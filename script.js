@@ -1634,6 +1634,296 @@ function proceedToPaymentCustom() {
     showNotification('Customized vehicle ready for purchase! Total: ' + formatPrice(customTotal), 'success');
 }
 
+// ============================================
+// BROKER/PARTNERSHIP SYSTEM
+// ============================================
+
+let brokerApplications = [];
+let sellerListings = [];
+
+function showBrokerModal() {
+    const modal = document.getElementById('brokerModal');
+    const content = document.getElementById('brokerContent');
+    
+    content.innerHTML = `
+        <div class="broker-form">
+            <div class="broker-hero">
+                <h3>🤝 Partner Broker Program</h3>
+                <p>Earn commissions by connecting buyers to vehicles on OmniDrive</p>
+            </div>
+            
+            <div class="broker-benefits">
+                <div class="benefit-item">
+                    <span class="benefit-icon">💰</span>
+                    <div>
+                        <strong>5% Commission</strong>
+                        <small>On every successful sale</small>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">🌍</span>
+                    <div>
+                        <strong>Global Inventory</strong>
+                        <small>Access to 234+ vehicles</small>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">📱</span>
+                    <div>
+                        <strong>Easy Management</strong>
+                        <small>Track sales from dashboard</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="broker-form-section">
+                <h4>Apply Now</h4>
+                <div class="filter-group">
+                    <label>Full Name</label>
+                    <input type="text" id="brokerName" placeholder="Your full name">
+                </div>
+                <div class="filter-group">
+                    <label>Email</label>
+                    <input type="email" id="brokerEmail" placeholder="your@email.com">
+                </div>
+                <div class="filter-group">
+                    <label>Phone</label>
+                    <input type="tel" id="brokerPhone" placeholder="+2547XXXXXXXX">
+                </div>
+                <div class="filter-group">
+                    <label>Company/Organization (Optional)</label>
+                    <input type="text" id="brokerCompany" placeholder="Your company name">
+                </div>
+                <div class="filter-group">
+                    <label>Why do you want to join?</label>
+                    <textarea id="brokerReason" rows="3" placeholder="Tell us about your experience..."></textarea>
+                </div>
+                <button onclick="submitBrokerApplication()" class="calc-btn">📝 Submit Application</button>
+            </div>
+            
+            <div class="broker-login">
+                <p>Already a partner? <a href="#" onclick="showBrokerDashboard()">Login to Dashboard</a></p>
+            </div>
+        </div>
+    `;
+    modal.classList.remove('hidden');
+}
+
+function submitBrokerApplication() {
+    const name = document.getElementById('brokerName').value;
+    const email = document.getElementById('brokerEmail').value;
+    const phone = document.getElementById('brokerPhone').value;
+    const company = document.getElementById('brokerCompany').value;
+    const reason = document.getElementById('brokerReason').value;
+    
+    if (!name || !email || !phone) {
+        showNotification('Please fill all required fields', 'error');
+        return;
+    }
+    
+    const application = {
+        id: 'BRK' + Date.now(),
+        name,
+        email,
+        phone,
+        company,
+        reason,
+        status: 'pending',
+        date: new Date().toISOString()
+    };
+    
+    brokerApplications.push(application);
+    localStorage.setItem('dealership_brokers', JSON.stringify(brokerApplications));
+    
+    showNotification('Application submitted! We will contact you within 24 hours.', 'success');
+    closeModal('brokerModal');
+}
+
+function showBrokerDashboard() {
+    showNotification('Broker dashboard coming soon!', 'info');
+}
+
+// ============================================
+// SELL YOUR VEHICLE (LIST FOR SALE)
+// ============================================
+
+function showListVehicleModal() {
+    const modal = document.getElementById('listVehicleModal');
+    const content = document.getElementById('listVehicleContent');
+    
+    content.innerHTML = `
+        <div class="list-vehicle-form">
+            <div class="seller-info">
+                <h3>🚗 List Your Vehicle for Sale</h3>
+                <p>Sell your car through OmniDrive and reach thousands of buyers</p>
+            </div>
+            
+            <div class="seller-benefits">
+                <div class="benefit-item">
+                    <span class="benefit-icon">🎯</span>
+                    <div>
+                        <strong>Wide Reach</strong>
+                        <small>Access to Kenya & East Africa</small>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">🔒</span>
+                    <div>
+                        <strong>Secure Payments</strong>
+                        <small>MPesa, Card, Bank Transfer</small>
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">🚚</span>
+                    <div>
+                        <strong>We Handle Delivery</strong>
+                        <small>Logistics included</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="vehicle-form">
+                <h4>Vehicle Details</h4>
+                <div class="form-row">
+                    <div class="filter-group">
+                        <label>Brand *</label>
+                        <input type="text" id="sellerBrand" placeholder="e.g., Toyota">
+                    </div>
+                    <div class="filter-group">
+                        <label>Model *</label>
+                        <input type="text" id="sellerModel" placeholder="e.g., Premio">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="filter-group">
+                        <label>Year *</label>
+                        <input type="number" id="sellerYear" placeholder="2020" min="1990" max="2026">
+                    </div>
+                    <div class="filter-group">
+                        <label>Price (USD) *</label>
+                        <input type="number" id="sellerPrice" placeholder="15000">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="filter-group">
+                        <label>Category</label>
+                        <select id="sellerCategory">
+                            <option value="Car">Car</option>
+                            <option value="Bike">Bike</option>
+                            <option value="Bus">Bus</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Condition</label>
+                        <select id="sellerCondition">
+                            <option value="New">New</option>
+                            <option value="Used">Used</option>
+                            <option value="Certified Pre-Owned">Certified Pre-Owned</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="filter-group">
+                        <label>Mileage</label>
+                        <input type="number" id="sellerMileage" placeholder="50000">
+                    </div>
+                    <div class="filter-group">
+                        <label>Fuel Type</label>
+                        <select id="sellerFuel">
+                            <option value="Gasoline">Gasoline</option>
+                            <option value="Diesel">Diesel</option>
+                            <option value="Electric">Electric</option>
+                            <option value="Hybrid">Hybrid</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Description</label>
+                    <textarea id="sellerDescription" rows="4" placeholder="Describe your vehicle's condition, features, etc."></textarea>
+                </div>
+                <div class="filter-group">
+                    <label>Image URL</label>
+                    <input type="url" id="sellerImage" placeholder="https://example.com/car-image.jpg">
+                </div>
+            </div>
+            
+            <div class="seller-contact">
+                <h4>Your Contact Details</h4>
+                <div class="form-row">
+                    <div class="filter-group">
+                        <label>Name *</label>
+                        <input type="text" id="sellerName" placeholder="Your name">
+                    </div>
+                    <div class="filter-group">
+                        <label>Phone *</label>
+                        <input type="tel" id="sellerPhone" placeholder="+2547XXXXXXXX">
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Email</label>
+                    <input type="email" id="sellerEmail" placeholder="your@email.com">
+                </div>
+            </div>
+            
+            <div class="listing-fee">
+                <p><strong>Listing Fee:</strong> FREE for first 3 vehicles!</p>
+                <p><small>We charge 3% commission on successful sale</small></p>
+            </div>
+            
+            <button onclick="submitVehicleListing()" class="calc-btn">🚗 Submit Listing</button>
+        </div>
+    `;
+    modal.classList.remove('hidden');
+}
+
+function submitVehicleListing() {
+    const brand = document.getElementById('sellerBrand').value;
+    const model = document.getElementById('sellerModel').value;
+    const year = document.getElementById('sellerYear').value;
+    const price = document.getElementById('sellerPrice').value;
+    const category = document.getElementById('sellerCategory').value;
+    const condition = document.getElementById('sellerCondition').value;
+    const mileage = document.getElementById('sellerMileage').value;
+    const fuel = document.getElementById('sellerFuel').value;
+    const description = document.getElementById('sellerDescription').value;
+    const image = document.getElementById('sellerImage').value;
+    const sellerName = document.getElementById('sellerName').value;
+    const sellerPhone = document.getElementById('sellerPhone').value;
+    const sellerEmail = document.getElementById('sellerEmail').value;
+    
+    if (!brand || !model || !year || !price || !sellerName || !sellerPhone) {
+        showNotification('Please fill all required fields', 'error');
+        return;
+    }
+    
+    const newId = inventory.length > 0 ? Math.max(...inventory.map(v => v.id)) + 1 : 1;
+    const listing = {
+        id: newId,
+        brand,
+        model,
+        price: parseInt(price),
+        year: parseInt(year),
+        category,
+        condition,
+        mileage: parseInt(mileage) || 0,
+        fuel,
+        bodyStyle: 'Sedan',
+        color: 'White',
+        nation: 'Kenya',
+        description,
+        img: image || getCarImage(brand, model),
+        seller: { name: sellerName, phone: sellerPhone, email: sellerEmail },
+        status: 'pending',
+        date: new Date().toISOString()
+    };
+    
+    sellerListings.push(listing);
+    localStorage.setItem('dealership_seller_listings', JSON.stringify(sellerListings));
+    
+    showNotification('Vehicle listed! We will review and publish within 24 hours.', 'success');
+    closeModal('listVehicleModal');
+}
+
 function initiateMpesaPayment() {
     const phone = document.getElementById('mpesaPhone').value.replace(/\D/g, '');
     const result = document.getElementById('mpesaResult');

@@ -2,20 +2,37 @@
    CSS VARIABLES
    ============================== */
 :root {
-    --amazon-navy: #131921;
-    --amazon-orange: #febd69;
-    --bg-grey: #eaeded;
-    --primary: #007185;
-    --accent: #e47911;
-    --danger: #d93025;
-    --success: #1a8e4c;
+    --amazon-navy: #0f1419;
+    --amazon-orange: #ff9f1c;
+    --bg-grey: #f8f9fa;
+    --primary: #00b4d8;
+    --accent: #ff6b35;
+    --danger: #ef476f;
+    --success: #06d6a0;
     
-    --bg: #eaeded;
+    --bg: #f8f9fa;
     --card: #ffffff;
-    --text: #0f1111;
-    --border: #ddd;
-    --heart: #ccc;
-    --price: #B12704;
+    --text: #1a1a2e;
+    --border: #e9ecef;
+    --heart: #ff6b6b;
+    --price: #e63946;
+    
+    --gradient-primary: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
+    --gradient-accent: linear-gradient(135deg, #ff9f1c 0%, #ff6b35 100%);
+    --gradient-dark: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+    --shadow-md: 0 4px 20px rgba(0,0,0,0.12);
+    --shadow-lg: 0 8px 40px rgba(0,0,0,0.18);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+}
+
+[data-theme="dark"] {
+    --bg: #0f1419;
+    --card: #1a1a2e;
+    --text: #f8f9fa;
+    --border: #2d3748;
 }
 
 /* ==============================
@@ -107,61 +124,85 @@ button {
    NAVBAR
    ============================== */
 .navbar {
-    background: var(--amazon-navy);
+    background: var(--gradient-dark);
     display: flex;
     flex-wrap: wrap;
-    padding: 12px 20px;
+    padding: 15px 30px;
     align-items: center;
     color: white;
     position: sticky;
     top: 0;
     z-index: 1000;
-    gap: 15px;
+    gap: 20px;
+    box-shadow: var(--shadow-md);
 }
 
 .logo {
-    font-size: 1.5rem;
-    font-weight: bold;
+    font-size: 1.8rem;
+    font-weight: 800;
     white-space: nowrap;
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
 }
 
 .tagline {
-    font-size: 0.8rem;
-    opacity: 0.8;
+    font-size: 0.75rem;
+    opacity: 0.7;
     font-weight: normal;
+    border-left: 1px solid rgba(255,255,255,0.3);
+    padding-left: 10px;
 }
 
 .search-box {
     flex: 1;
     display: flex;
-    min-width: 200px;
-    max-width: 500px;
+    min-width: 250px;
+    max-width: 550px;
+    position: relative;
 }
 
 #searchBar {
     flex: 1;
-    padding: 10px 15px;
-    border-radius: 4px 0 0 4px;
+    padding: 12px 20px;
+    border-radius: 25px 0 0 25px;
     border: none;
-    font-size: 1rem;
+    font-size: 0.95rem;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+#searchBar::placeholder {
+    color: rgba(255,255,255,0.5);
+}
+
+#searchBar:focus {
+    background: rgba(255,255,255,0.15);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary);
 }
 
 .search-btn {
-    background: var(--amazon-orange);
+    background: var(--gradient-accent);
     border: none;
-    padding: 10px 20px;
-    border-radius: 0 4px 4px 0;
+    padding: 12px 25px;
+    border-radius: 0 25px 25px 0;
     font-size: 1.1rem;
+    transition: transform 0.2s ease;
 }
 
 .search-btn:hover {
-    background: #ff9f3b;
+    transform: scale(1.05);
 }
 
 .nav-tools {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 15px;
 }
 
 .nav-tools select {
@@ -330,16 +371,18 @@ main {
 .car-card {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 15px;
-    transition: all 0.3s;
+    border-radius: var(--radius-lg);
+    padding: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    box-shadow: var(--shadow-sm);
 }
 
 .car-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary);
 }
 
 .car-card {
@@ -359,11 +402,16 @@ main {
 
 .car-card img {
     width: 100%;
-    height: 180px;
+    height: 200px;
     object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    background: var(--bg);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    margin-bottom: 0;
+    background: linear-gradient(135deg, var(--bg) 0%, var(--border) 100%);
+    transition: transform 0.3s ease;
+}
+
+.car-card:hover img {
+    transform: scale(1.05);
 }
 
 .car-card .heart-icon {
@@ -375,6 +423,15 @@ main {
     cursor: pointer;
     z-index: 10;
     transition: all 0.2s;
+    background: rgba(255,255,255,0.9);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+}
 }
 
 .heart-icon.active {

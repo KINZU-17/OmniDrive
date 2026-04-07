@@ -117,6 +117,10 @@
             
             <button onclick="showOrderTracking()" class="finance-btn" title="Orders">📦</button>
             
+            <button onclick="showBrokerModal()" class="finance-btn" title="Become a Partner">🤝</button>
+            
+            <button onclick="showListVehicleModal()" class="finance-btn" title="Sell Your Vehicle">💰</button>
+            
             <button onclick="showVinCheck()" class="finance-btn" title="VIN Check">🔍</button>
         </div>
     </header>
@@ -562,6 +566,30 @@
             </div>
             <h2>🔧 Customize Your Ride</h2>
             <div id="customizeContent"></div>
+        </div>
+    </div>
+
+    <!-- Broker/Partnership Modal -->
+    <div id="brokerModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeModal('brokerModal')">← Back</button>
+                <button class="close-btn" onclick="closeModal('brokerModal')">✕ Exit</button>
+            </div>
+            <h2>🤝 Become a Partner Broker</h2>
+            <div id="brokerContent"></div>
+        </div>
+    </div>
+
+    <!-- List Vehicle Modal -->
+    <div id="listVehicleModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeModal('listVehicleModal')">← Back</button>
+                <button class="close-btn" onclick="closeModal('listVehicleModal')">✕ Exit</button>
+            </div>
+            <h2>🚗 List Your Vehicle for Sale</h2>
+            <div id="listVehicleContent"></div>
         </div>
     </div>
 
