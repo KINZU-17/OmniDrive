@@ -961,6 +961,7 @@ function showDetailModal(id) {
                 ${compareList.includes(car.id) ? '✓ Added to Compare' : '+ Add to Compare'}
             </button>
             <button class="btn-contact" onclick="contactDealer('${car.brand} ${car.model}')">📞 Contact Dealer</button>
+            <button class="btn-buy" onclick="showMpesaPayment(${car.id}, ${car.price + calculateFreight(car)})">💳 Buy with MPesa</button>
         </div>
     `;
     
@@ -1161,6 +1162,122 @@ function showAccessories() {
 
 function addToCart(id) {
     alert("✅ Added to cart!");
+}
+
+// ============================================
+// MPESA PAYMENT
+// ============================================
+
+let cartTotal = 0;
+let selectedVehicle = null;
+
+function showMpesaPayment(vehicleId, totalAmount) {
+    selectedVehicle = inventory.find(v => v.id === vehicleId);
+    cartTotal = totalAmount || selectedVehicle.price;
+    
+    const modal = document.getElementById('mpesaModal');
+    const content = document.getElementById('mpesaContent');
+    
+    content.innerHTML = `
+        <div class="mpesa-form">
+            <div class="mpesa-logo">📱</div>
+            <h3>MPesa Payment</h3>
+            <p class="mpesa-subtitle">Pay with MPesa - Fast & Secure</p>
+            
+            <div class="payment-summary">
+                <p><strong>Vehicle:</strong> ${selectedVehicle.brand} ${selectedVehicle.model}</p>
+                <p><strong>Amount:</strong> ${formatPrice(cartTotal)}</p>
+            </div>
+            
+            <div class="filter-group">
+                <label>MPesa Phone Number</label>
+                <input type="tel" id="mpesaPhone" placeholder="2547XXXXXXXX (Kenya)">
+            </div>
+            
+            <div class="filter-group">
+                <label>Amount (KES)</label>
+                <input type="number" id="mpesaAmount" value="${Math.round(cartTotal * liveRates.KES)}" readonly>
+            </div>
+            
+            <button onclick="initiateMpesaPayment()" class="mpesa-btn">💳 Pay with MPesa</button>
+            
+            <div id="mpesaResult" class="mpesa-result"></div>
+            
+            <div class="mpesa-note">
+                <p>💡 You'll receive an STK push on your phone</p>
+                <p>Supported in Kenya, Tanzania, Mozambique, Ghana, DRC</p>
+            </div>
+        </div>
+    `;
+    
+    modal.classList.remove('hidden');
+}
+
+function initiateMpesaPayment() {
+    const phone = document.getElementById('mpesaPhone').value.replace(/\D/g, '');
+    const result = document.getElementById('mpesaResult');
+    
+    if (!phone || phone.length < 9) {
+        showNotification('Please enter a valid phone number', 'error');
+        return;
+    }
+    
+    if (phone.startsWith('0')) {
+        phone = '254' + phone.substring(1);
+    } else if (phone.startsWith('+')) {
+        phone = phone.substring(1);
+    }
+    
+    result.innerHTML = '<div class="loading">Processing payment...</div>';
+    
+    // Simulate MPesa API call
+    setTimeout(() => {
+        // In production, this would call the MPesa Daraja API
+        const transactionId = 'MP' + Date.now();
+        
+        result.innerHTML = `
+            <div class="success-message">
+                <h4>✅ Payment Initiated!</h4>
+                <p>Transaction ID: ${transactionId}</p>
+                <p>STK Push sent to your phone</p>
+                <p>Enter PIN to confirm</p>
+                <div class="pin-prompt">
+                    <label>Enter MPesa PIN:</label>
+                    <input type="password" id="mpesaPin" maxlength="4" placeholder="****">
+                    <button onclick="confirmMpesaPayment('${transactionId}')">Confirm</button>
+                </div>
+            </div>
+        `;
+    }, 1500);
+}
+
+function confirmMpesaPayment(transactionId) {
+    const pin = document.getElementById('mpesaPin').value;
+    
+    if (!pin || pin.length !== 4) {
+        showNotification('Please enter your 4-digit PIN', 'error');
+        return;
+    }
+    
+    // Simulate payment confirmation
+    const result = document.getElementById('mpesaResult');
+    result.innerHTML = '<div class="loading">Confirming payment...</div>';
+    
+    setTimeout(() => {
+        const confirmedId = 'TXN' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        
+        result.innerHTML = `
+            <div class="success-message">
+                <h4>🎉 Payment Successful!</h4>
+                <p>Confirmed: ${confirmedId}</p>
+                <p>Amount: ${formatPrice(cartTotal)}</p>
+                <p>You'll receive an SMS confirmation</p>
+                <button onclick="closeModal('mpesaModal')" class="calc-btn">Done</button>
+            </div>
+        `;
+        
+        showNotification(`Payment successful! Vehicle: ${selectedVehicle.brand} ${selectedVehicle.model}`, 'success');
+    }, 2000);
 }
 
 // ============================================

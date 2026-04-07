@@ -100,6 +100,8 @@
             </div>
             
             <button onclick="showPriceAlerts()" class="finance-btn" title="Price Alerts">🔔</button>
+            
+            <button onclick="showMpesaPayment(1, 50000)" class="finance-btn" title="MPesa Payment">💳</button>
         </div>
     </header>
 
@@ -472,6 +474,18 @@
             </div>
             <h2>🔧 Parts & Accessories</h2>
             <div id="accessoriesContent"></div>
+        </div>
+    </div>
+
+    <!-- MPesa Payment Modal -->
+    <div id="mpesaModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeModal('mpesaModal')">← Back</button>
+                <button class="close-btn" onclick="closeModal('mpesaModal')">✕ Exit</button>
+            </div>
+            <h2>📱 MPesa Payment</h2>
+            <div id="mpesaContent"></div>
         </div>
     </div>
 
