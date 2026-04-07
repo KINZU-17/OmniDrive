@@ -1,27 +1,137 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBI-Dealership</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- ========================
+         HEADER / NAVBAR
+    ======================== -->
     <header class="navbar">
         <div class="logo">GlobalDrive</div>
+        
         <div class="search-box">
             <input type="text" id="searchBar" placeholder="Search brands or models..." oninput="applyFilters()">
-            <button class="search-btn">🔍</button>
+            <button class="search-btn" onclick="applyFilters()">🔍</button>
         </div>
+        
         <div class="nav-tools">
             <select id="currencyPicker" onchange="updateCurrency()">
-                <option value="USD">USD - $</option>
-                <option value="EUR">EUR - €</option>
-                <option value="JPY">JPY - ¥</option>
+                <optgroup label="Popular Currencies">
+                    <option value="USD">USD - $ (US Dollar)</option>
+                    <option value="EUR">EUR - € (Euro)</option>
+                    <option value="GBP">GBP - £ (British Pound)</option>
+                    <option value="JPY">JPY - ¥ (Japanese Yen)</option>
+                    <option value="CNY">CNY - ¥ (Chinese Yuan)</option>
+                </optgroup>
+                <optgroup label="Europe">
+                    <option value="CHF">CHF - Fr (Swiss Franc)</option>
+                    <option value="SEK">SEK - kr (Swedish Krona)</option>
+                    <option value="NOK">NOK - kr (Norwegian Krone)</option>
+                    <option value="DKK">DKK - kr (Danish Krone)</option>
+                    <option value="PLN">PLN - zł (Polish Zloty)</option>
+                    <option value="CZK">CZK - Kč (Czech Koruna)</option>
+                    <option value="HUF">HUF - Ft (Hungarian Forint)</option>
+                    <option value="RON">RON - L (Romanian Leu)</option>
+                    <option value="BGN">BGN - лв (Bulgarian Lev)</option>
+                    <option value="HRK">HRK - kn (Croatian Kuna)</option>
+                    <option value="ISK">ISK - kr (Icelandic Krona)</option>
+                </optgroup>
+                <optgroup label="Americas">
+                    <option value="CAD">CAD - $ (Canadian Dollar)</option>
+                    <option value="AUD">AUD - $ (Australian Dollar)</option>
+                    <option value="MXN">MXN - $ (Mexican Peso)</option>
+                    <option value="BRL">BRL - R$ (Brazilian Real)</option>
+                    <option value="ARS">ARS - $ (Argentine Peso)</option>
+                    <option value="CLP">CLP - $ (Chilean Peso)</option>
+                    <option value="COP">COP - $ (Colombian Peso)</option>
+                    <option value="PEN">PEN - S/ (Peruvian Sol)</option>
+                    <option value="VEB">VEB - Bs (Venezuelan Bolívar)</option>
+                </optgroup>
+                <optgroup label="Asia">
+                    <option value="INR">INR - ₹ (Indian Rupee)</option>
+                    <option value="KRW">KRW - ₩ (South Korean Won)</option>
+                    <option value="SGD">SGD - $ (Singapore Dollar)</option>
+                    <option value="HKD">HKD - $ (Hong Kong Dollar)</option>
+                    <option value="MYR">MYR - RM (Malaysian Ringgit)</option>
+                    <option value="THB">THB - ฿ (Thai Baht)</option>
+                    <option value="IDR">IDR - Rp (Indonesian Rupiah)</option>
+                    <option value="PHP">PHP - ₱ (Philippine Peso)</option>
+                    <option value="VND">VND - ₫ (Vietnamese Dong)</option>
+                    <option value="PKR">PKR - ₨ (Pakistani Rupee)</option>
+                    <option value="BDT">BDT - ৳ (Bangladeshi Taka)</option>
+                    <option value="TWD">TWD - $ (Taiwan Dollar)</option>
+                </optgroup>
+                <optgroup label="Middle East">
+                    <option value="AED">AED - د.إ (UAE Dirham)</option>
+                    <option value="SAR">SAR - ر.س (Saudi Riyal)</option>
+                    <option value="ILS">ILS - ₪ (Israeli Shekel)</option>
+                    <option value="TRY">TRY - ₺ (Turkish Lira)</option>
+                    <option value="EGP">EGP - E£ (Egyptian Pound)</option>
+                    <option value="KWD">KWD - د.ك (Kuwaiti Dinar)</option>
+                    <option value="QAR">QAR - ر.ق (Qatari Riyal)</option>
+                    <option value="BHD">BHD - .د.ب (Bahraini Dinar)</option>
+                    <option value="OMR">OMR - ر.ع (Omani Rial)</option>
+                </optgroup>
+                <optgroup label="Africa">
+                    <option value="ZAR">ZAR - R (South African Rand)</option>
+                    <option value="NGN">NGN - ₦ (Nigerian Naira)</option>
+                    <option value="KES">KES - KSh (Kenyan Shilling)</option>
+                    <option value="GHS">GHS - ₵ (Ghanaian Cedi)</option>
+                    <option value="MAD">MAD - د.م. (Moroccan Dirham)</option>
+                    <option value="TND">TND - د.ت (Tunisian Dinar)</option>
+                </optgroup>
+                <optgroup label="Oceania">
+                    <option value="NZD">NZD - $ (New Zealand Dollar)</option>
+                    <option value="FJD">FJD - $ (Fiji Dollar)</option>
+                    <option value="PGK">PGK - K (Papua New Guinean Kina)</option>
+                </optgroup>
             </select>
+            
+            <button onclick="toggleTheme()" class="theme-btn" title="Toggle Theme">🌙</button>
+            
+            <button onclick="showFinancingCalc()" class="finance-btn" title="Financing Calculator">💰</button>
+            
+            <div class="wishlist-badge" onclick="showWishlistModal()" title="View Wishlist">
+                ❤️ <span id="wishCount">0</span>
+            </div>
         </div>
     </header>
 
+    <!-- ========================
+         MAIN CONTENT
+    ======================== -->
     <div class="container">
+        <!-- SIDEBAR -->
         <aside class="sidebar">
-            <h3>Filter Results</h3>
+            <div class="sidebar-header">
+                <h3>Filters</h3>
+                <button onclick="clearFilters()" class="clear-btn">Clear All</button>
+            </div>
+            
+            <div class="filter-group">
+                <label>Category</label>
+                <select id="categoryFilter" onchange="applyFilters()">
+                    <option value="all">All Categories</option>
+                    <option value="Car">Cars 🚗</option>
+                    <option value="Bike">Bikes 🏍️</option>
+                    <option value="Bus">Buses 🚌</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Condition</label>
+                <select id="conditionFilter" onchange="applyFilters()">
+                    <option value="all">All Conditions</option>
+                    <option value="New">New</option>
+                    <option value="Used">Used</option>
+                    <option value="Certified Pre-Owned">Certified Pre-Owned</option>
+                </select>
+            </div>
+            
             <div class="filter-group">
                 <label>Nationality</label>
                 <select id="nationFilter" onchange="applyFilters()">
@@ -29,46 +139,337 @@
                     <option value="Japan">Japan 🇯🇵</option>
                     <option value="Germany">Germany 🇩🇪</option>
                     <option value="USA">USA 🇺🇸</option>
+                    <option value="Italy">Italy 🇮🇹</option>
+                    <option value="UK">UK 🇬🇧</option>
+                    <option value="Sweden">Sweden 🇸🇪</option>
+                    <option value="India">India 🇮🇳</option>
+                    <option value="China">China 🇨🇳</option>
+                    <option value="South Korea">South Korea 🇰🇷</option>
+                    <option value="France">France 🇫🇷</option>
+                    <option value="Croatia">Croatia 🇭🇷</option>
                 </select>
             </div>
+
             <div class="filter-group">
-                <label>Max Price</label>
-                <input type="range" id="priceRange" min="10000" max="300000" step="5000" oninput="applyFilters()">
-                <span id="priceDisplay">$300,000</span>
+                <label>Body Style</label>
+                <select id="bodyStyleFilter" onchange="applyFilters()">
+                    <option value="all">All Body Styles</option>
+                    <option value="Sedan">Sedan</option>
+                    <option value="SUV">SUV</option>
+                    <option value="Coupe">Coupe</option>
+                    <option value="Convertible">Convertible</option>
+                    <option value="Truck">Truck</option>
+                    <option value="Van">Van</option>
+                    <option value="Hatchback">Hatchback</option>
+                    <option value="Wagon">Wagon</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Fuel Type</label>
+                <select id="fuelFilter" onchange="applyFilters()">
+                    <option value="all">All Fuel Types</option>
+                    <option value="Gasoline">Gasoline</option>
+                    <option value="Diesel">Diesel</option>
+                    <option value="Electric">Electric</option>
+                    <option value="Hybrid">Hybrid</option>
+                    <option value="Plug-in Hybrid">Plug-in Hybrid</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Drivetrain</label>
+                <select id="drivetrainFilter" onchange="applyFilters()">
+                    <option value="all">All Drivetrains</option>
+                    <option value="AWD">AWD</option>
+                    <option value="RWD">RWD</option>
+                    <option value="FWD">FWD</option>
+                    <option value="4WD">4WD</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Color</label>
+                <select id="colorFilter" onchange="applyFilters()">
+                    <option value="all">All Colors</option>
+                    <option value="Black">Black</option>
+                    <option value="White">White</option>
+                    <option value="Silver">Silver</option>
+                    <option value="Gray">Gray</option>
+                    <option value="Red">Red</option>
+                    <option value="Blue">Blue</option>
+                    <option value="Yellow">Yellow</option>
+                    <option value="Orange">Orange</option>
+                    <option value="Green">Green</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Max Price: <span id="priceDisplay">$3,000,000</span></label>
+                <input type="range" id="priceRange" min="10000" max="3000000" step="10000" value="3000000" oninput="applyFilters()">
+            </div>
+            
+            <div class="filter-group">
+                <label>Sort By</label>
+                <select id="sortFilter" onchange="applyFilters()">
+                    <option value="default">Default</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
+                    <option value="name-asc">Name: A to Z</option>
+                    <option value="name-desc">Name: Z to A</option>
+                    <option value="rating">Highest Rated</option>
+                </select>
+            </div>
+            
+            <div class="stats-box">
+                <p>Showing <span id="resultsCount">0</span> vehicles</p>
+            </div>
+
+            <hr>
+
+            <div class="calculator-buttons">
+                <button onclick="showTradeInCalc()" class="calc-sidebar-btn">🔄 Trade-In Value</button>
+                <button onclick="showInsuranceCalc()" class="calc-sidebar-btn">🛡️ Insurance Quote</button>
+                <button onclick="showImportCalc()" class="calc-sidebar-btn">📦 Import Calculator</button>
+            </div>
+            
+            <hr>
+            
+            <div class="recently-viewed">
+                <h4>Recently Viewed</h4>
+                <div id="recentList"></div>
             </div>
         </aside>
 
-        <main id="vehicleGrid" class="grid"></main>
+        <!-- VEHICLE GRID -->
+        <main>
+            <div id="vehicleGrid" class="grid"></div>
+            <div id="emptyState" class="empty-state hidden">
+                <h3>No vehicles found</h3>
+                <p>Try adjusting your filters</p>
+                <button onclick="clearFilters()">Clear Filters</button>
+            </div>
+        </main>
     </div>
 
+    <!-- ========================
+         COMPARE TRAY
+    ======================== -->
     <div id="compareTray" class="compare-tray hidden">
         <span id="compareText">0 Vehicles Selected</span>
-        <button onclick="showComparison()">Compare Now</button>
+        <button onclick="showComparison()" class="compare-btn">Compare</button>
+        <button onclick="clearCompare()" class="clear-compare-btn">Clear</button>
     </div>
-    <div id="adminPanel" class="admin-box">
-    <h3>Add New Vehicle</h3>
-    <input type="text" id="newBrand" placeholder="Brand (e.g. Toyota)">
-    <input type="text" id="newModel" placeholder="Model (e.g. Supra)">
-    <input type="number" id="newPrice" placeholder="Price in USD">
-    <select id="newNation">
-        <option value="Japan">Japan</option>
-        <option value="Germany">Germany</option>
-        <option value="USA">USA</option>
-        <option value="Italy">Italy</option>
-    </select>
-    <button onclick="addNewVehicle()">List Vehicle</button>
-</div>
-<footer class="site-footer">
-    <p>&copy; 2026 GlobalDrive Dealership</p>
-    <button onclick="checkAdminAccess()" class="admin-link">Staff Login</button>
-</footer>
 
-<div id="adminPanel" class="admin-modal hidden">
-    <div class="modal-content">
-        <span class="close" onclick="closeAdmin()">&times;</span>
-        <h2>Inventory Management</h2>
+    <!-- ========================
+         FEATURED DEALS
+    ======================== -->
+    <section class="featured-section">
+        <h2>🔥 Hot Deals This Week</h2>
+        <div id="featuredSection"></div>
+    </section>
+
+    <!-- ========================
+         FOOTER
+    ======================== -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <button onclick="checkAdminAccess()" class="admin-link">Staff Login</button>
+                <button onclick="exportInventory()" class="export-btn">Export Inventory</button>
+                <button onclick="showServiceCenter()" class="admin-link">Service Center</button>
+                <button onclick="showAccessories()" class="admin-link">Parts & Accessories</button>
+            </div>
+            <p>&copy; 2026 GlobalDrive - International Vehicle Marketplace</p>
         </div>
-</div>
+    </footer>
+
+    <!-- Chat Widget -->
+    <div id="chatWidget" class="chat-widget hidden" onclick="toggleChat()">
+        <span>💬 Chat</span>
+    </div>
+    <div id="chatBox" class="chat-box hidden">
+        <div class="chat-header">
+            <h4>Live Support</h4>
+            <button onclick="toggleChat()">✕</button>
+        </div>
+        <div id="chatMessages" class="chat-messages"></div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendChat()">
+            <button onclick="sendChat()">Send</button>
+        </div>
+    </div>
+
+    <!-- ========================
+         MODALS
+    ======================== -->
+    
+    <!-- Vehicle Detail Modal -->
+    <div id="detailModal" class="modal hidden">
+        <div class="modal-content detail-modal-content">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeDetailModal()">← Back to Inventory</button>
+                <button class="close-btn" onclick="closeDetailModal()">✕ Exit</button>
+            </div>
+            <div id="detailContent"></div>
+        </div>
+    </div>
+
+    <!-- Comparison Modal -->
+    <div id="compareModal" class="modal hidden">
+        <div class="modal-content compare-modal-content">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeCompareModal()">← Back</button>
+                <button class="close-btn" onclick="closeCompareModal()">✕ Exit</button>
+            </div>
+            <h2>Vehicle Comparison</h2>
+            <div id="compareTable"></div>
+        </div>
+    </div>
+
+    <!-- Wishlist Modal -->
+    <div id="wishlistModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeWishlistModal()">← Back</button>
+                <button class="close-btn" onclick="closeWishlistModal()">✕ Exit</button>
+            </div>
+            <h2>My Wishlist</h2>
+            <div id="wishlistContent"></div>
+        </div>
+    </div>
+
+    <!-- Financing Calculator Modal -->
+    <div id="financeModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeFinanceModal()">← Back</button>
+                <button class="close-btn" onclick="closeFinanceModal()">✕ Exit</button>
+            </div>
+            <h2>Financing Calculator</h2>
+            <div class="finance-form">
+                <div class="filter-group">
+                    <label>Vehicle Price</label>
+                    <input type="number" id="financePrice" placeholder="Enter price">
+                </div>
+                <div class="filter-group">
+                    <label>Down Payment ($)</label>
+                    <input type="number" id="financeDown" value="5000">
+                </div>
+                <div class="filter-group">
+                    <label>Loan Term (months)</label>
+                    <select id="financeTerm">
+                        <option value="24">24 months</option>
+                        <option value="36">36 months</option>
+                        <option value="48">48 months</option>
+                        <option value="60">60 months</option>
+                        <option value="72">72 months</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Interest Rate (%)</label>
+                    <input type="number" id="financeRate" value="5.9" step="0.1">
+                </div>
+                <button onclick="calculateFinance()" class="calc-btn">Calculate</button>
+                <div id="financeResult" class="finance-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Modal -->
+    <div id="adminModal" class="modal hidden">
+        <div class="modal-content admin-modal-content">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeAdmin()">← Back</button>
+                <button class="close-btn" onclick="closeAdmin()">✕ Exit</button>
+            </div>
+            <h2>Inventory Management</h2>
+            <div class="admin-tabs">
+                <button onclick="showAdminTab('add')" class="tab-btn active">Add Vehicle</button>
+                <button onclick="showAdminTab('list')" class="tab-btn">View Inventory</button>
+            </div>
+            <div id="adminAddTab" class="admin-tab">
+                <div class="admin-form">
+                    <input type="text" id="newBrand" placeholder="Brand (e.g. Toyota)">
+                    <input type="text" id="newModel" placeholder="Model (e.g. Supra)">
+                    <input type="number" id="newPrice" placeholder="Price in USD">
+                    <select id="newNation">
+                        <option value="Japan">Japan</option>
+                        <option value="Germany">Germany</option>
+                        <option value="USA">USA</option>
+                        <option value="Italy">Italy</option>
+                        <option value="Sweden">Sweden</option>
+                        <option value="India">India</option>
+                        <option value="China">China</option>
+                    </select>
+                    <select id="newCategory">
+                        <option value="Car">Car</option>
+                        <option value="Bike">Bike</option>
+                        <option value="Bus">Bus</option>
+                    </select>
+                    <input type="text" id="newImage" placeholder="Image URL (optional)">
+                    <div class="specs-inputs">
+                        <input type="text" id="newEngine" placeholder="Engine (e.g. 3.0L Twin Turbo)">
+                        <input type="number" id="newHorsepower" placeholder="Horsepower">
+                        <input type="text" id="newTransmission" placeholder="Transmission (e.g. 6-Speed Auto)">
+                    </div>
+                    <button onclick="addNewVehicle()">Add Vehicle</button>
+                </div>
+            </div>
+            <div id="adminListTab" class="admin-tab hidden">
+                <div id="adminInventoryList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dealer Locator Modal -->
+    <div id="dealerModal" class="modal hidden">
+        <div class="modal-content dealer-modal-content">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeDealerModal()">← Back</button>
+                <button class="close-btn" onclick="closeDealerModal()">✕ Exit</button>
+            </div>
+            <h2>🏪 Find a Dealer Near You</h2>
+            <p class="modal-subtitle">Locate GlobalDrive dealers in your area</p>
+            <div id="dealerContent"></div>
+        </div>
+    </div>
+
+    <!-- Video Gallery Modal -->
+    <div id="videoModal" class="modal hidden">
+        <div class="modal-content video-modal-content">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeModal('videoModal')">← Back</button>
+                <button class="close-btn" onclick="closeModal('videoModal')">✕ Exit</button>
+            </div>
+            <h2>🎥 Video Gallery</h2>
+            <div id="videoContent"></div>
+        </div>
+    </div>
+
+    <!-- Service Center Modal -->
+    <div id="serviceModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeModal('serviceModal')">← Back</button>
+                <button class="close-btn" onclick="closeModal('serviceModal')">✕ Exit</button>
+            </div>
+            <div id="serviceContent"></div>
+        </div>
+    </div>
+
+    <!-- Accessories Modal -->
+    <div id="accessoriesModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeModal('accessoriesModal')">← Back</button>
+                <button class="close-btn" onclick="closeModal('accessoriesModal')">✕ Exit</button>
+            </div>
+            <h2>🔧 Parts & Accessories</h2>
+            <div id="accessoriesContent"></div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>

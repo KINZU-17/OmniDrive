@@ -46,3 +46,12 @@ API calculates the global price.
 User searches and compares.
 
 LocalStorage keeps it all saved.
+
+## 🚀 New in Version 2.0
+Night Drive Mode: Personalized UI themes for low-light browsing.
+
+Wishlist Synchronization: Persistent "Saved Vehicles" across sessions.
+
+Urgency Logic: Real-time stock alerts based on inventory levels.
+
+Enhanced Modals: Deep-dive specs including localized tax calculations.

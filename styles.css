@@ -1,68 +1,1532 @@
+/* ==============================
+   CSS VARIABLES
+   ============================== */
 :root {
     --amazon-navy: #131921;
     --amazon-orange: #febd69;
     --bg-grey: #eaeded;
+    --primary: #007185;
+    --accent: #e47911;
+    --danger: #d93025;
+    --success: #1a8e4c;
+    
+    --bg: #eaeded;
+    --card: #ffffff;
+    --text: #0f1111;
+    --border: #ddd;
+    --heart: #ccc;
+    --price: #B12704;
 }
 
-body { font-family: Arial, sans-serif; background: var(--bg-grey); margin: 0; }
+[data-theme="dark"] {
+    --bg: #0d1117;
+    --card: #161b22;
+    --text: #c9d1d9;
+    --border: #30363d;
+    --primary: #58a6ff;
+    --heart: #555;
+    --price: #f85149;
+}
 
+/* ==============================
+   BASE STYLES
+   ============================== */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 0;
+    transition: background 0.3s, color 0.3s;
+    min-height: 100vh;
+}
+
+h1, h2, h3, h4 {
+    margin: 0 0 10px 0;
+}
+
+button {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ==============================
+   NAVBAR
+   ============================== */
 .navbar {
     background: var(--amazon-navy);
     display: flex;
-    padding: 10px 20px;
+    flex-wrap: wrap;
+    padding: 12px 20px;
     align-items: center;
     color: white;
-    position: sticky; top: 0; z-index: 100;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    gap: 15px;
 }
 
-.search-box { flex-grow: 1; display: flex; margin: 0 20px; }
-#searchBar { width: 100%; padding: 8px; border-radius: 4px 0 0 4px; border: none; }
-.search-btn { background: var(--amazon-orange); border: none; padding: 8px 15px; border-radius: 0 4px 4px 0; cursor: pointer; }
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
 
-.container { display: flex; padding: 20px; gap: 20px; }
+.search-box {
+    flex: 1;
+    display: flex;
+    min-width: 200px;
+    max-width: 500px;
+}
 
-.sidebar { width: 250px; background: white; padding: 20px; border-radius: 8px; height: fit-content; }
+#searchBar {
+    flex: 1;
+    padding: 10px 15px;
+    border-radius: 4px 0 0 4px;
+    border: none;
+    font-size: 1rem;
+}
 
+.search-btn {
+    background: var(--amazon-orange);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 0 4px 4px 0;
+    font-size: 1.1rem;
+}
+
+.search-btn:hover {
+    background: #ff9f3b;
+}
+
+.nav-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nav-tools select {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: none;
+    background: white;
+    color: #0f1111;
+}
+
+.theme-btn, .finance-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.3rem;
+    padding: 8px;
+    border-radius: 50%;
+}
+
+.theme-btn:hover, .finance-btn:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.wishlist-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+}
+
+.wishlist-badge:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+/* ==============================
+   LAYOUT
+   ============================== */
+.container {
+    display: flex;
+    padding: 20px;
+    gap: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+main {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ==============================
+   SIDEBAR
+   ============================== */
+.sidebar {
+    width: 280px;
+    background: var(--card);
+    padding: 20px;
+    border-radius: 8px;
+    height: fit-content;
+    position: sticky;
+    top: 80px;
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.clear-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.filter-group {
+    margin-bottom: 18px;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.filter-group select,
+.filter-group input[type="select"],
+.filter-group input[type="number"],
+.filter-group input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.95rem;
+}
+
+.filter-group input[type="range"] {
+    width: 100%;
+    cursor: pointer;
+}
+
+.stats-box {
+    background: var(--bg);
+    padding: 12px;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.stats-box span {
+    color: var(--primary);
+    font-size: 1.2rem;
+}
+
+.recently-viewed {
+    margin-top: 15px;
+}
+
+.recently-viewed h4 {
+    font-size: 0.9rem;
+    color: var(--text);
+    opacity: 0.8;
+}
+
+.recent-item {
+    padding: 8px;
+    background: var(--bg);
+    border-radius: 4px;
+    margin-bottom: 5px;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.recent-item:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.sidebar hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+}
+
+/* ==============================
+   GRID
+   ============================== */
 .grid {
-    flex-grow: 1;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
 }
 
+/* ==============================
+   CAR CARD
+   ============================== */
 .car-card {
-    background: white;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
     padding: 15px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.car-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.car-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
     border-radius: 8px;
-    border: 1px solid #ddd;
-    transition: 0.3s;
+    margin-bottom: 12px;
+    background: var(--bg);
 }
-.car-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
 
-.price { font-size: 1.5rem; font-weight: bold; color: #B12704; }
-
-.compare-tray {
-    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-    background: #232f3e; color: white; padding: 15px 40px;
-    border-radius: 10px 10px 0 0; display: flex; gap: 20px;
-}
-.hidden { display: none; }
-
-.admin-link {
-    background: transparent;
-    border: none;
-    color: #565959;
-    font-size: 0.7rem;
+.car-card .heart-icon {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 1.5rem;
+    color: var(--heart);
     cursor: pointer;
-    text-decoration: underline;
+    z-index: 10;
+    transition: all 0.2s;
 }
 
-.admin-modal {
+.heart-icon.active {
+    color: #ff4d4d;
+    animation: heartBeat 0.3s;
+}
+
+@keyframes heartBeat {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+.car-card h3 {
+    font-size: 1.1rem;
+    margin: 5px 0;
+}
+
+.car-card .category-badge {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    margin-bottom: 8px;
+}
+
+.car-card .origin {
+    color: var(--text);
+    opacity: 0.7;
+    font-size: 0.9rem;
+}
+
+.car-card .price {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--price);
+    margin: 10px 0;
+}
+
+.car-card .shipping-fee {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin-bottom: 10px;
+}
+
+.car-card .urgency {
+    color: var(--danger);
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+
+.car-card .availability {
+    color: var(--success);
+    font-size: 0.85rem;
+}
+
+.car-card-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.car-card button {
+    flex: 1;
+    padding: 10px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: #005a6e;
+}
+
+.btn-secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+
+.btn-secondary:hover {
+    background: var(--bg);
+}
+
+.btn-compare {
+    background: var(--accent);
+    color: white;
+    border: none;
+}
+
+.btn-compare:hover {
+    background: #d97706;
+}
+
+/* ==============================
+   EMPTY STATE
+   ============================== */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: var(--card);
+    border-radius: 12px;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.empty-state button {
+    margin-top: 20px;
+    padding: 12px 30px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+/* ==============================
+   COMPARE TRAY
+   ============================== */
+.compare-tray {
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8); /* Darken the background */
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--amazon-navy);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    z-index: 900;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
+}
+
+.compare-btn {
+    background: var(--amazon-orange);
+    color: #0f1111;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.clear-compare-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+}
+
+/* ==============================
+   MODALS
+   ============================== */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 5000;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.modal-content {
+    background: var(--card);
+    padding: 25px;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.detail-modal-content {
+    max-width: 900px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+}
+
+.back-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.back-btn:hover {
+    background: #005a6e;
+}
+
+.close-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.close-btn:hover {
+    background: var(--danger);
+    color: white;
+    border-color: var(--danger);
+}
+
+.compare-modal-content {
+    max-width: 1000px;
+}
+
+.modal-content .close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 2rem;
+    cursor: pointer;
+    color: var(--text);
+    opacity: 0.6;
+}
+
+.modal-content .close:hover {
+    opacity: 1;
+}
+
+.modal-content h2 {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+}
+
+/* ==============================
+   DETAIL MODAL
+   ============================== */
+.detail-image {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.detail-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.detail-info .info-item {
+    background: var(--bg);
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.detail-info .info-item label {
+    display: block;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    margin-bottom: 5px;
+}
+
+.detail-info .info-item span {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.detail-total {
+    background: var(--bg);
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.detail-total .total-price {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--price);
+}
+
+.detail-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.detail-buttons button {
+    flex: 1;
+    min-width: 120px;
+    padding: 15px;
+    font-size: 1rem;
+}
+
+.btn-contact {
+    background: var(--success);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.btn-contact:hover {
+    background: #158a3e;
+}
+
+/* ==============================
+   ABOUT SECTION
+   ============================== */
+.about-section {
+    background: var(--bg);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.about-section h3 {
+    margin-bottom: 10px;
+    color: var(--primary);
+}
+
+.about-section p {
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.specs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.spec-item {
+    background: var(--card);
+    padding: 10px;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+}
+
+.spec-item label {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-bottom: 4px;
+}
+
+.spec-item span {
+    font-weight: 600;
+}
+
+/* ==============================
+   SHIPPING INFO
+   ============================== */
+.shipping-info {
+    background: var(--bg);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.shipping-info h4 {
+    margin-bottom: 12px;
+    color: var(--primary);
+}
+
+.shipping-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.ship-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.ship-item.total {
+    border-bottom: none;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--price);
+    padding-top: 12px;
+}
+
+/* ==============================
+   COMPARE TABLE
+   ============================== */
+.compare-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.compare-table th,
+.compare-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.compare-table th {
+    background: var(--bg);
+    font-weight: 600;
+}
+
+.compare-table img {
+    width: 100px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+/* ==============================
+   ADMIN MODAL
+   ============================== */
+.admin-modal-content {
+    max-width: 900px;
+}
+
+.admin-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    border: none;
+    background: var(--bg);
+    color: var(--text);
+    border-radius: 6px;
+}
+
+.tab-btn.active {
+    background: var(--primary);
+    color: white;
+}
+
+.admin-form input,
+.admin-form select {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+}
+
+.specs-inputs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.admin-inventory-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.inventory-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+
+.inventory-item .info {
+    flex: 1;
+}
+
+.inventory-item .actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-edit, .btn-delete {
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: none;
+    font-size: 0.85rem;
+}
+
+.btn-edit {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-delete {
+    background: var(--danger);
+    color: white;
+}
+
+/* ==============================
+   FINANCE CALCULATOR
+   ============================== */
+.finance-form {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.calc-btn {
+    width: 100%;
+    padding: 15px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    margin-top: 15px;
+}
+
+.finance-result {
+    margin-top: 20px;
+    padding: 20px;
+    background: var(--bg);
+    border-radius: 8px;
+    text-align: center;
+}
+
+.finance-result .monthly {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.finance-result .total {
+    margin-top: 10px;
+    opacity: 0.7;
+}
+
+/* ==============================
+   FOOTER
+   ============================== */
+.site-footer {
+    background: var(--amazon-navy);
+    color: white;
+    padding: 30px 20px;
+    margin-top: 40px;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.footer-links {
+    display: flex;
+    gap: 15px;
+}
+
+.export-btn, .admin-link {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.export-btn:hover, .admin-link:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+/* ==============================
+   RESPONSIVE
+   ============================== */
+@media (max-width: 900px) {
+    .container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        position: static;
+    }
+    
+    .grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .navbar {
+        justify-content: center;
+    }
+    
+    .logo {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .search-box {
+        order: 2;
+        max-width: 100%;
+    }
+    
+    .nav-tools {
+        order: 1;
+        justify-content: center;
+    }
+    
+    .compare-tray {
+        flex-direction: column;
+        padding: 15px;
+        width: 100%;
+        border-radius: 0;
+    }
+    
+    .grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .sidebar {
+        padding: 15px;
+    }
+    
+    .modal-content {
+        padding: 15px;
+    }
+    
+    .admin-tabs {
+        flex-direction: column;
+    }
+    
+    .specs-inputs {
+        grid-template-columns: 1fr;
+    }
+    
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .detail-buttons {
+        flex-direction: column;
+    }
+}
+
+/* ==============================
+   ANIMATIONS
+   ============================== */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal {
+    animation: fadeIn 0.2s;
+}
+
+.car-card {
+    animation: fadeIn 0.3s;
+}
+
+/* ==============================
+   DEALER LOCATOR
+   ============================== */
+.dealer-modal-content {
+    max-width: 800px;
+}
+
+.modal-subtitle {
+    color: var(--text);
+    opacity: 0.7;
+    margin-bottom: 20px;
+}
+
+.dealer-search {
+    text-align: center;
+    padding: 30px 20px;
+    background: var(--bg);
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.locate-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+}
+
+.locate-btn:hover {
+    background: #d97706;
+}
+
+.dealer-note {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    font-size: 1.1rem;
+}
+
+.nearest-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.distance-badge {
+    background: var(--primary);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+.dealer-grid {
+    display: grid;
+    gap: 15px;
+}
+
+.dealer-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    transition: all 0.2s;
+}
+
+.dealer-card.nearest {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, var(--card) 0%, rgba(232, 189, 105, 0.1) 100%);
+}
+
+.dealer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.dealer-header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.nearest-tag {
+    background: var(--accent);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+}
+
+.dealer-address, .dealer-distance, .dealer-hours {
+    margin: 5px 0;
+    color: var(--text);
+}
+
+.dealer-distance {
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.dealer-contact {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.contact-btn {
+    flex: 1;
+    display: block;
+    text-align: center;
+    padding: 12px;
+    background: var(--bg);
+    color: var(--text);
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.contact-btn:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.dealer-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.directions-btn, .test-drive-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.directions-btn {
+    background: var(--primary);
+    color: white;
+}
+
+.directions-btn:hover {
+    background: #005a6e;
+}
+
+.test-drive-btn {
+    background: var(--success);
+    color: white;
+}
+
+.test-drive-btn:hover {
+    background: #158a3e;
+}
+
+/* ==============================
+   BADGES & LABELS
+   ============================== */
+.condition-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.badge-new {
+    background: var(--success);
+    color: white;
+}
+
+.badge-used {
+    background: var(--accent);
+    color: white;
+}
+
+.badge-cpo {
+    background: var(--primary);
+    color: white;
+}
+
+.year-badge {
+    background: var(--bg);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    margin-left: 8px;
+}
+
+.rating-display {
+    color: #f59e0b;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+}
+
+.specs-mini {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    margin: 4px 0;
+}
+
+.card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.card-actions button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.btn-view {
+    background: var(--primary);
+    color: white;
+    flex: 1;
+}
+
+.btn-wish, .btn-share {
+    background: var(--bg);
+    color: var(--text);
+    min-width: 40px;
+}
+
+/* ==============================
+   CALCULATOR BUTTONS
+   ============================== */
+.calculator-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.calc-sidebar-btn {
+    padding: 12px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.calc-sidebar-btn:hover {
+    background: #005a6e;
+}
+
+/* ==============================
+   CALCULATOR RESULTS
+   ============================== */
+.trade-in-result, .insurance-result, .import-result {
+    background: var(--bg);
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.trade-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.premium-monthly {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--success);
+}
+
+.import-total {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 15px;
+    border-top: 2px solid var(--border);
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.import-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+/* ==============================
+   FEATURED DEALS
+   ============================== */
+.featured-section {
+    padding: 40px 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.featured-section h2 {
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+}
+
+.featured-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.featured-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 15px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.featured-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.featured-card img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.deal-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--danger);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.deal-price {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--danger);
+}
+
+.was-price {
+    text-decoration: line-through;
+    opacity: 0.5;
+    font-size: 0.9rem;
+}
+
+/* ==============================
+   CHAT WIDGET
+   ============================== */
+.chat-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--primary);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    z-index: 1001;
+    font-weight: bold;
+}
+
+.chat-box {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 350px;
+    height: 450px;
+    background: var(--card);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    background: var(--primary);
+    color: white;
+    border-radius: 12px 12px 0 0;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.chat-user, .chat-bot {
+    padding: 10px 15px;
+    border-radius: 15px;
+    margin-bottom: 10px;
+    max-width: 80%;
+}
+
+.chat-user {
+    background: var(--primary);
+    color: white;
+    margin-left: auto;
+}
+
+.chat-bot {
+    background: var(--bg);
+}
+
+.chat-input {
+    display: flex;
+    padding: 15px;
+    border-top: 1px solid var(--border);
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 20px 0 0 20px;
+}
+
+.chat-input button {
+    padding: 10px 20px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 0 20px 20px 0;
+}
+
+/* ==============================
+   ACCESSORIES
+   ============================== */
+.accessories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.accessory-card {
+    background: var(--bg);
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.accessory-card h4 {
+    margin-bottom: 5px;
+}
+
+.accessory-card .category {
+    font-size: 0.8rem;
+    opacity: 0.6;
+}
+
+.accessory-card .price {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary);
+    margin: 10px 0;
+}
+
+.accessory-card button {
+    width: 100%;
+    padding: 10px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.cart-summary {
+    margin-top: 20px;
+    text-align: right;
+}
+
+.checkout-btn {
+    padding: 15px 40px;
+    background: var(--success);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.video-modal-content {
+    max-width: 900px;
+}
+
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 }
