@@ -396,26 +396,26 @@ function checkPriceAlerts() {
 // ============================================
 
 const dealers = [
-    { id: 1, name: "GlobalDrive Tokyo", address: "Tokyo, Japan", phone: "+81-3-1234-5678", email: "tokyo@globaldrive.com", lat: 35.6762, lng: 139.6503, hours: "9:00 AM - 6:00 PM" },
-    { id: 2, name: "GlobalDrive Osaka", address: "Osaka, Japan", phone: "+81-6-1234-5678", email: "osaka@globaldrive.com", lat: 34.6937, lng: 135.5023, hours: "9:00 AM - 6:00 PM" },
-    { id: 3, name: "GlobalDrive Frankfurt", address: "Frankfurt, Germany", phone: "+49-69-1234-5678", email: "frankfurt@globaldrive.com", lat: 50.1109, lng: 8.6821, hours: "9:00 AM - 6:00 PM" },
-    { id: 4, name: "GlobalDrive Munich", address: "Munich, Germany", phone: "+49-89-1234-5678", email: "munich@globaldrive.com", lat: 48.1351, lng: 11.5820, hours: "9:00 AM - 6:00 PM" },
-    { id: 5, name: "GlobalDrive New York", address: "New York, USA", phone: "+1-212-123-4567", email: "ny@globaldrive.com", lat: 40.7128, lng: -74.0060, hours: "9:00 AM - 6:00 PM" },
-    { id: 6, name: "GlobalDrive Los Angeles", address: "Los Angeles, USA", phone: "+1-310-123-4567", email: "la@globaldrive.com", lat: 34.0522, lng: -118.2437, hours: "9:00 AM - 6:00 PM" },
-    { id: 7, name: "GlobalDrive Miami", address: "Miami, USA", phone: "+1-305-123-4567", email: "miami@globaldrive.com", lat: 25.7617, lng: -80.1918, hours: "9:00 AM - 6:00 PM" },
-    { id: 8, name: "GlobalDrive London", address: "London, UK", phone: "+44-20-1234-5678", email: "london@globaldrive.com", lat: 51.5074, lng: -0.1278, hours: "9:00 AM - 6:00 PM" },
-    { id: 9, name: "GlobalDrive Paris", address: "Paris, France", phone: "+33-1-1234-5678", email: "paris@globaldrive.com", lat: 48.8566, lng: 2.3522, hours: "9:00 AM - 6:00 PM" },
-    { id: 10, name: "GlobalDrive Dubai", address: "Dubai, UAE", phone: "+971-4-123-4567", email: "dubai@globaldrive.com", lat: 25.2048, lng: 55.2708, hours: "9:00 AM - 6:00 PM" },
-    { id: 11, name: "GlobalDrive Singapore", address: "Singapore", phone: "+65-1234-5678", email: "singapore@globaldrive.com", lat: 1.3521, lng: 103.8198, hours: "9:00 AM - 6:00 PM" },
-    { id: 12, name: "GlobalDrive Sydney", address: "Sydney, Australia", phone: "+61-2-1234-5678", email: "sydney@globaldrive.com", lat: -33.8688, lng: 151.2093, hours: "9:00 AM - 6:00 PM" },
-    { id: 13, name: "GlobalDrive Toronto", address: "Toronto, Canada", phone: "+1-416-123-4567", email: "toronto@globaldrive.com", lat: 43.6532, lng: -79.3832, hours: "9:00 AM - 6:00 PM" },
-    { id: 14, name: "GlobalDrive Shanghai", address: "Shanghai, China", phone: "+86-21-1234-5678", email: "shanghai@globaldrive.com", lat: 31.2304, lng: 121.4737, hours: "9:00 AM - 6:00 PM" },
-    { id: 15, name: "GlobalDrive Mumbai", address: "Mumbai, India", phone: "+91-22-1234-5678", email: "mumbai@globaldrive.com", lat: 19.0760, lng: 72.8777, hours: "9:00 AM - 6:00 PM" },
-    { id: 16, name: "GlobalDrive São Paulo", address: "São Paulo, Brazil", phone: "+55-11-1234-5678", email: "saopaulo@globaldrive.com", lat: -23.5505, lng: -46.6333, hours: "9:00 AM - 6:00 PM" },
-    { id: 17, name: "GlobalDrive Rome", address: "Rome, Italy", phone: "+39-06-1234-5678", email: "rome@globaldrive.com", lat: 41.9028, lng: 12.4964, hours: "9:00 AM - 6:00 PM" },
-    { id: 18, name: "GlobalDrive Seoul", address: "Seoul, South Korea", phone: "+82-2-1234-5678", email: "seoul@globaldrive.com", lat: 37.5665, lng: 126.9780, hours: "9:00 AM - 6:00 PM" },
-    { id: 19, name: "GlobalDrive Bangkok", address: "Bangkok, Thailand", phone: "+66-2-123-4567", email: "bangkok@globaldrive.com", lat: 13.7563, lng: 100.5018, hours: "9:00 AM - 6:00 PM" },
-    { id: 20, name: "GlobalDrive Johannesburg", address: "Johannesburg, South Africa", phone: "+27-11-123-4567", email: "johannesburg@globaldrive.com", lat: -26.2041, lng: 28.0473, hours: "9:00 AM - 6:00 PM" }
+    { id: 1, name: "OmniDrive Tokyo", address: "Tokyo, Japan", phone: "+81-3-1234-5678", email: "tokyo@globaldrive.com", lat: 35.6762, lng: 139.6503, hours: "9:00 AM - 6:00 PM" },
+    { id: 2, name: "OmniDrive Osaka", address: "Osaka, Japan", phone: "+81-6-1234-5678", email: "osaka@globaldrive.com", lat: 34.6937, lng: 135.5023, hours: "9:00 AM - 6:00 PM" },
+    { id: 3, name: "OmniDrive Frankfurt", address: "Frankfurt, Germany", phone: "+49-69-1234-5678", email: "frankfurt@globaldrive.com", lat: 50.1109, lng: 8.6821, hours: "9:00 AM - 6:00 PM" },
+    { id: 4, name: "OmniDrive Munich", address: "Munich, Germany", phone: "+49-89-1234-5678", email: "munich@globaldrive.com", lat: 48.1351, lng: 11.5820, hours: "9:00 AM - 6:00 PM" },
+    { id: 5, name: "OmniDrive New York", address: "New York, USA", phone: "+1-212-123-4567", email: "ny@globaldrive.com", lat: 40.7128, lng: -74.0060, hours: "9:00 AM - 6:00 PM" },
+    { id: 6, name: "OmniDrive Los Angeles", address: "Los Angeles, USA", phone: "+1-310-123-4567", email: "la@globaldrive.com", lat: 34.0522, lng: -118.2437, hours: "9:00 AM - 6:00 PM" },
+    { id: 7, name: "OmniDrive Miami", address: "Miami, USA", phone: "+1-305-123-4567", email: "miami@globaldrive.com", lat: 25.7617, lng: -80.1918, hours: "9:00 AM - 6:00 PM" },
+    { id: 8, name: "OmniDrive London", address: "London, UK", phone: "+44-20-1234-5678", email: "london@globaldrive.com", lat: 51.5074, lng: -0.1278, hours: "9:00 AM - 6:00 PM" },
+    { id: 9, name: "OmniDrive Paris", address: "Paris, France", phone: "+33-1-1234-5678", email: "paris@globaldrive.com", lat: 48.8566, lng: 2.3522, hours: "9:00 AM - 6:00 PM" },
+    { id: 10, name: "OmniDrive Dubai", address: "Dubai, UAE", phone: "+971-4-123-4567", email: "dubai@globaldrive.com", lat: 25.2048, lng: 55.2708, hours: "9:00 AM - 6:00 PM" },
+    { id: 11, name: "OmniDrive Singapore", address: "Singapore", phone: "+65-1234-5678", email: "singapore@globaldrive.com", lat: 1.3521, lng: 103.8198, hours: "9:00 AM - 6:00 PM" },
+    { id: 12, name: "OmniDrive Sydney", address: "Sydney, Australia", phone: "+61-2-1234-5678", email: "sydney@globaldrive.com", lat: -33.8688, lng: 151.2093, hours: "9:00 AM - 6:00 PM" },
+    { id: 13, name: "OmniDrive Toronto", address: "Toronto, Canada", phone: "+1-416-123-4567", email: "toronto@globaldrive.com", lat: 43.6532, lng: -79.3832, hours: "9:00 AM - 6:00 PM" },
+    { id: 14, name: "OmniDrive Shanghai", address: "Shanghai, China", phone: "+86-21-1234-5678", email: "shanghai@globaldrive.com", lat: 31.2304, lng: 121.4737, hours: "9:00 AM - 6:00 PM" },
+    { id: 15, name: "OmniDrive Mumbai", address: "Mumbai, India", phone: "+91-22-1234-5678", email: "mumbai@globaldrive.com", lat: 19.0760, lng: 72.8777, hours: "9:00 AM - 6:00 PM" },
+    { id: 16, name: "OmniDrive São Paulo", address: "São Paulo, Brazil", phone: "+55-11-1234-5678", email: "saopaulo@globaldrive.com", lat: -23.5505, lng: -46.6333, hours: "9:00 AM - 6:00 PM" },
+    { id: 17, name: "OmniDrive Rome", address: "Rome, Italy", phone: "+39-06-1234-5678", email: "rome@globaldrive.com", lat: 41.9028, lng: 12.4964, hours: "9:00 AM - 6:00 PM" },
+    { id: 18, name: "OmniDrive Seoul", address: "Seoul, South Korea", phone: "+82-2-1234-5678", email: "seoul@globaldrive.com", lat: 37.5665, lng: 126.9780, hours: "9:00 AM - 6:00 PM" },
+    { id: 19, name: "OmniDrive Bangkok", address: "Bangkok, Thailand", phone: "+66-2-123-4567", email: "bangkok@globaldrive.com", lat: 13.7563, lng: 100.5018, hours: "9:00 AM - 6:00 PM" },
+    { id: 20, name: "OmniDrive Johannesburg", address: "Johannesburg, South Africa", phone: "+27-11-123-4567", email: "johannesburg@globaldrive.com", lat: -26.2041, lng: 28.0473, hours: "9:00 AM - 6:00 PM" }
 ];
 
 let userLocation = null;
@@ -974,7 +974,7 @@ function closeDetailModal() {
 
 function shareVehicle(name, price) {
     const url = window.location.href;
-    const text = `Check out this ${name} for ${formatPrice(price)} on GlobalDrive!`;
+    const text = `Check out this ${name} for ${formatPrice(price)} on OmniDrive!`;
     if (navigator.share) {
         navigator.share({ title: name, text: text, url: url });
     } else {
@@ -1255,7 +1255,7 @@ function showPaymentModal(vehicleId, totalAmount) {
                 <div id="mpesaResult" class="mpesa-result"></div>
                 
                 <div class="mpesa-note">
-                    <p>💡 Secure payment powered by GlobalDrive</p>
+                    <p>💡 Secure payment powered by OmniDrive</p>
                     <p>Supported: Kenya, Tanzania, Mozambique, Ghana, DRC</p>
                 </div>
             </div>
@@ -1500,7 +1500,7 @@ function doRegister() {
     
     currentUser = { name, email, phone, orders: 0, since: new Date().toLocaleDateString() };
     localStorage.setItem('dealership_user', JSON.stringify(currentUser));
-    showNotification('Account created! Welcome to GlobalDrive!', 'success');
+    showNotification('Account created! Welcome to OmniDrive!', 'success');
     showAuthModal();
 }
 
@@ -1718,14 +1718,14 @@ function copyReferralCode() {
 
 function shareReferralWhatsApp() {
     const code = document.querySelector('.code-display').innerText;
-    const text = encodeURIComponent(`Join GlobalDrive! Use my referral code: ${code} to get $500 off on your vehicle purchase!`);
+    const text = encodeURIComponent(`Join OmniDrive! Use my referral code: ${code} to get $500 off on your vehicle purchase!`);
     window.open(`https://wa.me/?text=${text}`, '_blank');
 }
 
 function shareReferralEmail() {
     const code = document.querySelector('.code-display').innerText;
-    const subject = encodeURIComponent('GlobalDrive Referral Code');
-    const body = encodeURIComponent(`Use my referral code: ${code} to get $500 off on your vehicle purchase at GlobalDrive!`);
+    const subject = encodeURIComponent('OmniDrive Referral Code');
+    const body = encodeURIComponent(`Use my referral code: ${code} to get $500 off on your vehicle purchase at OmniDrive!`);
     window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
 }
 

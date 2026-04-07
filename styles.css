@@ -125,6 +125,12 @@ button {
     white-space: nowrap;
 }
 
+.tagline {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    font-weight: normal;
+}
+
 .search-box {
     flex: 1;
     display: flex;
