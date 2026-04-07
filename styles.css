@@ -2351,3 +2351,123 @@ main {
         grid-template-columns: 1fr;
     }
 }
+
+/* ==============================
+   BROKER/PARTNERSHIP
+   ============================== */
+.broker-form, .list-vehicle-form {
+    max-width: 100%;
+}
+
+.broker-hero, .seller-info {
+    text-align: center;
+    padding: 25px;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-md);
+    color: white;
+    margin-bottom: 20px;
+}
+
+.broker-hero h3, .seller-info h3 {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+}
+
+.broker-benefits, .seller-benefits {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.benefit-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+}
+
+.benefit-icon {
+    font-size: 1.5rem;
+}
+
+.benefit-item small {
+    display: block;
+    opacity: 0.7;
+    font-size: 0.8rem;
+}
+
+.broker-form-section, .vehicle-form, .seller-contact {
+    background: var(--bg);
+    padding: 20px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+}
+
+.broker-form-section h4, .vehicle-form h4, .seller-contact h4 {
+    margin-bottom: 15px;
+    color: var(--primary);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.filter-group input, .filter-group select, .filter-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    color: var(--text);
+    font-size: 0.95rem;
+}
+
+.filter-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.listing-fee {
+    text-align: center;
+    padding: 15px;
+    background: rgba(6, 214, 160, 0.1);
+    border-radius: var(--radius-sm);
+    margin-bottom: 20px;
+}
+
+.listing-fee p {
+    margin: 5px 0;
+}
+
+.broker-login {
+    text-align: center;
+    padding: 15px;
+    border-top: 1px solid var(--border);
+}
+
+.broker-login a {
+    color: var(--primary);
+    font-weight: bold;
+}
+
+@media (max-width: 600px) {
+    .broker-benefits, .seller-benefits {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
