@@ -102,6 +102,12 @@
             <button onclick="showPriceAlerts()" class="finance-btn" title="Price Alerts">🔔</button>
             
             <button onclick="showMpesaPayment(1, 50000)" class="finance-btn" title="MPesa Payment">💳</button>
+            
+            <button onclick="showAuthModal()" class="finance-btn" title="Account">👤</button>
+            
+            <button onclick="showOrderTracking()" class="finance-btn" title="Orders">📦</button>
+            
+            <button onclick="showVinCheck()" class="finance-btn" title="VIN Check">🔍</button>
         </div>
     </header>
 
@@ -486,6 +492,54 @@
             </div>
             <h2>📱 MPesa Payment</h2>
             <div id="mpesaContent"></div>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeModal('authModal')">← Back</button>
+                <button class="close-btn" onclick="closeModal('authModal')">✕ Exit</button>
+            </div>
+            <h2>🔐 Account</h2>
+            <div id="authContent"></div>
+        </div>
+    </div>
+
+    <!-- Order Tracking Modal -->
+    <div id="orderModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeModal('orderModal')">← Back</button>
+                <button class="close-btn" onclick="closeModal('orderModal')">✕ Exit</button>
+            </div>
+            <h2>📦 Order Tracking</h2>
+            <div id="orderContent"></div>
+        </div>
+    </div>
+
+    <!-- VIN Check Modal -->
+    <div id="vinModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeModal('vinModal')">← Back</button>
+                <button class="close-btn" onclick="closeModal('vinModal')">✕ Exit</button>
+            </div>
+            <h2>🔍 Vehicle History Check</h2>
+            <div id="vinContent"></div>
+        </div>
+    </div>
+
+    <!-- Referral Modal -->
+    <div id="referralModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeModal('referralModal')">← Back</button>
+                <button class="close-btn" onclick="closeModal('referralModal')">✕ Exit</button>
+            </div>
+            <h2>🎁 Refer a Friend</h2>
+            <div id="referralContent"></div>
         </div>
     </div>
 

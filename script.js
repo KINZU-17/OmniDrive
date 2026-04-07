@@ -1171,7 +1171,7 @@ function addToCart(id) {
 let cartTotal = 0;
 let selectedVehicle = null;
 
-function showMpesaPayment(vehicleId, totalAmount) {
+function showPaymentModal(vehicleId, totalAmount) {
     selectedVehicle = inventory.find(v => v.id === vehicleId);
     cartTotal = totalAmount || selectedVehicle.price;
     
@@ -1180,37 +1180,149 @@ function showMpesaPayment(vehicleId, totalAmount) {
     
     content.innerHTML = `
         <div class="mpesa-form">
-            <div class="mpesa-logo">📱</div>
-            <h3>MPesa Payment</h3>
-            <p class="mpesa-subtitle">Pay with MPesa - Fast & Secure</p>
-            
-            <div class="payment-summary">
-                <p><strong>Vehicle:</strong> ${selectedVehicle.brand} ${selectedVehicle.model}</p>
-                <p><strong>Amount:</strong> ${formatPrice(cartTotal)}</p>
-            </div>
-            
-            <div class="filter-group">
-                <label>MPesa Phone Number</label>
-                <input type="tel" id="mpesaPhone" placeholder="2547XXXXXXXX (Kenya)">
-            </div>
-            
-            <div class="filter-group">
-                <label>Amount (KES)</label>
-                <input type="number" id="mpesaAmount" value="${Math.round(cartTotal * liveRates.KES)}" readonly>
-            </div>
-            
-            <button onclick="initiateMpesaPayment()" class="mpesa-btn">💳 Pay with MPesa</button>
-            
-            <div id="mpesaResult" class="mpesa-result"></div>
-            
-            <div class="mpesa-note">
-                <p>💡 You'll receive an STK push on your phone</p>
-                <p>Supported in Kenya, Tanzania, Mozambique, Ghana, DRC</p>
+            <div class="payment-methods">
+                <h3>Select Payment Method</h3>
+                
+                <div class="payment-options">
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="mpesa" checked onchange="togglePaymentMethod()">
+                        <span class="option-icon">📱</span>
+                        <span class="option-name">MPesa</span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="card" onchange="togglePaymentMethod()">
+                        <span class="option-icon">💳</span>
+                        <span class="option-name">Card</span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="bank" onchange="togglePaymentMethod()">
+                        <span class="option-icon">🏦</span>
+                        <span class="option-name">Bank Transfer</span>
+                    </label>
+                </div>
+                
+                <div class="payment-summary">
+                    <p><strong>Vehicle:</strong> ${selectedVehicle.brand} ${selectedVehicle.model}</p>
+                    <p><strong>Amount:</strong> ${formatPrice(cartTotal)}</p>
+                </div>
+                
+                <div id="mpesaFields">
+                    <div class="filter-group">
+                        <label>MPesa Phone Number</label>
+                        <input type="tel" id="mpesaPhone" placeholder="2547XXXXXXXX (Kenya)">
+                    </div>
+                    <button onclick="initiateMpesaPayment()" class="mpesa-btn">💳 Pay with MPesa</button>
+                </div>
+                
+                <div id="cardFields" class="hidden">
+                    <div class="filter-group">
+                        <label>Card Number</label>
+                        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                    </div>
+                    <div class="filter-group" style="display:flex;gap:10px">
+                        <div style="flex:1">
+                            <label>Expiry</label>
+                            <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5">
+                        </div>
+                        <div style="flex:1">
+                            <label>CVV</label>
+                            <input type="password" id="cardCvv" placeholder="123" maxlength="4">
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label>Cardholder Name</label>
+                        <input type="text" id="cardName" placeholder="John Doe">
+                    </div>
+                    <button onclick="processCardPayment()" class="mpesa-btn">💳 Pay with Card</button>
+                    <div class="card-logos">
+                        <span>💳 Visa</span>
+                        <span>💳 Mastercard</span>
+                        <span>💳 AMEX</span>
+                    </div>
+                </div>
+                
+                <div id="bankFields" class="hidden">
+                    <div class="bank-details">
+                        <p><strong>Bank:</strong> Standard Chartered</p>
+                        <p><strong>Account:</strong> 0123456789</p>
+                        <p><strong>Branch:</strong> Westlands</p>
+                        <p><strong>SWIFT:</strong> SCBLKENX</p>
+                        <p class="bank-note">Use your order ID as payment reference</p>
+                    </div>
+                    <button onclick="confirmBankTransfer()" class="mpesa-btn">🏦 Confirm Transfer</button>
+                </div>
+                
+                <div id="mpesaResult" class="mpesa-result"></div>
+                
+                <div class="mpesa-note">
+                    <p>💡 Secure payment powered by GlobalDrive</p>
+                    <p>Supported: Kenya, Tanzania, Mozambique, Ghana, DRC</p>
+                </div>
             </div>
         </div>
     `;
     
     modal.classList.remove('hidden');
+}
+
+function togglePaymentMethod() {
+    const method = document.querySelector('input[name="paymentMethod"]:checked').value;
+    document.getElementById('mpesaFields').classList.toggle('hidden', method !== 'mpesa');
+    document.getElementById('cardFields').classList.toggle('hidden', method !== 'card');
+    document.getElementById('bankFields').classList.toggle('hidden', method !== 'bank');
+}
+
+function processCardPayment() {
+    const cardNum = document.getElementById('cardNumber').value.replace(/\s/g, '');
+    const expiry = document.getElementById('cardExpiry').value;
+    const cvv = document.getElementById('cardCvv').value;
+    const name = document.getElementById('cardName').value;
+    
+    if (!cardNum || !expiry || !cvv || !name) {
+        showNotification('Please fill all card details', 'error');
+        return;
+    }
+    
+    if (cardNum.length < 13 || cvv.length < 3) {
+        showNotification('Invalid card details', 'error');
+        return;
+    }
+    
+    const result = document.getElementById('mpesaResult');
+    result.innerHTML = '<div class="loading">Processing card payment...</div>';
+    
+    setTimeout(() => {
+        const txnId = 'CARD' + Date.now();
+        result.innerHTML = `
+            <div class="success-message">
+                <h4>✅ Payment Successful!</h4>
+                <p>Transaction ID: ${txnId}</p>
+                <p>Amount: ${formatPrice(cartTotal)}</p>
+                <p>Receipt sent to your email</p>
+                <button onclick="closeModal('mpesaModal')" class="calc-btn">Done</button>
+            </div>
+        `;
+        showNotification('Card payment successful!', 'success');
+    }, 2000);
+}
+
+function confirmBankTransfer() {
+    const result = document.getElementById('mpesaResult');
+    const orderId = 'ORD' + Date.now();
+    result.innerHTML = `
+        <div class="success-message">
+            <h4>✅ Bank Details Provided</h4>
+            <p>Order ID: ${orderId}</p>
+            <p>Use this ID when making the transfer</p>
+            <p>You'll receive confirmation once payment clears</p>
+            <button onclick="closeModal('mpesaModal')" class="calc-btn">Done</button>
+        </div>
+    `;
+    showNotification('Bank transfer initiated. Please complete payment within 24 hours.', 'success');
+}
+
+function showMpesaPayment(vehicleId, totalAmount) {
+    showPaymentModal(vehicleId, totalAmount);
 }
 
 function initiateMpesaPayment() {
@@ -1278,6 +1390,343 @@ function confirmMpesaPayment(transactionId) {
         
         showNotification(`Payment successful! Vehicle: ${selectedVehicle.brand} ${selectedVehicle.model}`, 'success');
     }, 2000);
+}
+
+// ============================================
+// USER AUTHENTICATION
+// ============================================
+
+let currentUser = null;
+
+function showAuthModal() {
+    const modal = document.getElementById('authModal');
+    const content = document.getElementById('authContent');
+    
+    const savedUser = localStorage.getItem('dealership_user');
+    currentUser = savedUser ? JSON.parse(savedUser) : null;
+    
+    if (currentUser) {
+        content.innerHTML = `
+            <div class="user-profile">
+                <div class="user-avatar">👤</div>
+                <h3>Welcome back!</h3>
+                <div class="user-info">
+                    <p><label>Name:</label> ${currentUser.name}</p>
+                    <p><label>Email:</label> ${currentUser.email}</p>
+                    <p><label>Orders:</label> ${currentUser.orders || 0}</p>
+                    <p><label>Member since:</label> ${currentUser.since || 'Today'}</p>
+                </div>
+                <button onclick="showOrderTracking()" class="calc-btn">📦 View My Orders</button>
+                <button onclick="showReferralProgram()" class="calc-btn" style="margin-top:10px">🎁 Referral Program</button>
+                <button onclick="logout()" class="clear-btn" style="margin-top:20px">Logout</button>
+            </div>
+        `;
+    } else {
+        content.innerHTML = `
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+                <button class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+            </div>
+            
+            <div id="loginForm">
+                <div class="filter-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="your@email.com">
+                </div>
+                <div class="filter-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••">
+                </div>
+                <button onclick="doLogin()" class="calc-btn">Login</button>
+            </div>
+            
+            <div id="registerForm" class="hidden">
+                <div class="filter-group">
+                    <label>Full Name</label>
+                    <input type="text" id="regName" placeholder="John Doe">
+                </div>
+                <div class="filter-group">
+                    <label>Email</label>
+                    <input type="email" id="regEmail" placeholder="your@email.com">
+                </div>
+                <div class="filter-group">
+                    <label>Password</label>
+                    <input type="password" id="regPassword" placeholder="••••••••">
+                </div>
+                <div class="filter-group">
+                    <label>Phone</label>
+                    <input type="tel" id="regPhone" placeholder="+2547XXXXXXXX">
+                </div>
+                <button onclick="doRegister()" class="calc-btn">Create Account</button>
+            </div>
+        `;
+    }
+    
+    modal.classList.remove('hidden');
+}
+
+function switchAuthTab(tab) {
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
+    document.getElementById('registerForm').classList.toggle('hidden', tab !== 'register');
+}
+
+function doLogin() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    if (!email || !password) {
+        showNotification('Please enter email and password', 'error');
+        return;
+    }
+    
+    currentUser = { name: email.split('@')[0], email, orders: 3, since: '2024' };
+    localStorage.setItem('dealership_user', JSON.stringify(currentUser));
+    showNotification('Login successful!', 'success');
+    showAuthModal();
+}
+
+function doRegister() {
+    const name = document.getElementById('regName').value;
+    const email = document.getElementById('regEmail').value;
+    const password = document.getElementById('regPassword').value;
+    const phone = document.getElementById('regPhone').value;
+    
+    if (!name || !email || !password) {
+        showNotification('Please fill all fields', 'error');
+        return;
+    }
+    
+    currentUser = { name, email, phone, orders: 0, since: new Date().toLocaleDateString() };
+    localStorage.setItem('dealership_user', JSON.stringify(currentUser));
+    showNotification('Account created! Welcome to GlobalDrive!', 'success');
+    showAuthModal();
+}
+
+function logout() {
+    currentUser = null;
+    localStorage.removeItem('dealership_user');
+    showAuthModal();
+}
+
+// ============================================
+// ORDER TRACKING
+// ============================================
+
+let orders = [
+    { id: 'ORD12345', vehicle: 'Toyota GR Corolla', price: 42000, status: 'delivered', date: '2024-01-15' },
+    { id: 'ORD12346', vehicle: 'Ducati Panigale V4 R', price: 42000, status: 'shipped', date: '2024-02-01' },
+    { id: 'ORD12347', vehicle: 'Mercedes Citaro', price: 350000, status: 'processing', date: '2024-02-10' }
+];
+
+function showOrderTracking() {
+    const modal = document.getElementById('orderModal');
+    const content = document.getElementById('orderContent');
+    
+    let html = `
+        <div class="filter-group">
+            <label>Order ID</label>
+            <input type="text" id="orderSearch" placeholder="ORD12345">
+        </div>
+        <button onclick="searchOrder()" class="clear-btn">Track Order</button>
+        
+        <div id="orderResults">
+    `;
+    
+    orders.forEach(order => {
+        const statusSteps = ['placed', 'paid', 'processing', 'shipped', 'delivered'];
+        const currentIdx = statusSteps.indexOf(order.status);
+        
+        html += `
+            <div class="order-card">
+                <div class="order-header">
+                    <span class="order-id">${order.id}</span>
+                    <span class="order-status">${order.status}</span>
+                </div>
+                <div class="order-vehicle">
+                    <div>
+                        <strong>${order.vehicle}</strong>
+                        <p>${formatPrice(order.price)}</p>
+                        <p>${order.date}</p>
+                    </div>
+                </div>
+                <div class="order-timeline">
+                    ${statusSteps.map((step, i) => `
+                        <div class="timeline-item ${i <= currentIdx ? 'completed' : ''} ${i === currentIdx ? 'current' : ''}">
+                            <h4>${step.charAt(0).toUpperCase() + step.slice(1)}</h4>
+                            <p>${i <= currentIdx ? '✓ Completed' : 'Pending'}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    content.innerHTML = html;
+    modal.classList.remove('hidden');
+}
+
+function searchOrder() {
+    const id = document.getElementById('orderSearch').value;
+    const order = orders.find(o => o.id === id);
+    
+    if (order) {
+        showNotification(`Order ${id}: ${order.status}`, 'success');
+    } else {
+        showNotification('Order not found', 'error');
+    }
+}
+
+// ============================================
+// VIN CHECK
+// ============================================
+
+function showVinCheck() {
+    const modal = document.getElementById('vinModal');
+    const content = document.getElementById('vinContent');
+    
+    content.innerHTML = `
+        <div class="vin-form">
+            <p>Enter Vehicle Identification Number (VIN) to get full history report</p>
+            <div class="filter-group">
+                <label>VIN Number</label>
+                <input type="text" id="vinNumber" class="vin-input" placeholder="1HGBH41JXMN109186" maxlength="17">
+            </div>
+            <button onclick="checkVin()" class="calc-btn">🔍 Check VIN</button>
+            
+            <div id="vinResult"></div>
+        </div>
+    `;
+    modal.classList.remove('hidden');
+}
+
+function checkVin() {
+    const vin = document.getElementById('vinNumber').value.toUpperCase();
+    
+    if (vin.length < 11) {
+        showNotification('Please enter a valid VIN (11+ characters)', 'error');
+        return;
+    }
+    
+    const result = document.getElementById('vinResult');
+    result.innerHTML = '<div class="loading">Checking VIN...</div>';
+    
+    setTimeout(() => {
+        const car = inventory[Math.floor(Math.random() * inventory.length)];
+        
+        result.innerHTML = `
+            <div class="vin-result">
+                <div class="vin-section">
+                    <h4>Vehicle Details <span class="check-badge badge-verified">✓ Verified</span></h4>
+                    <div class="vin-row"><span class="vin-label">Make:</span><span class="vin-value">${car.brand}</span></div>
+                    <div class="vin-row"><span class="vin-label">Model:</span><span class="vin-value">${car.model}</span></div>
+                    <div class="vin-row"><span class="vin-label">Year:</span><span class="vin-value">${car.year}</span></div>
+                    <div class="vin-row"><span class="vin-label">Fuel:</span><span class="vin-value">${car.fuel}</span></div>
+                </div>
+                
+                <div class="vin-section">
+                    <h4>Ownership <span class="check-badge badge-verified">✓ Clear</span></h4>
+                    <div class="vin-row"><span class="vin-label">Previous Owners:</span><span class="vin-value">0</span></div>
+                    <div class="vin-row"><span class="vin-label">Accidents:</span><span class="vin-value">None reported</span></div>
+                    <div class="vin-row"><span class="vin-label">Title Status:</span><span class="vin-value">Clean</span></div>
+                </div>
+                
+                <div class="vin-section">
+                    <h4>Inspection</h4>
+                    <div class="vin-row"><span class="vin-label">Engine:</span><span class="vin-value">✓ Passed</span></div>
+                    <div class="vin-row"><span class="vin-label">Brakes:</span><span class="vin-value">✓ Passed</span></div>
+                    <div class="vin-row"><span class="vin-label">Tires:</span><span class="vin-value">✓ Good</span></div>
+                </div>
+            </div>
+        `;
+    }, 1500);
+}
+
+// ============================================
+// REFERRAL PROGRAM
+// ============================================
+
+function showReferralProgram() {
+    const modal = document.getElementById('referralModal');
+    const content = document.getElementById('referralContent');
+    
+    const referralCode = 'GLOBAL' + Math.random().toString(36).substr(2, 6).toUpperCase();
+    const referrals = Math.floor(Math.random() * 5);
+    const earnings = referrals * 500;
+    
+    content.innerHTML = `
+        <div class="referral-program">
+            <p>Invite friends and earn $500 per successful referral!</p>
+            
+            <div class="referral-steps">
+                <div class="referral-step">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">📤</div>
+                    <h4>Share Code</h4>
+                    <p>Send to friends</p>
+                </div>
+                <div class="referral-step">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">👤</div>
+                    <h4>They Buy</h4>
+                    <p>They purchase a vehicle</p>
+                </div>
+                <div class="referral-step">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">💰</div>
+                    <h4>You Earn</h4>
+                    <p>$500 credit!</p>
+                </div>
+            </div>
+            
+            <div class="referral-code">
+                <p>Your Referral Code</p>
+                <div class="code-display">${referralCode}</div>
+                <div class="share-buttons">
+                    <button class="share-btn" onclick="copyReferralCode()">📋 Copy</button>
+                    <button class="share-btn" onclick="shareReferralWhatsApp()">💬 WhatsApp</button>
+                    <button class="share-btn" onclick="shareReferralEmail()">✉️ Email</button>
+                </div>
+            </div>
+            
+            <div class="referral-stats">
+                <div class="stat-box">
+                    <div class="stat-number">${referrals}</div>
+                    <div class="stat-label">Referrals</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">${earnings}</div>
+                    <div class="stat-label">Earnings ($)</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">${referrals > 0 ? '$' + (earnings + 500) : '$0'}</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+            </div>
+        </div>
+    `;
+    modal.classList.remove('hidden');
+}
+
+function copyReferralCode() {
+    const code = document.querySelector('.code-display').innerText;
+    navigator.clipboard.writeText(code);
+    showNotification('Code copied!', 'success');
+}
+
+function shareReferralWhatsApp() {
+    const code = document.querySelector('.code-display').innerText;
+    const text = encodeURIComponent(`Join GlobalDrive! Use my referral code: ${code} to get $500 off on your vehicle purchase!`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+}
+
+function shareReferralEmail() {
+    const code = document.querySelector('.code-display').innerText;
+    const subject = encodeURIComponent('GlobalDrive Referral Code');
+    const body = encodeURIComponent(`Use my referral code: ${code} to get $500 off on your vehicle purchase at GlobalDrive!`);
+    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
 }
 
 // ============================================

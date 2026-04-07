@@ -831,7 +831,341 @@ main {
 }
 
 /* ==============================
-   ADMIN MODAL
+   AUTH & USER
+   ============================== */
+.auth-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.auth-tab {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: var(--bg);
+    color: var(--text);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.auth-tab.active {
+    background: var(--primary);
+    color: white;
+}
+
+.auth-form input {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+}
+
+.user-profile {
+    text-align: center;
+}
+
+.user-avatar {
+    font-size: 4rem;
+    margin-bottom: 10px;
+}
+
+.user-info {
+    background: var(--bg);
+    padding: 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+    text-align: left;
+}
+
+.user-info p {
+    margin: 8px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.user-info label {
+    opacity: 0.7;
+}
+
+/* ==============================
+   ORDER TRACKING
+   ============================== */
+.order-timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.order-timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+}
+
+.timeline-item {
+    position: relative;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.timeline-item::before {
+    content: '●';
+    position: absolute;
+    left: -24px;
+    top: 18px;
+    color: var(--border);
+    font-size: 1.2rem;
+}
+
+.timeline-item.completed::before {
+    color: var(--success);
+}
+
+.timeline-item.current::before {
+    color: var(--primary);
+    animation: pulse 1s infinite;
+}
+
+.timeline-item h4 {
+    margin: 0 0 5px 0;
+    font-size: 1rem;
+}
+
+.timeline-item p {
+    margin: 0;
+    font-size: 0.85rem;
+    opacity: 0.7;
+}
+
+.order-card {
+    background: var(--bg);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.order-id {
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.order-status {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    background: var(--primary);
+    color: white;
+}
+
+.order-vehicle {
+    display: flex;
+    gap: 15px;
+    margin: 10px 0;
+}
+
+.order-vehicle img {
+    width: 80px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.order-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.order-actions button {
+    flex: 1;
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+}
+
+/* ==============================
+   VIN CHECK
+   ============================== */
+.vin-form {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.vin-input {
+    font-family: monospace;
+    font-size: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-align: center;
+}
+
+.vin-result {
+    margin-top: 20px;
+}
+
+.vin-section {
+    background: var(--bg);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.vin-section h4 {
+    color: var(--primary);
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 5px;
+}
+
+.vin-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.vin-row:last-child {
+    border-bottom: none;
+}
+
+.vin-label {
+    opacity: 0.7;
+}
+
+.vin-value {
+    font-weight: 600;
+}
+
+.check-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    margin-left: 8px;
+}
+
+.badge-verified {
+    background: var(--success);
+    color: white;
+}
+
+.badge-warning {
+    background: var(--accent);
+    color: white;
+}
+
+/* ==============================
+   REFERRAL
+   ============================== */
+.referral-program {
+    text-align: center;
+}
+
+.referral-steps {
+    display: flex;
+    justify-content: space-around;
+    margin: 30px 0;
+}
+
+.referral-step {
+    flex: 1;
+    padding: 20px;
+}
+
+.step-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.step-number {
+    background: var(--primary);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    font-weight: bold;
+}
+
+.referral-code {
+    background: var(--bg);
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.code-display {
+    font-family: monospace;
+    font-size: 1.8rem;
+    letter-spacing: 5px;
+    padding: 15px;
+    background: var(--card);
+    border-radius: 6px;
+    margin: 15px 0;
+    border: 2px dashed var(--primary);
+}
+
+.share-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.share-btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+.referral-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.stat-box {
+    background: var(--bg);
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+/* ==============================
+   VIDEO MODAL
    ============================== */
 .admin-modal-content {
     max-width: 900px;
@@ -957,9 +1291,84 @@ main {
    MPESA PAYMENT
    ============================== */
 .mpesa-form {
-    max-width: 400px;
+    max-width: 450px;
     margin: 0 auto;
     text-align: center;
+}
+
+.payment-methods h3 {
+    margin-bottom: 20px;
+}
+
+.payment-options {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.payment-option {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px 10px;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.payment-option:hover {
+    border-color: var(--primary);
+}
+
+.payment-option input {
+    display: none;
+}
+
+.payment-option:has(input:checked) {
+    border-color: var(--primary);
+    background: rgba(0, 113, 133, 0.1);
+}
+
+.option-icon {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+.option-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.card-logos {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    font-size: 0.85rem;
+    opacity: 0.7;
+}
+
+.bank-details {
+    background: var(--bg);
+    padding: 15px;
+    border-radius: 8px;
+    text-align: left;
+    margin-bottom: 15px;
+}
+
+.bank-details p {
+    margin: 8px 0;
+}
+
+.bank-note {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
 }
 
 .mpesa-logo {
