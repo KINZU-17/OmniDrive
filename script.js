@@ -961,6 +961,7 @@ function showDetailModal(id) {
                 ${compareList.includes(car.id) ? '✓ Added to Compare' : '+ Add to Compare'}
             </button>
             <button class="btn-contact" onclick="contactDealer('${car.brand} ${car.model}')">📞 Contact Dealer</button>
+            <button class="btn-customize" onclick="showVehicleCustomization(${car.id})">🔧 Customize</button>
             <button class="btn-buy" onclick="showMpesaPayment(${car.id}, ${car.price + calculateFreight(car)})">💳 Buy with MPesa</button>
         </div>
     `;
@@ -1323,6 +1324,252 @@ function confirmBankTransfer() {
 
 function showMpesaPayment(vehicleId, totalAmount) {
     showPaymentModal(vehicleId, totalAmount);
+}
+
+// ============================================
+// VEHICLE CUSTOMIZATION (PIMP YOUR RIDE)
+// ============================================
+
+const customizationOptions = {
+    wheels: [
+        { id: 'stock', name: 'Stock Wheels', price: 0 },
+        { id: 'sport', name: 'Sport Alloy 19"', price: 1200 },
+        { id: 'performance', name: 'Performance 20"', price: 2500 },
+        { id: 'forged', name: 'Forged Black 21"', price: 4500 },
+        { id: 'gold', name: 'Gold Plated 22"', price: 8000 }
+    ],
+    paint: [
+        { id: 'stock', name: 'Stock Color', price: 0 },
+        { id: 'metallic', name: 'Metallic Paint', price: 800 },
+        { id: 'matte', name: 'Matte Finish', price: 1500 },
+        { id: 'pearl', name: 'Pearl Effect', price: 2000 },
+        { id: 'chrome', name: 'Chrome Finish', price: 3000 },
+        { id: 'wrapping', name: 'Vinyl Wrap (Custom)', price: 2500 },
+        { id: 'candy', name: 'Candy Red', price: 3500 },
+        { id: 'flip', name: 'Flip Paint (Color Shift)', price: 4500 }
+    ],
+    body: [
+        { id: 'stock', name: 'Stock Body', price: 0 },
+        { id: 'bodykit', name: 'Sport Body Kit', price: 3500 },
+        { id: 'widebody', name: 'Wide Body Kit', price: 8000 },
+        { id: 'carbon', name: 'Carbon Fiber Parts', price: 5000 },
+        { id: 'aero', name: 'Aero Package', price: 4500 },
+        { id: 'hood', name: 'Carbon Hood', price: 2800 },
+        { id: 'spoiler', name: 'Racing Spoiler', price: 1800 },
+        { id: ' diffuser', name: 'Rear Diffuser', price: 1200 }
+    ],
+    interior: [
+        { id: 'stock', name: 'Stock Interior', price: 0 },
+        { id: 'leather', name: 'Leather Seats', price: 2500 },
+        { id: 'nappa', name: 'Nappa Leather', price: 4500 },
+        { id: 'alcantara', name: 'Alcantara Interior', price: 3500 },
+        { id: 'stitching', name: 'Custom Stitching', price: 800 },
+        { id: 'carbon', name: 'Carbon Trim', price: 1500 },
+        { id: 'lighting', name: 'Ambient Lighting', price: 600 },
+        { id: 'sound', name: 'Premium Sound System', price: 3500 }
+    ],
+    engine: [
+        { id: 'stock', name: 'Stock Engine', price: 0 },
+        { id: 'tune', name: 'ECU Tune', price: 1500 },
+        { id: 'intake', name: 'Cold Air Intake', price: 800 },
+        { id: 'exhaust', name: 'Sport Exhaust', price: 2500 },
+        { id: 'turbo', name: 'Turbo Upgrade', price: 8000 },
+        { id: 'super', name: 'Supercharger', price: 12000 },
+        { id: 'ecu', name: 'Engine Management', price: 3000 },
+        { id: 'cooling', name: 'Performance Cooling', price: 1800 }
+    ],
+    audio: [
+        { id: 'stock', name: 'Stock Audio', price: 0 },
+        { id: 'premium', name: 'Premium Audio', price: 2000 },
+        { id: 'focal', name: 'Focal Sound System', price: 4500 },
+        { id: 'bose', name: 'Bose Surround', price: 3500 },
+        { id: 'subwoofer', name: 'Subwoofer Install', price: 1200 },
+        { id: 'amp', name: 'Amplifier Upgrade', price: 1500 }
+    ],
+    windows: [
+        { id: 'stock', name: 'Stock Windows', price: 0 },
+        { id: 'tint', name: 'Window Tint', price: 350 },
+        { id: 'privacy', name: 'Privacy Glass', price: 800 },
+        { id: 'laminated', name: 'Laminated Glass', price: 1200 }
+    ],
+    accessories: [
+        { id: 'none', name: 'No Accessories', price: 0 },
+        { id: 'spoiler', name: 'Rear Spoiler', price: 600 },
+        { id: 'roofrack', name: 'Roof Rack', price: 450 },
+        { id: 'bike', name: 'Bike Rack', price: 350 },
+        { id: 'cargo', name: 'Cargo Box', price: 550 },
+        { id: 'led', name: 'LED Light Bar', price: 400 },
+        { id: 'lights', name: 'Underglow Lights', price: 500 },
+        { id: 'ground', name: 'Ground Effects', price: 800 }
+    ]
+};
+
+let vehicleCustomization = {};
+let customTotal = 0;
+
+function showVehicleCustomization(vehicleId) {
+    const vehicle = inventory.find(v => v.id === vehicleId);
+    if (!vehicle) return;
+    
+    selectedVehicle = vehicle;
+    vehicleCustomization = {
+        vehicleId: vehicle.id,
+        basePrice: vehicle.price,
+        wheels: 'stock',
+        paint: 'stock',
+        body: 'stock',
+        interior: 'stock',
+        engine: 'stock',
+        audio: 'stock',
+        windows: 'stock',
+        accessories: 'none'
+    };
+    
+    const modal = document.getElementById('customizeModal');
+    const content = document.getElementById('customizeContent');
+    
+    content.innerHTML = renderCustomizationUI(vehicle);
+    modal.classList.remove('hidden');
+    updateCustomizationTotal();
+}
+
+function renderCustomizationUI(vehicle) {
+    let total = vehicle.price;
+    let html = `
+        <div class="customize-vehicle">
+            <div class="customize-preview">
+                <img src="${vehicle.img || ''}" alt="${vehicle.model}">
+                <h3>${vehicle.brand} ${vehicle.model}</h3>
+                <p class="base-price">Base: ${formatPrice(vehicle.price)}</p>
+            </div>
+            
+            <div class="customize-options">
+                <div class="customize-section">
+                    <h4>🛞 Wheels</h4>
+                    <select onchange="updateCustomization('wheels', this.value)">
+                        ${customizationOptions.wheels.map(w => `<option value="${w.id}">${w.name} (+${formatPrice(w.price)})</option>`).join('')}
+                    </select>
+                </div>
+                
+                <div class="customize-section">
+                    <h4>🎨 Paint</h4>
+                    <select onchange="updateCustomization('paint', this.value)">
+                        ${customizationOptions.paint.map(p => `<option value="${p.id}">${p.name} (+${formatPrice(p.price)})</option>`).join('')}
+                    </select>
+                </div>
+                
+                <div class="customize-section">
+                    <h4>🚗 Body Kit</h4>
+                    <select onchange="updateCustomization('body', this.value)">
+                        ${customizationOptions.body.map(b => `<option value="${b.id}">${b.name} (+${formatPrice(b.price)})</option>`).join('')}
+                    </select>
+                </div>
+                
+                <div class="customize-section">
+                    <h4>💺 Interior</h4>
+                    <select onchange="updateCustomization('interior', this.value)">
+                        ${customizationOptions.interior.map(i => `<option value="${i.id}">${i.name} (+${formatPrice(i.price)})</option>`).join('')}
+                    </select>
+                </div>
+                
+                <div class="customize-section">
+                    <h4>⚙️ Engine</h4>
+                    <select onchange="updateCustomization('engine', this.value)">
+                        ${customizationOptions.engine.map(e => `<option value="${e.id}">${e.name} (+${formatPrice(e.price)})</option>`).join('')}
+                    </select>
+                </div>
+                
+                <div class="customize-section">
+                    <h4>🔊 Audio</h4>
+                    <select onchange="updateCustomization('audio', this.value)">
+                        ${customizationOptions.audio.map(a => `<option value="${a.id}">${a.name} (+${formatPrice(a.price)})</option>`).join('')}
+                    </select>
+                </div>
+                
+                <div class="customize-section">
+                    <h4>🪟 Windows</h4>
+                    <select onchange="updateCustomization('windows', this.value)">
+                        ${customizationOptions.windows.map(w => `<option value="${w.id}">${w.name} (+${formatPrice(w.price)})</option>`).join('')}
+                    </select>
+                </div>
+                
+                <div class="customize-section">
+                    <h4>🎁 Accessories</h4>
+                    <select onchange="updateCustomization('accessories', this.value)">
+                        ${customizationOptions.accessories.map(a => `<option value="${a.id}">${a.name} (+${formatPrice(a.price)})</option>`).join('')}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="customize-summary">
+                <div class="summary-row">
+                    <span>Base Price:</span>
+                    <span>${formatPrice(vehicle.price)}</span>
+                </div>
+                <div class="summary-row custom-costs">
+                    <span>Customizations:</span>
+                    <span id="customCost">${formatPrice(0)}</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total:</span>
+                    <span id="customTotal">${formatPrice(vehicle.price)}</span>
+                </div>
+            </div>
+            
+            <div class="customize-buttons">
+                <button onclick="resetCustomization()" class="btn-secondary">Reset</button>
+                <button onclick="proceedToPaymentCustom()" class="calc-btn">💳 Proceed to Payment</button>
+            </div>
+        </div>
+    `;
+    return html;
+}
+
+function updateCustomization(category, value) {
+    vehicleCustomization[category] = value;
+    updateCustomizationTotal();
+}
+
+function updateCustomizationTotal() {
+    if (!selectedVehicle) return;
+    
+    let customCost = 0;
+    
+    customCost += customizationOptions.wheels.find(w => w.id === vehicleCustomization.wheels)?.price || 0;
+    customCost += customizationOptions.paint.find(p => p.id === vehicleCustomization.paint)?.price || 0;
+    customCost += customizationOptions.body.find(b => b.id === vehicleCustomization.body)?.price || 0;
+    customCost += customizationOptions.interior.find(i => i.id === vehicleCustomization.interior)?.price || 0;
+    customCost += customizationOptions.engine.find(e => e.id === vehicleCustomization.engine)?.price || 0;
+    customCost += customizationOptions.audio.find(a => a.id === vehicleCustomization.audio)?.price || 0;
+    customCost += customizationOptions.windows.find(w => w.id === vehicleCustomization.windows)?.price || 0;
+    customCost += customizationOptions.accessories.find(a => a.id === vehicleCustomization.accessories)?.price || 0;
+    
+    customTotal = selectedVehicle.price + customCost;
+    
+    document.getElementById('customCost').innerText = formatPrice(customCost);
+    document.getElementById('customTotal').innerText = formatPrice(customTotal);
+}
+
+function resetCustomization() {
+    vehicleCustomization = {
+        vehicleId: selectedVehicle.id,
+        basePrice: selectedVehicle.price,
+        wheels: 'stock',
+        paint: 'stock',
+        body: 'stock',
+        interior: 'stock',
+        engine: 'stock',
+        audio: 'stock',
+        windows: 'stock',
+        accessories: 'none'
+    };
+    showVehicleCustomization(selectedVehicle.id);
+}
+
+function proceedToPaymentCustom() {
+    closeModal('customizeModal');
+    showPaymentModal(selectedVehicle.id, customTotal);
+    showNotification('Customized vehicle ready for purchase! Total: ' + formatPrice(customTotal), 'success');
 }
 
 function initiateMpesaPayment() {
