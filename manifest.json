@@ -1,0 +1,16 @@
+{
+  "name": "OmniDrive - Vehicle Marketplace",
+  "short_name": "OmniDrive",
+  "description": "Connecting you to the drive of your choice",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#131921",
+  "theme_color": "#131921",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
