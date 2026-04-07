@@ -1,0 +1,68 @@
+:root {
+    --amazon-navy: #131921;
+    --amazon-orange: #febd69;
+    --bg-grey: #eaeded;
+}
+
+body { font-family: Arial, sans-serif; background: var(--bg-grey); margin: 0; }
+
+.navbar {
+    background: var(--amazon-navy);
+    display: flex;
+    padding: 10px 20px;
+    align-items: center;
+    color: white;
+    position: sticky; top: 0; z-index: 100;
+}
+
+.search-box { flex-grow: 1; display: flex; margin: 0 20px; }
+#searchBar { width: 100%; padding: 8px; border-radius: 4px 0 0 4px; border: none; }
+.search-btn { background: var(--amazon-orange); border: none; padding: 8px 15px; border-radius: 0 4px 4px 0; cursor: pointer; }
+
+.container { display: flex; padding: 20px; gap: 20px; }
+
+.sidebar { width: 250px; background: white; padding: 20px; border-radius: 8px; height: fit-content; }
+
+.grid {
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.car-card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    transition: 0.3s;
+}
+.car-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+.price { font-size: 1.5rem; font-weight: bold; color: #B12704; }
+
+.compare-tray {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    background: #232f3e; color: white; padding: 15px 40px;
+    border-radius: 10px 10px 0 0; display: flex; gap: 20px;
+}
+.hidden { display: none; }
+
+.admin-link {
+    background: transparent;
+    border: none;
+    color: #565959;
+    font-size: 0.7rem;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.admin-modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); /* Darken the background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5000;
+}

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">GlobalDrive</div>
+        <div class="search-box">
+            <input type="text" id="searchBar" placeholder="Search brands or models..." oninput="applyFilters()">
+            <button class="search-btn">🔍</button>
+        </div>
+        <div class="nav-tools">
+            <select id="currencyPicker" onchange="updateCurrency()">
+                <option value="USD">USD - $</option>
+                <option value="EUR">EUR - €</option>
+                <option value="JPY">JPY - ¥</option>
+            </select>
+        </div>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h3>Filter Results</h3>
+            <div class="filter-group">
+                <label>Nationality</label>
+                <select id="nationFilter" onchange="applyFilters()">
+                    <option value="all">All Countries</option>
+                    <option value="Japan">Japan 🇯🇵</option>
+                    <option value="Germany">Germany 🇩🇪</option>
+                    <option value="USA">USA 🇺🇸</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Max Price</label>
+                <input type="range" id="priceRange" min="10000" max="300000" step="5000" oninput="applyFilters()">
+                <span id="priceDisplay">$300,000</span>
+            </div>
+        </aside>
+
+        <main id="vehicleGrid" class="grid"></main>
+    </div>
+
+    <div id="compareTray" class="compare-tray hidden">
+        <span id="compareText">0 Vehicles Selected</span>
+        <button onclick="showComparison()">Compare Now</button>
+    </div>
+    <div id="adminPanel" class="admin-box">
+    <h3>Add New Vehicle</h3>
+    <input type="text" id="newBrand" placeholder="Brand (e.g. Toyota)">
+    <input type="text" id="newModel" placeholder="Model (e.g. Supra)">
+    <input type="number" id="newPrice" placeholder="Price in USD">
+    <select id="newNation">
+        <option value="Japan">Japan</option>
+        <option value="Germany">Germany</option>
+        <option value="USA">USA</option>
+        <option value="Italy">Italy</option>
+    </select>
+    <button onclick="addNewVehicle()">List Vehicle</button>
+</div>
+<footer class="site-footer">
+    <p>&copy; 2026 GlobalDrive Dealership</p>
+    <button onclick="checkAdminAccess()" class="admin-link">Staff Login</button>
+</footer>
+
+<div id="adminPanel" class="admin-modal hidden">
+    <div class="modal-content">
+        <span class="close" onclick="closeAdmin()">&times;</span>
+        <h2>Inventory Management</h2>
+        </div>
+</div>
+    <script src="script.js"></script>
+</body>
+</html>
