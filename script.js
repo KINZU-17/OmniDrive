@@ -211,7 +211,34 @@ let inventory = [
     { id: 72, brand: "New Flyer", model: "Xcelsior", price: 350000, nation: "USA", category: "Bus", condition: "New", year: 2026, mileage: 0, fuel: "Diesel", drivetrain: "RWD", bodyStyle: "City Bus", color: "Yellow", img: getCarImage("New Flyer", "Xcelsior"), engine: "8.9L Diesel", horsepower: 320, transmission: "6-Speed Auto", availability: "In Stock", warranty: "3 Years/100k Miles", rating: 4.4 },
     { id: 73, brand: "Gillig", model: "Low Floor", price: 320000, nation: "USA", category: "Bus", condition: "New", year: 2026, mileage: 0, fuel: "Diesel", drivetrain: "RWD", bodyStyle: "City Bus", color: "White", img: getCarImage("Gillig", "Low Floor"), engine: "8.9L Diesel", horsepower: 300, transmission: "6-Speed Auto", availability: "In Stock", warranty: "3 Years/100k Miles", rating: 4.3 },
     { id: 74, brand: "Wrightbus", model: "Streetdeck", price: 300000, nation: "UK", category: "Bus", condition: "New", year: 2026, mileage: 0, fuel: "Hybrid", drivetrain: "RWD", bodyStyle: "Double Decker", color: "Red", img: getCarImage("Wrightbus", "Streetdeck"), engine: "4.5L Hybrid", horsepower: 220, transmission: "6-Speed Auto", availability: "In Stock", warranty: "3 Years/100k Miles", rating: 4.5 },
-    { id: 75, brand: "Yutong", model: "E12", price: 250000, nation: "China", category: "Bus", condition: "New", year: 2026, mileage: 0, fuel: "Electric", drivetrain: "RWD", bodyStyle: "Coach", color: "Blue", img: getCarImage("Yutong", "E12"), engine: "Dual Motor Electric", horsepower: 280, transmission: "1-Speed", availability: "In Stock", warranty: "8 Years/500k Miles", rating: 4.3 }
+    { id: 75, brand: "Yutong", model: "E12", price: 250000, nation: "China", category: "Bus", condition: "New", year: 2026, mileage: 0, fuel: "Electric", drivetrain: "RWD", bodyStyle: "Coach", color: "Blue", img: getCarImage("Yutong", "E12"), engine: "Dual Motor Electric", horsepower: 280, transmission: "1-Speed", availability: "In Stock", warranty: "8 Years/500k Miles", rating: 4.3 },
+
+    // ========== TRUCKS ==========
+    { id: 76, brand: "Ford", model: "F-150 Raptor", price: 78000, nation: "USA", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "4WD", bodyStyle: "Truck", color: "Black", img: getCarImage("Ford", "F-150"), engine: "3.0L EcoBoost V6", horsepower: 450, transmission: "10-Speed Auto", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.7 },
+    { id: 77, brand: "Chevrolet", model: "Silverado ZR2", price: 72000, nation: "USA", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "4WD", bodyStyle: "Truck", color: "White", img: getCarImage("Chevrolet", "Silverado"), engine: "6.2L V8", horsepower: 420, transmission: "10-Speed Auto", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.6 },
+    { id: 78, brand: "Ram", model: "2500 Power Wagon", price: 75000, nation: "USA", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Diesel", drivetrain: "4WD", bodyStyle: "Truck", color: "Gray", img: getCarImage("Ram", "2500"), engine: "6.7L Diesel", horsepower: 410, transmission: "8-Speed Auto", availability: "Low Stock", warranty: "5 Years/60k Miles", rating: 4.5 },
+    { id: 79, brand: "Toyota", model: "Tundra TRD Pro", price: 65000, nation: "Japan", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "4WD", bodyStyle: "Truck", color: "White", img: getCarImage("Toyota", "Tundra"), engine: "3.4L Twin Turbo V6", horsepower: 389, transmission: "10-Speed Auto", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.6 },
+    { id: 80, brand: "GMC", model: "Hummer EV", price: 110000, nation: "USA", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Electric", drivetrain: "4WD", bodyStyle: "Truck", color: "Green", img: getCarImage("GMC", "Hummer"), engine: "Tri Motor", horsepower: 1000, transmission: "1-Speed", availability: "In Stock", warranty: "8 Years/100k Miles", rating: 4.8 },
+    { id: 81, brand: "Nissan", model: "Frontier Pro-4X", price: 42000, nation: "Japan", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "4WD", bodyStyle: "Truck", color: "Red", img: getCarImage("Nissan", "Frontier"), engine: "3.8L V6", horsepower: 310, transmission: "9-Speed Auto", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.4 },
+    { id: 82, brand: "Rivian", model: "R1T", price: 73000, nation: "USA", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Electric", drivetrain: "4WD", bodyStyle: "Truck", color: "Black", img: getCarImage("Rivian", "R1T"), engine: "Quad Motor", horsepower: 800, transmission: "1-Speed", availability: "Low Stock", warranty: "6 Years/60k Miles", rating: 4.7 },
+
+    // ========== VANS ==========
+    { id: 83, brand: "Mercedes-Benz", model: "Sprinter", price: 55000, nation: "Germany", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Diesel", drivetrain: "RWD", bodyStyle: "Van", color: "White", img: getCarImage("Mercedes", "Sprinter"), engine: "2.0L Diesel", horsepower: 188, transmission: "9-Speed Auto", availability: "In Stock", warranty: "5 Years/100k Miles", rating: 4.5 },
+    { id: 84, brand: "Ford", model: "Transit", price: 48000, nation: "USA", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Van", color: "White", img: getCarImage("Ford", "Transit"), engine: "3.5L V6", horsepower: 310, transmission: "10-Speed Auto", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.4 },
+    { id: 85, brand: "Ram", model: "ProMaster", price: 42000, nation: "USA", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "FWD", bodyStyle: "Van", color: "White", img: getCarImage("Ram", "ProMaster"), engine: "3.6L V6", horsepower: 280, transmission: "6-Speed Auto", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.3 },
+    { id: 86, brand: "Toyota", model: "Sienna", price: 52000, nation: "Japan", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Hybrid", drivetrain: "AWD", bodyStyle: "Van", color: "Silver", img: getCarImage("Toyota", "Sienna"), engine: "2.5L Hybrid", horsepower: 245, transmission: "eCVT", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.6 },
+    { id: 87, brand: "Honda", model: "Odyssey", price: 48000, nation: "Japan", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "FWD", bodyStyle: "Van", color: "White", img: getCarImage("Honda", "Odyssey"), engine: "3.5L V6", horsepower: 280, transmission: "10-Speed Auto", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.5 },
+    { id: 88, brand: "Chevrolet", model: "Express", price: 38000, nation: "USA", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Van", color: "White", img: getCarImage("Chevrolet", "Express"), engine: "4.3L V6", horsepower: 276, transmission: "8-Speed Auto", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.2 },
+    { id: 89, brand: "Nissan", model: "NV3500", price: 45000, nation: "Japan", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Van", color: "White", img: getCarImage("Nissan", "NV"), engine: "5.6L V8", horsepower: 375, transmission: "7-Speed Auto", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.3 },
+    { id: 90, brand: " Kia", model: "Carnival", price: 42000, nation: "South Korea", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "FWD", bodyStyle: "Van", color: "White", img: getCarImage("Kia", "Carnival"), engine: "3.5L V6", horsepower: 290, transmission: "8-Speed Auto", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.4 },
+
+    // ========== SCOOTERS ==========
+    { id: 91, brand: "Honda", model: "PCX 150", price: 3600, nation: "Japan", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Scooter", color: "White", img: getCarImage("Honda", "PCX"), engine: "149cc Single", horsepower: 15, transmission: "CVT", availability: "In Stock", warranty: "2 Years/10k Miles", rating: 4.3 },
+    { id: 92, brand: "Yamaha", model: "NMAX", price: 4000, nation: "Japan", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Scooter", color: "Blue", img: getCarImage("Yamaha", "NMAX"), engine: "155cc Single", horsepower: 16, transmission: "CVT", availability: "In Stock", warranty: "2 Years/10k Miles", rating: 4.4 },
+    { id: 93, brand: "Piaggio", model: "Medley 150", price: 4200, nation: "Italy", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Scooter", color: "White", img: getCarImage("Piaggio", "Medley"), engine: "150cc Single", horsepower: 16, transmission: "CVT", availability: "In Stock", warranty: "2 Years/10k Miles", rating: 4.3 },
+    { id: 94, brand: "SYM", model: "Joymax", price: 3500, nation: "Taiwan", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Scooter", color: "Black", img: getCarImage("SYM", "Joymax"), engine: "125cc Single", horsepower: 12, transmission: "CVT", availability: "In Stock", warranty: "2 Years/10k Miles", rating: 4.1 },
+    { id: 95, brand: "BMW", model: "C 400 GT", price: 8000, nation: "Germany", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Scooter", color: "Silver", img: getCarImage("BMW", "C400"), engine: "350cc Single", horsepower: 34, transmission: "CVT", availability: "In Stock", warranty: "3 Years/Unlimited", rating: 4.5 },
+    { id: 96, brand: "TVS", model: "NTORQ", price: 2500, nation: "India", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Scooter", color: "Red", img: getCarImage("TVS", "NTORQ"), engine: "124.8cc Single", horsepower: 9, transmission: "CVT", availability: "In Stock", warranty: "5 Years/50k Miles", rating: 4.2 }
 ];
 
 let liveRates = { USD: 1 };
@@ -219,7 +246,150 @@ let compareList = [];
 let currentCurrency = 'USD';
 let wishlist = [];
 let recentlyViewed = [];
+let priceAlerts = [];
 const ADMIN_PASS = "admin123";
+
+// Load price alerts from localStorage
+const savedAlerts = localStorage.getItem('dealership_priceAlerts');
+if (savedAlerts) {
+    priceAlerts = JSON.parse(savedAlerts);
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+function showNotification(message, type = 'info') {
+    const container = document.getElementById('notificationContainer');
+    const id = Date.now();
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.id = id;
+    notification.innerHTML = `
+        <span>${message}</span>
+        <button class="notification-close" onclick="dismissNotification(${id})">✕</button>
+    `;
+    container.appendChild(notification);
+    setTimeout(() => dismissNotification(id), 5000);
+}
+
+function dismissNotification(id) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => el.remove(), 300);
+    }
+}
+
+// Add price alert styles
+const style = document.createElement('style');
+style.textContent = `
+@keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
+`;
+document.head.appendChild(style);
+
+// ============================================
+// PRICE ALERTS
+// ============================================
+
+function showPriceAlerts() {
+    const modal = document.getElementById('detailModal');
+    const content = document.getElementById('detailContent');
+    
+    let html = `
+        <h2>🔔 Price Alerts</h2>
+        <p>Get notified when a vehicle drops to your target price.</p>
+        
+        <div class="finance-form">
+            <div class="filter-group">
+                <label>Select Vehicle</label>
+                <select id="alertVehicle">
+                    ${inventory.map(v => `<option value="${v.id}">${v.brand} ${v.model} - ${formatPrice(v.price)}</option>`).join('')}
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Target Price</label>
+                <input type="number" id="alertTarget" placeholder="Your target price">
+            </div>
+            <div class="filter-group">
+                <label>Your Email</label>
+                <input type="email" id="alertEmail" placeholder="your@email.com">
+            </div>
+            <button onclick="addPriceAlert()" class="calc-btn">🔔 Create Alert</button>
+        </div>
+        
+        <div class="trade-in-result" style="margin-top:20px;">
+            <h3>Your Active Alerts</h3>
+            ${priceAlerts.length === 0 ? '<p>No active alerts</p>' : priceAlerts.map(alert => {
+                const v = inventory.find(x => x.id === alert.vehicleId);
+                return v ? `
+                    <div class="inventory-item">
+                        <div class="info">
+                            <strong>${v.brand} ${v.model}</strong><br>
+                            <small>Target: ${formatPrice(alert.target)} | Current: ${formatPrice(v.price)}</small>
+                        </div>
+                        <button class="btn-delete" onclick="removePriceAlert(${alert.id})">Remove</button>
+                    </div>
+                ` : '';
+            }).join('')}
+        </div>
+    `;
+    
+    content.innerHTML = html;
+    modal.classList.remove('hidden');
+}
+
+function addPriceAlert() {
+    const vehicleId = parseInt(document.getElementById('alertVehicle').value);
+    const target = parseInt(document.getElementById('alertTarget').value);
+    const email = document.getElementById('alertEmail').value;
+    
+    if (!target || !email) {
+        showNotification('Please fill all fields', 'error');
+        return;
+    }
+    
+    const vehicle = inventory.find(v => v.id === vehicleId);
+    if (target >= vehicle.price) {
+        showNotification('Target price must be lower than current price', 'warning');
+        return;
+    }
+    
+    const alert = {
+        id: Date.now(),
+        vehicleId,
+        target,
+        email,
+        createdAt: new Date().toISOString()
+    };
+    
+    priceAlerts.push(alert);
+    localStorage.setItem('dealership_priceAlerts', JSON.stringify(priceAlerts));
+    
+    showNotification(`Alert created! We'll notify ${email} when price drops to ${formatPrice(target)}`, 'success');
+    showPriceAlerts();
+}
+
+function removePriceAlert(id) {
+    priceAlerts = priceAlerts.filter(a => a.id !== id);
+    localStorage.setItem('dealership_priceAlerts', JSON.stringify(priceAlerts));
+    showPriceAlerts();
+}
+
+// Check alerts (could be called on price changes or periodically)
+function checkPriceAlerts() {
+    priceAlerts.forEach(alert => {
+        const vehicle = inventory.find(v => v.id === alert.vehicleId);
+        if (vehicle && vehicle.price <= alert.target) {
+            showNotification(`🔔 Price drop! ${vehicle.brand} ${vehicle.model} is now ${formatPrice(vehicle.price)}`, 'success');
+            priceAlerts = priceAlerts.filter(a => a.id !== alert.id);
+            localStorage.setItem('dealership_priceAlerts', JSON.stringify(priceAlerts));
+        }
+    });
+}
 
 // ============================================
 // DEALERS NETWORK
@@ -286,19 +456,45 @@ const fallbackRates = {
     MAD: 9.95, TND: 3.12, NZD: 1.64, FJD: 2.23, PGK: 3.75
 };
 
+let isLoading = true;
+
 async function init() {
+    showLoadingSpinner();
     try {
         const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        if (!res.ok) throw new Error('API failed');
         const data = await res.json();
         liveRates = { ...fallbackRates, ...data.rates };
     } catch (e) {
-        console.log("Using fallback rates");
+        console.log("Using fallback rates - " + e.message);
         liveRates = fallbackRates;
+        showNotification('Using offline rates. Some features may be limited.', 'warning');
     }
     updateWishCount();
     renderRecentlyViewed();
     renderFeatured();
     render();
+    hideLoadingSpinner();
+}
+
+function showLoadingSpinner() {
+    const grid = document.getElementById('vehicleGrid');
+    grid.innerHTML = `
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading vehicles...</p>
+        </div>
+    `;
+}
+
+function hideLoadingSpinner() {
+    isLoading = false;
+}
+
+// Error handling for images
+function handleImageError(img) {
+    img.onerror = null;
+    img.src = 'https://placehold.co/400x250/131921/febd69?text=Image+Not+Available';
 }
 
 // ============================================
@@ -340,6 +536,19 @@ function getAvailabilityClass(status) {
 // RENDERING
 // ============================================
 
+function getVehicleBadge(car) {
+    const hotDeals = [32, 9, 42, 15, 13]; // GT-R, Corvette, GR Corolla, Civic Type R, Mustang
+    const newArrivals = [52, 53, 54, 55, 56]; // Latest bikes
+    const topRated = inventory.filter(v => v.rating >= 4.9).slice(0, 10).map(v => v.id);
+    
+    if (hotDeals.includes(car.id)) return '<span class="deal-badge">🔥 Hot Deal</span>';
+    if (newArrivals.includes(car.id)) return '<span class="deal-badge badge-new-arrival">🆕 New Arrival</span>';
+    if (topRated.includes(car.id)) return '<span class="deal-badge badge-top-rated">⭐ Top Rated</span>';
+    if (car.price > 1000000) return '<span class="deal-badge badge-luxury">💎 Luxury</span>';
+    if (car.fuel === 'Electric' && car.category !== 'Bus') return '<span class="deal-badge badge-electric">🔋 Electric</span>';
+    return '';
+}
+
 function render(data = inventory) {
     const grid = document.getElementById('vehicleGrid');
     const emptyState = document.getElementById('emptyState');
@@ -362,6 +571,7 @@ function render(data = inventory) {
         const freight = calculateFreight(car);
         const availClass = getAvailabilityClass(car.availability);
         const stars = '★'.repeat(Math.floor(car.rating || 4)) + (car.rating % 1 >= 0.5 ? '½' : '');
+        const badge = getVehicleBadge(car);
 
         grid.innerHTML += `
             <div class="car-card">
@@ -371,6 +581,7 @@ function render(data = inventory) {
                      onclick="showDetailModal(${car.id})">
                 <span class="heart-icon ${isFavorited ? 'active' : ''}" 
                       onclick="toggleWishlist(${car.id})">♥</span>
+                ${badge}
                 <span class="condition-badge ${car.condition === 'New' ? 'badge-new' : car.condition === 'Used' ? 'badge-used' : 'badge-cpo'}">${car.condition}</span>
                 <h3 onclick="showDetailModal(${car.id})" style="cursor:pointer">${car.brand} ${car.model}</h3>
                 <div class="rating-display">⭐ ${car.rating || 'N/A'} <span class="year-badge">${car.year}</span></div>
