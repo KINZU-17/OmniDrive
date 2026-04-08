@@ -1,16 +1,45 @@
 {
   "name": "OmniDrive - Vehicle Marketplace",
   "short_name": "OmniDrive",
-  "description": "Connecting you to the drive of your choice",
+  "description": "Kenya's premier online vehicle marketplace. 148+ cars, bikes, buses, trucks and vans from around the globe.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#131921",
-  "theme_color": "#131921",
+  "orientation": "portrait-primary",
+  "background_color": "#0f1419",
+  "theme_color": "#0052cc",
+  "lang": "en",
+  "categories": ["shopping", "automotive"],
   "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
     {
-      "src": "favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "name": "Browse Cars",
+      "short_name": "Cars",
+      "description": "Browse all cars",
+      "url": "/?category=Car",
+      "icons": [{ "src": "favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Browse Bikes",
+      "short_name": "Bikes",
+      "description": "Browse all motorcycles",
+      "url": "/?category=Bike",
+      "icons": [{ "src": "favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Browse Buses",
+      "short_name": "Buses",
+      "description": "Browse all buses",
+      "url": "/?category=Bus",
+      "icons": [{ "src": "favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "My Wishlist",
+      "short_name": "Wishlist",
+      "description": "View saved vehicles",
+      "url": "/?wishlist=1",
+      "icons": [{ "src": "favicon.svg", "sizes": "any" }]
     }
   ]
 }

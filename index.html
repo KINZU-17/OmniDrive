@@ -14,6 +14,7 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 </head>
 <body>
     <!-- ========================
@@ -24,7 +25,10 @@
         <span class="tagline">Connecting you to the drive of your choice</span>
         
         <div class="search-box">
-            <input type="text" id="searchBar" placeholder="Search brands or models..." oninput="applyFilters()">
+            <div style="position:relative;flex:1;display:flex">
+                <input type="text" id="searchBar" placeholder="Search brands or models..." oninput="applyFilters(); showSearchSuggestions()" onblur="hideSearchSuggestions()" autocomplete="off">
+                <div id="searchSuggestions" class="search-suggestions"></div>
+            </div>
             <button class="search-btn" onclick="applyFilters()">🔍</button>
         </div>
         
@@ -125,62 +129,60 @@
         </div>
     </header>
 
+    <!-- ========================
+         CINEMATIC SPLASH SCREEN
+    ======================== -->
+    <div id="splashScreen" class="splash-screen">
+        <div class="splash-particles" id="splashParticles"></div>
+        <div class="splash-light-left"></div>
+        <div class="splash-light-right"></div>
+        <div class="splash-vehicles">
+            <div class="splash-vehicle-item" style="animation-delay:0s">🚗<span>Cars</span></div>
+            <div class="splash-vehicle-item" style="animation-delay:0.15s">🏍️<span>Bikes</span></div>
+            <div class="splash-vehicle-item" style="animation-delay:0.3s">🚌<span>Buses</span></div>
+            <div class="splash-vehicle-item" style="animation-delay:0.45s">🚛<span>Trucks</span></div>
+            <div class="splash-vehicle-item" style="animation-delay:0.6s">🚐<span>Vans</span></div>
+        </div>
+        <div class="splash-road">
+            <div class="splash-car">🚗</div>
+        </div>
+        <div class="splash-content">
+            <div class="splash-logo-wrap">
+                <div class="splash-logo">OmniDrive</div>
+                <div class="splash-logo-line"></div>
+            </div>
+            <div class="splash-tagline">Connecting you to the drive of your choice</div>
+            <div class="splash-sub">Kenya's Premier Vehicle Marketplace</div>
+            <button class="splash-enter-btn" onclick="dismissSplash()">Enter Showroom →</button>
+        </div>
+        <div class="splash-footer">omnidrive.co.ke</div>
+    </div>
+
     <!-- Notification Container -->
     <div id="notificationContainer" class="notification-container"></div>
 
     <!-- ========================
          MAIN CONTENT
     ======================== -->
-    <div class="container">
-        <!-- SIDEBAR -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h3>Filters</h3>
-                <button onclick="clearFilters()" class="clear-btn">Clear All</button>
-            </div>
-            
-            <div class="filter-group">
-                <label>Category</label>
-                <select id="categoryFilter" onchange="applyFilters()">
-                    <option value="all">All Categories</option>
-                    <option value="Car">Cars 🚗</option>
-                    <option value="Bike">Bikes 🏍️</option>
-                    <option value="Bus">Buses 🚌</option>
-                </select>
-            </div>
+    <div class="main-wrapper">
 
-            <div class="filter-group">
-                <label>Condition</label>
-                <select id="conditionFilter" onchange="applyFilters()">
-                    <option value="all">All Conditions</option>
+        <!-- TOP FILTER BAR -->
+        <div class="filter-bar" id="filterBar">
+            <div class="filter-bar-primary">
+                <select id="categoryFilter" onchange="applyFilters()" class="filter-pill">
+                    <option value="all">All Types</option>
+                    <option value="Car">Cars &#x1F697;</option>
+                    <option value="Bike">Bikes &#x1F3CD;&#xFE0F;</option>
+                    <option value="Bus">Buses &#x1F68C;</option>
+                </select>
+                <select id="conditionFilter" onchange="applyFilters()" class="filter-pill">
+                    <option value="all">Any Condition</option>
                     <option value="New">New</option>
                     <option value="Used">Used</option>
-                    <option value="Certified Pre-Owned">Certified Pre-Owned</option>
+                    <option value="Certified Pre-Owned">CPO</option>
                 </select>
-            </div>
-            
-            <div class="filter-group">
-                <label>Nationality</label>
-                <select id="nationFilter" onchange="applyFilters()">
-                    <option value="all">All Countries</option>
-                    <option value="Japan">Japan 🇯🇵</option>
-                    <option value="Germany">Germany 🇩🇪</option>
-                    <option value="USA">USA 🇺🇸</option>
-                    <option value="Italy">Italy 🇮🇹</option>
-                    <option value="UK">UK 🇬🇧</option>
-                    <option value="Sweden">Sweden 🇸🇪</option>
-                    <option value="India">India 🇮🇳</option>
-                    <option value="China">China 🇨🇳</option>
-                    <option value="South Korea">South Korea 🇰🇷</option>
-                    <option value="France">France 🇫🇷</option>
-                    <option value="Croatia">Croatia 🇭🇷</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label>Body Style</label>
-                <select id="bodyStyleFilter" onchange="applyFilters()">
-                    <option value="all">All Body Styles</option>
+                <select id="bodyStyleFilter" onchange="applyFilters()" class="filter-pill">
+                    <option value="all">Body Style</option>
                     <option value="Sedan">Sedan</option>
                     <option value="SUV">SUV</option>
                     <option value="Coupe">Coupe</option>
@@ -190,35 +192,37 @@
                     <option value="Hatchback">Hatchback</option>
                     <option value="Wagon">Wagon</option>
                 </select>
-            </div>
-
-            <div class="filter-group">
-                <label>Fuel Type</label>
-                <select id="fuelFilter" onchange="applyFilters()">
-                    <option value="all">All Fuel Types</option>
+                <select id="fuelFilter" onchange="applyFilters()" class="filter-pill">
+                    <option value="all">Fuel Type</option>
                     <option value="Gasoline">Gasoline</option>
                     <option value="Diesel">Diesel</option>
                     <option value="Electric">Electric</option>
                     <option value="Hybrid">Hybrid</option>
                     <option value="Plug-in Hybrid">Plug-in Hybrid</option>
                 </select>
-            </div>
-
-            <div class="filter-group">
-                <label>Drivetrain</label>
-                <select id="drivetrainFilter" onchange="applyFilters()">
-                    <option value="all">All Drivetrains</option>
+                <select id="drivetrainFilter" onchange="applyFilters()" class="filter-pill">
+                    <option value="all">Drivetrain</option>
                     <option value="AWD">AWD</option>
                     <option value="RWD">RWD</option>
                     <option value="FWD">FWD</option>
                     <option value="4WD">4WD</option>
                 </select>
-            </div>
-
-            <div class="filter-group">
-                <label>Color</label>
-                <select id="colorFilter" onchange="applyFilters()">
-                    <option value="all">All Colors</option>
+                <select id="nationFilter" onchange="applyFilters()" class="filter-pill">
+                    <option value="all">Origin</option>
+                    <option value="Japan">Japan &#x1F1EF;&#x1F1F5;</option>
+                    <option value="Germany">Germany &#x1F1E9;&#x1F1EA;</option>
+                    <option value="USA">USA &#x1F1FA;&#x1F1F8;</option>
+                    <option value="Italy">Italy &#x1F1EE;&#x1F1F9;</option>
+                    <option value="UK">UK &#x1F1EC;&#x1F1E7;</option>
+                    <option value="Sweden">Sweden &#x1F1F8;&#x1F1EA;</option>
+                    <option value="India">India &#x1F1EE;&#x1F1F3;</option>
+                    <option value="China">China &#x1F1E8;&#x1F1F3;</option>
+                    <option value="South Korea">South Korea &#x1F1F0;&#x1F1F7;</option>
+                    <option value="France">France &#x1F1EB;&#x1F1F7;</option>
+                    <option value="Croatia">Croatia &#x1F1ED;&#x1F1F7;</option>
+                </select>
+                <select id="colorFilter" onchange="applyFilters()" class="filter-pill">
+                    <option value="all">Color</option>
                     <option value="Black">Black</option>
                     <option value="White">White</option>
                     <option value="Silver">Silver</option>
@@ -229,48 +233,70 @@
                     <option value="Orange">Orange</option>
                     <option value="Green">Green</option>
                 </select>
-            </div>
-            
-            <div class="filter-group">
-                <label>Max Price: <span id="priceDisplay">$3,000,000</span></label>
-                <input type="range" id="priceRange" min="10000" max="30000000" step="10000" value="3000000" oninput="applyFilters()">
-            </div>
-            
-            <div class="filter-group">
-                <label>Sort By</label>
-                <select id="sortFilter" onchange="applyFilters()">
-                    <option value="default">Default</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                    <option value="name-asc">Name: A to Z</option>
-                    <option value="name-desc">Name: Z to A</option>
-                    <option value="rating">Highest Rated</option>
+                <select id="cityFilter" onchange="applyFilters()" class="filter-pill">
+                    <option value="all">Location</option>
+                    <option value="Nairobi">Nairobi</option>
+                    <option value="Mombasa">Mombasa</option>
+                    <option value="Kisumu">Kisumu</option>
+                    <option value="Nakuru">Nakuru</option>
+                    <option value="Eldoret">Eldoret</option>
                 </select>
-            </div>
-            
-            <div class="stats-box">
-                <p>Showing <span id="resultsCount">0</span> vehicles</p>
+                <button onclick="toggleAdvancedFilters()" class="filter-pill filter-pill-btn" id="advancedToggle">&#x2699;&#xFE0F; More</button>
+                <button onclick="clearFilters()" class="filter-pill filter-pill-clear">&#x2715; Clear</button>
             </div>
 
-            <hr>
+            <!-- Advanced filters -->
+            <div class="filter-bar-advanced hidden" id="advancedFilters">
+                <div class="filter-advanced-row">
+                    <div class="filter-range-group">
+                        <label>Min Price: <strong id="minPriceDisplay">$0</strong></label>
+                        <input type="range" id="minPriceRange" min="0" max="30000000" step="10000" value="0" oninput="applyFilters()">
+                    </div>
+                    <div class="filter-range-group">
+                        <label>Max Price: <strong id="priceDisplay">$3,000,000</strong></label>
+                        <input type="range" id="priceRange" min="10000" max="30000000" step="10000" value="3000000" oninput="applyFilters()">
+                    </div>
+                    <div class="filter-range-group">
+                        <label>Sort By</label>
+                        <select id="sortFilter" onchange="applyFilters()" class="filter-pill">
+                            <option value="default">Default</option>
+                            <option value="price-low">Price: Low &rarr; High</option>
+                            <option value="price-high">Price: High &rarr; Low</option>
+                            <option value="name-asc">Name: A &rarr; Z</option>
+                            <option value="name-desc">Name: Z &rarr; A</option>
+                            <option value="rating">Highest Rated</option>
+                        </select>
+                    </div>
+                    <div class="filter-range-group">
+                        <label>Tools</label>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap">
+                            <button onclick="showTradeInCalc()" class="filter-tool-btn">&#x1F504; Trade-In</button>
+                            <button onclick="showInsuranceCalc()" class="filter-tool-btn">&#x1F6E1;&#xFE0F; Insurance</button>
+                            <button onclick="showImportCalc()" class="filter-tool-btn">&#x1F4E6; Import Duty</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <div class="calculator-buttons">
-                <button onclick="showTradeInCalc()" class="calc-sidebar-btn">🔄 Trade-In Value</button>
-                <button onclick="showInsuranceCalc()" class="calc-sidebar-btn">🛡️ Insurance Quote</button>
-                <button onclick="showImportCalc()" class="calc-sidebar-btn">📦 Import Calculator</button>
+            <div class="filter-bar-meta">
+                <span class="results-count">Showing <strong id="resultsCount">0</strong> vehicles</span>
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                    <div class="view-toggle">
+                        <button id="viewGrid" class="view-btn active" onclick="setView('grid')" title="Grid View">&#9783;</button>
+                        <button id="viewMap" class="view-btn" onclick="setView('map')" title="Map View">&#x1F5FA;</button>
+                    </div>
+                    <div class="recently-viewed-inline">
+                        <span style="opacity:.6;font-size:.8rem">Recent:</span>
+                        <div id="recentList" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+                    </div>
+                </div>
             </div>
-            
-            <hr>
-            
-            <div class="recently-viewed">
-                <h4>Recently Viewed</h4>
-                <div id="recentList"></div>
-            </div>
-        </aside>
+        </div>
 
         <!-- VEHICLE GRID -->
-        <main>
+        <main class="grid-main">
             <div id="vehicleGrid" class="grid"></div>
+            <div id="mapView" class="map-view hidden"></div>
             <div id="emptyState" class="empty-state hidden">
                 <h3>No vehicles found</h3>
                 <p>Try adjusting your filters</p>
@@ -306,13 +332,14 @@
                 <button onclick="exportInventory()" class="export-btn">Export Inventory</button>
                 <button onclick="showServiceCenter()" class="admin-link">Service Center</button>
                 <button onclick="showAccessories()" class="admin-link">Parts & Accessories</button>
+                <a href="dealer-register.html" class="admin-link" style="text-decoration:none">🚗 Become a Dealer</a>
             </div>
-            <p>&copy; 2026 OmniDrive.co.ke - Connecting you to the drive of your choice</p>
+            <p>&copy; <span id="footerYear"></span> OmniDrive.co.ke - Connecting you to the drive of your choice</p>
         </div>
     </footer>
 
     <!-- Chat Widget -->
-    <div id="chatWidget" class="chat-widget hidden" onclick="toggleChat()">
+    <div id="chatWidget" class="chat-widget" onclick="toggleChat()">
         <span>💬 Chat</span>
     </div>
     <div id="chatBox" class="chat-box hidden">
@@ -414,6 +441,8 @@
             <div class="admin-tabs">
                 <button onclick="showAdminTab('add')" class="tab-btn active">Add Vehicle</button>
                 <button onclick="showAdminTab('list')" class="tab-btn">View Inventory</button>
+                <button onclick="showAdminTab('pending')" class="tab-btn">⏳ Pending</button>
+                <button onclick="showAdminTab('stats')" class="tab-btn">📊 Dealer Stats</button>
             </div>
             <div id="adminAddTab" class="admin-tab">
                 <div class="admin-form">
@@ -446,6 +475,8 @@
             <div id="adminListTab" class="admin-tab hidden">
                 <div id="adminInventoryList"></div>
             </div>
+            <div id="adminPendingTab" class="admin-tab hidden"></div>
+            <div id="adminStatsTab" class="admin-tab hidden"></div>
         </div>
     </div>
 
@@ -494,6 +525,21 @@
             </div>
             <h2>🔧 Parts & Accessories</h2>
             <div id="accessoriesContent"></div>
+        </div>
+    </div>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookieBanner" class="cookie-banner hidden">
+        <div class="cookie-content">
+            <span class="cookie-icon">🍪</span>
+            <div class="cookie-text">
+                <h4>We value your privacy</h4>
+                <p>We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. By clicking "Accept All", you consent to our use of cookies. <a href="privacy.html" target="_blank">Privacy Policy</a> | <a href="terms.html" target="_blank">Terms of Service</a></p>
+            </div>
+        </div>
+        <div class="cookie-buttons">
+            <button onclick="declineCookies()" class="btn-cookie-decline">Decline</button>
+            <button onclick="acceptCookies()" class="btn-cookie-accept">Accept All</button>
         </div>
     </div>
 
@@ -593,6 +639,19 @@
         </div>
     </div>
 
+    <!-- Back to Top -->
+    <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(r => console.log('SW registered:', r.scope))
+                    .catch(e => console.log('SW failed:', e));
+            });
+        }
+    </script>
 </body>
 </html>

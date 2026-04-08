@@ -57,18 +57,22 @@ OmniDrive is a **one-stop digital dealership** that brings the entire vehicle bu
 ## Growth Roadmap
 
 ### Phase 1 (Launch)
-- [x] 96 vehicles, all categories
+- [x] 148 vehicles, all categories
 - [x] Multi-payment (MPesa, Card, Bank)
 - [x] User auth & orders
 - [x] VIN checks
 - [x] Referral program
+- [x] Dealer registration portal
+- [x] PWA / offline support
+- [x] Partner broker program
 
 ### Phase 2 (Enhance)
 - [ ] Live video walkarounds
 - [ ] 3D vehicle tours
 - [ ] AI-powered recommendations
-- [ ] Insurance quotes
+- [ ] Insurance quotes API integration
 - [ ] Vehicle registration service
+- [ ] Mobile app (React Native)
 
 ### Phase 3 (Scale)
 - [ ] Auction platform
@@ -94,8 +98,8 @@ OmniDrive is a **one-stop digital dealership** that brings the entire vehicle bu
 ## Success Metrics
 
 - **Year 1**: 1,000 vehicles sold, 50,000 registered users
-- **Year 2**: Expand to 5 African countries
-- **Year 3**: Launch auction & trade-in marketplace
+- **Year 2**: Expand to 5 African countries, launch mobile app
+- **Year 3**: Launch auction & trade-in marketplace, B2B fleet sales
 
 ---
 

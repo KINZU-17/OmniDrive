@@ -63,8 +63,8 @@ OmniDrive is Kenya's premier online vehicle marketplace - a comprehensive digita
 
 | Category | Count | Examples |
 |----------|-------|----------|
-| **Cars** | 100+ | Economy to Luxury, SUV, Sedan, Coupe, Convertible |
-| **Bikes** | 40+ | Sports, Touring, Scooters, Adventure, Electric |
+| **Cars** | 110+ | Economy to Luxury, SUV, Sedan, Coupe, Convertible |
+| **Bikes** | 45+ | Sports, Touring, Scooters, Adventure, Electric |
 | **Buses** | 10+ | City Coaches, Electric, Double Decker |
 | **Trucks** | 15+ | Pickups, Heavy Duty, Commercial |
 | **Vans** | 10+ | Passenger, Cargo, Mini-vans |
@@ -111,35 +111,52 @@ Japan 🇯🇵 | USA 🇺🇸 | Germany 🇩🇪 | UK 🇬🇧 | Italy 🇮🇹 
 OmniDrive-dealership/
 ├── index.html          # Main application
 ├── script.js           # All JavaScript logic
-├── styles.css         # Complete styling
-├── README.md          # This file
-├── VISION.md          # Company vision
-├── logo.svg           # Brand logo
-├── favicon.svg        # Favicon
-├── manifest.json      # PWA manifest
-├── sitemap.xml       # SEO sitemap
-├── robots.txt         # Crawler rules
-├── privacy.html      # Privacy policy
-├── terms.html        # Terms of service
-└── assets/           # Images and media
+├── styles.css          # Complete styling
+├── server.js           # Node.js/Express MPesa backend
+├── sw.js               # Service Worker (PWA offline support)
+├── README.md           # This file
+├── VISION.md           # Company vision
+├── logo.svg            # Brand logo
+├── favicon.svg         # Favicon
+├── manifest.json       # PWA manifest
+├── package.json        # Node dependencies
+├── .env                # Environment variables (not committed)
+├── sitemap.xml         # SEO sitemap
+├── robots.txt          # Crawler rules
+├── privacy.html        # Privacy policy
+├── terms.html          # Terms of service
+├── dealer-register.html # Dealer onboarding page
+└── assets/             # Images and media
 ```
 
 ---
 
 ## 🎯 Getting Started
 
-1. Open `index.html` in a web browser
+1. Open `index.html` in a web browser (or run `npm start` for the backend)
 2. Browse vehicles by category or use filters
-3. Add vehicles to wishlist or compare
-4. Customize your ride (optional)
-5. Proceed to payment (MPesa/Card/Bank)
-6. Track your order
+3. Add vehicles to wishlist or compare up to 3 side-by-side
+4. Customize your ride with Pimp Your Ride (optional)
+5. Proceed to payment (MPesa/Card/Bank Transfer)
+6. Track your order in real-time
 
 ---
 
 ## 🌐 Domain
 
-**OmniDrive.co.ke** - Connecting you to the drive of your choice.
+**OmniDrive.co.ke** — Connecting you to the drive of your choice.
+
+---
+
+## 🖥️ Running the Backend
+
+```bash
+npm install
+cp .env.example .env   # fill in your MPesa Daraja credentials
+npm start              # starts Express server on port 3000
+```
+
+The frontend auto-connects to `http://localhost:3000` for MPesa STK Push.
 
 ---
 
@@ -147,5 +164,6 @@ OmniDrive-dealership/
 
 - **Email**: info@omnidrive.co.ke
 - **Phone**: +254 700 000 000
+- **Dealer Registration**: [dealer-register.html](dealer-register.html)
 
 *Your drive starts here.*

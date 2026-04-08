@@ -1,91 +1,339 @@
+const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3000'
+    : 'https://omnidrive-backend.up.railway.app';
+
+
+
+function showSearchSuggestions() {
+    const query = document.getElementById('searchBar').value.trim().toLowerCase();
+    const box = document.getElementById('searchSuggestions');
+    if (!query || query.length < 2) { box.innerHTML = ''; box.style.display = 'none'; return; }
+
+    const matches = [];
+    const seen = new Set();
+    inventory.forEach(car => {
+        const full = `${car.brand} ${car.model}`;
+        const key = full.toLowerCase();
+        if (key.includes(query) && !seen.has(key)) {
+            seen.add(key);
+            matches.push({ label: full, type: 'vehicle' });
+        }
+        if (car.brand.toLowerCase().includes(query) && !seen.has(car.brand.toLowerCase())) {
+            seen.add(car.brand.toLowerCase());
+            matches.push({ label: car.brand, type: 'brand' });
+        }
+    });
+
+    if (!matches.length) { box.innerHTML = ''; box.style.display = 'none'; return; }
+
+    box.innerHTML = matches.slice(0, 8).map(m => `
+        <div class="suggestion-item" onmousedown="selectSuggestion('${sanitize(m.label)}')">
+            <span>${m.type === 'brand' ? '\uD83C\uDFED' : '\uD83D\uDE97'}</span>
+            <span>${sanitize(m.label)}</span>
+        </div>
+    `).join('');
+    box.style.display = 'block';
+}
+
+function selectSuggestion(value) {
+    document.getElementById('searchBar').value = value;
+    hideSearchSuggestions();
+    applyFilters();
+}
+
+function hideSearchSuggestions() {
+    setTimeout(() => {
+        const box = document.getElementById('searchSuggestions');
+        if (box) { box.innerHTML = ''; box.style.display = 'none'; }
+    }, 150);
+}
+
+
+(function () {
+    const container = document.getElementById('splashParticles');
+    for (let i = 0; i < 40; i++) {
+        const p = document.createElement('div');
+        p.className = 'splash-particle';
+        const size = Math.random() * 4 + 1;
+        p.style.cssText = `
+            width:${size}px; height:${size}px;
+            left:${Math.random() * 100}%;
+            bottom:${Math.random() * -20}%;
+            animation-duration:${Math.random() * 8 + 5}s;
+            animation-delay:${Math.random() * 5}s;
+            opacity:${Math.random() * 0.6 + 0.2};
+        `;
+        container.appendChild(p);
+    }
+
+})();
+
+function dismissSplash() {
+    const splash = document.getElementById('splashScreen');
+    if (!splash) return;
+    splash.classList.add('dismissed');
+    setTimeout(() => splash.remove(), 950);
+}
+
 // ============================================
 // CONFIGURATION & STATE
 // ============================================
 
 const imageDatabase = {
-    "Nissan Skyline GT-R": "https://upload.wikimedia.org/wikipedia/commons/5/55/Nissan_Skyline_GT-R_V-Spec_II_N%C3%BCr_R34.jpg",
-    "Nissan GT-R": "https://upload.wikimedia.org/wikipedia/commons/5/55/Nissan_Skyline_GT-R_V-Spec_II_N%C3%BCr_R34.jpg",
-    "Nissan": "https://upload.wikimedia.org/wikipedia/commons/5/55/Nissan_Skyline_GT-R_V-Spec_II_N%C3%BCr_R34.jpg",
-    "Honda Super Cub": "https://upload.wikimedia.org/wikipedia/commons/5/54/Honda_Super_Cub_125.jpg",
-    "Honda": "https://upload.wikimedia.org/wikipedia/commons/5/54/Honda_Super_Cub_125.jpg",
-    "Porsche 911 GT3": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Porsche_911_GT3_Mk_I.jpg",
-    "Porsche 911": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Porsche_911_GT3_Mk_I.jpg",
-    "Porsche": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Porsche_911_GT3_Mk_I.jpg",
-    "Mercedes Citaro": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Mercedes-Benz_Citaro_G_(W639)_Frontline.jpg",
-    "Mercedes-Benz": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Mercedes-Benz_Citaro_G_(W639)_Frontline.jpg",
-    "Mercedes": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Mercedes-Benz_Citaro_G_(W639)_Frontline.jpg",
-    "Ducati Panigale": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Ducati_Panigale_V4.jpg",
-    "Ducati": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Ducati_Panigale_V4.jpg",
-    "Ford F-150 Lightning": "https://upload.wikimedia.org/wikipedia/commons/a/a2/2022_Ford_F-150_Lariat_Range_01.jpg",
-    "Ford F-150": "https://upload.wikimedia.org/wikipedia/commons/a/a2/2022_Ford_F-150_Lariat_Range_01.jpg",
-    "Ford": "https://upload.wikimedia.org/wikipedia/commons/a/a2/2022_Ford_F-150_Lariat_Range_01.jpg",
-    "Tesla Model S": "https://upload.wikimedia.org/wikipedia/commons/9/9a/Tesla_Model_S_long_range.jpg",
-    "Tesla Model 3": "https://upload.wikimedia.org/wikipedia/commons/9/9a/Tesla_Model_S_long_range.jpg",
-    "Tesla": "https://upload.wikimedia.org/wikipedia/commons/9/9a/Tesla_Model_S_long_range.jpg",
-    "Volvo 9700": "https://upload.wikimedia.org/wikipedia/commons/a/a8/Volvo_9700_hoge_1.jpg",
-    "Volvo Coach": "https://upload.wikimedia.org/wikipedia/commons/a/a8/Volvo_9700_hoge_1.jpg",
-    "Volvo": "https://upload.wikimedia.org/wikipedia/commons/a/a8/Volvo_9700_hoge_1.jpg",
-    "Royal Enfield Interceptor": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Royal_Enfield_Interceptor_650.jpg",
-    "Royal Enfield": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Royal_Enfield_Interceptor_650.jpg",
-    "BYD K9": "https://upload.wikimedia.org/wikipedia/commons/f/f8/BYD_K9_electrical_bus_in_Shanghai%2C_China.jpg",
-    "Toyota Supra": "https://upload.wikimedia.org/wikipedia/commons/3/39/Toyota_GR_Supra.jpg",
-    "Toyota GR Supra": "https://upload.wikimedia.org/wikipedia/commons/3/39/Toyota_GR_Supra.jpg",
-    "Toyota": "https://upload.wikimedia.org/wikipedia/commons/3/39/Toyota_GR_Supra.jpg",
-    "BMW M3": "https://upload.wikimedia.org/wikipedia/commons/f/f3/BMW_M3_Competition.jpg",
-    "BMW": "https://upload.wikimedia.org/wikipedia/commons/f/f3/BMW_M3_Competition.jpg",
-    "Audi RS7": "https://upload.wikimedia.org/wikipedia/commons/f/fc/Audi_RS7_Sportback_2023.jpg",
-    "Audi": "https://upload.wikimedia.org/wikipedia/commons/f/fc/Audi_RS7_Sportback_2023.jpg",
-    "Lamborghini Huracan": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Lamborghini_Hurac%C3%A1n_STO.jpg",
-    "Lamborghini": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Lamborghini_Hurac%C3%A1n_STO.jpg",
-    "Ferrari 296": "https://upload.wikimedia.org/wikipedia/commons/3/31/Ferrari_458_Italia.jpg",
-    "Ferrari": "https://upload.wikimedia.org/wikipedia/commons/3/31/Ferrari_458_Italia.jpg",
-    "Yamaha YZF": "https://upload.wikimedia.org/wikipedia/commons/6/68/Yamaha_YZF-R1.jpg",
+    // ── Acura ──
+    "Acura NSX": "https://upload.wikimedia.org/wikipedia/commons/3/3c/2017_Acura_NSX_%28facelift%2C_red%29%2C_front_8.21.19.jpg",
+    "Acura MDX": "https://upload.wikimedia.org/wikipedia/commons/e/e3/2022_Acura_MDX_Type_S%2C_front_8.6.22.jpg",
+    "Acura TLX": "https://upload.wikimedia.org/wikipedia/commons/4/4e/2021_Acura_TLX_Type_S%2C_front_7.9.21.jpg",
+    "Acura": "https://upload.wikimedia.org/wikipedia/commons/3/3c/2017_Acura_NSX_%28facelift%2C_red%29%2C_front_8.21.19.jpg",
+    // ── Alfa Romeo ──
+    "Alfa Romeo Giulia": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Alfa_Romeo_Giulia_Quadrifoglio_%28facelift%2C_red%29%2C_front_8.6.22.jpg",
+    "Alfa Romeo": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Alfa_Romeo_Giulia_Quadrifoglio_%28facelift%2C_red%29%2C_front_8.6.22.jpg",
+    // ── Aston Martin ──
+    "Aston Martin DB12": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Aston_Martin_DB12_%282023%29_front.jpg",
+    "Aston Martin": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Aston_Martin_DB12_%282023%29_front.jpg",
+    // ── Bentley ──
+    "Bentley Continental": "https://upload.wikimedia.org/wikipedia/commons/8/8b/Bentley_Continental_GT_V8_%28facelift%2C_silver%29%2C_front_8.6.22.jpg",
+    "Bentley": "https://upload.wikimedia.org/wikipedia/commons/8/8b/Bentley_Continental_GT_V8_%28facelift%2C_silver%29%2C_front_8.6.22.jpg",
+    // ── Bugatti ──
+    "Bugatti Chiron": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Bugatti_Chiron_-_Goodwood_Festival_of_Speed_2017.jpg",
+    "Bugatti": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Bugatti_Chiron_-_Goodwood_Festival_of_Speed_2017.jpg",
+    // ── Buick ──
+    "Buick Enclave": "https://upload.wikimedia.org/wikipedia/commons/8/8e/2018_Buick_Enclave_Avenir%2C_front_11.3.18.jpg",
+    "Buick": "https://upload.wikimedia.org/wikipedia/commons/8/8e/2018_Buick_Enclave_Avenir%2C_front_11.3.18.jpg",
+    // ── Cadillac ──
+    "Cadillac Escalade": "https://upload.wikimedia.org/wikipedia/commons/5/5e/2021_Cadillac_Escalade_Sport%2C_front_10.3.20.jpg",
+    "Cadillac": "https://upload.wikimedia.org/wikipedia/commons/5/5e/2021_Cadillac_Escalade_Sport%2C_front_10.3.20.jpg",
+    // ── Chevrolet ──
+    "Chevrolet Corvette": "https://upload.wikimedia.org/wikipedia/commons/6/sixty/2023_Chevrolet_Corvette_Z06%2C_front_9.3.22.jpg",
+    "Chevrolet Silverado": "https://upload.wikimedia.org/wikipedia/commons/a/a5/2022_Chevrolet_Silverado_1500_ZR2%2C_front_5.28.22.jpg",
+    "Chevrolet": "https://upload.wikimedia.org/wikipedia/commons/6/sixty/2023_Chevrolet_Corvette_Z06%2C_front_9.3.22.jpg",
+    // ── Chrysler ──
+    "Chrysler Pacifica": "https://upload.wikimedia.org/wikipedia/commons/3/3e/2021_Chrysler_Pacifica_Touring_L%2C_front_10.3.20.jpg",
+    "Chrysler": "https://upload.wikimedia.org/wikipedia/commons/3/3e/2021_Chrysler_Pacifica_Touring_L%2C_front_10.3.20.jpg",
+    // ── Dodge ──
+    "Dodge Challenger": "https://upload.wikimedia.org/wikipedia/commons/b/b5/2018_Dodge_Challenger_SRT_Hellcat_Widebody%2C_front_6.15.19.jpg",
+    "Dodge": "https://upload.wikimedia.org/wikipedia/commons/b/b5/2018_Dodge_Challenger_SRT_Hellcat_Widebody%2C_front_6.15.19.jpg",
+    // ── Cupra ──
+    "Cupra Formentor": "https://upload.wikimedia.org/wikipedia/commons/2/2e/CUPRA_Formentor_VZ5_%282022%29_front.jpg",
+    "Cupra": "https://upload.wikimedia.org/wikipedia/commons/2/2e/CUPRA_Formentor_VZ5_%282022%29_front.jpg",
+    // ── Dacia ──
+    "Dacia Duster": "https://upload.wikimedia.org/wikipedia/commons/f/f3/Dacia_Duster_II_facelift_IMG_3526.jpg",
+    "Dacia": "https://upload.wikimedia.org/wikipedia/commons/f/f3/Dacia_Duster_II_facelift_IMG_3526.jpg",
+    // ── Fiat ──
+    "Fiat 500": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Fiat_500_Abarth_595_Competizione_%282016%29_front.jpg",
+    "Fiat": "https://upload.wikimedia.org/wikipedia/commons/0/0e/Fiat_500_Abarth_595_Competizione_%282016%29_front.jpg",
+    // ── Genesis ──
+    "Genesis GV80": "https://upload.wikimedia.org/wikipedia/commons/e/e5/2021_Genesis_GV80_2.5T%2C_front_10.3.20.jpg",
+    "Genesis": "https://upload.wikimedia.org/wikipedia/commons/e/e5/2021_Genesis_GV80_2.5T%2C_front_10.3.20.jpg",
+    // ── GMC ──
+    "GMC Sierra": "https://upload.wikimedia.org/wikipedia/commons/4/4e/2019_GMC_Sierra_Denali_1500%2C_front_10.27.19.jpg",
+    "GMC Hummer": "https://upload.wikimedia.org/wikipedia/commons/5/5e/2022_GMC_Hummer_EV_Edition_1%2C_front_5.28.22.jpg",
+    "GMC": "https://upload.wikimedia.org/wikipedia/commons/4/4e/2019_GMC_Sierra_Denali_1500%2C_front_10.27.19.jpg",
+    // ── Hennessey ──
+    "Hennessey Venom": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Hennessey_Venom_F5_2020_NY_Auto_Show.jpg",
+    "Hennessey": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Hennessey_Venom_F5_2020_NY_Auto_Show.jpg",
+    // ── Hyundai ──
+    "Hyundai Ioniq": "https://upload.wikimedia.org/wikipedia/commons/8/8e/2022_Hyundai_IONIQ_5_AWD%2C_front_8.6.22.jpg",
+    "Hyundai": "https://upload.wikimedia.org/wikipedia/commons/8/8e/2022_Hyundai_IONIQ_5_AWD%2C_front_8.6.22.jpg",
+    // ── Infiniti ──
+    "Infiniti QX80": "https://upload.wikimedia.org/wikipedia/commons/2/2e/2018_Infiniti_QX80%2C_front_10.27.19.jpg",
+    "Infiniti": "https://upload.wikimedia.org/wikipedia/commons/2/2e/2018_Infiniti_QX80%2C_front_10.27.19.jpg",
+    // ── Jaguar ──
+    "Jaguar F-PACE": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Jaguar_F-PACE_SVR_%282021%29_front.jpg",
+    "Jaguar": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Jaguar_F-PACE_SVR_%282021%29_front.jpg",
+    // ── Jeep ──
+    "Jeep Wrangler": "https://upload.wikimedia.org/wikipedia/commons/3/3e/2021_Jeep_Wrangler_Rubicon_392%2C_front_10.3.20.jpg",
+    "Jeep Grand Cherokee": "https://upload.wikimedia.org/wikipedia/commons/5/5e/2021_Jeep_Grand_Cherokee_L_Overland%2C_front_10.3.20.jpg",
+    "Jeep": "https://upload.wikimedia.org/wikipedia/commons/3/3e/2021_Jeep_Wrangler_Rubicon_392%2C_front_10.3.20.jpg",
+    // ── Kia ──
+    "Kia EV9": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Kia_EV9_GT-Line_%282023%29_front.jpg",
+    "Kia Carnival": "https://upload.wikimedia.org/wikipedia/commons/4/4e/2022_Kia_Carnival_SX_Prestige%2C_front_5.28.22.jpg",
+    "Kia": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Kia_EV9_GT-Line_%282023%29_front.jpg",
+    // ── Koenigsegg ──
+    "Koenigsegg Regera": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Koenigsegg_Regera_-_Goodwood_Festival_of_Speed_2016.jpg",
+    "Koenigsegg": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Koenigsegg_Regera_-_Goodwood_Festival_of_Speed_2016.jpg",
+    // ── Land Rover ──
+    "Land Rover Range Rover": "https://upload.wikimedia.org/wikipedia/commons/e/e3/2022_Land_Rover_Range_Rover_Sport_HST%2C_front_8.6.22.jpg",
+    "Land Rover": "https://upload.wikimedia.org/wikipedia/commons/e/e3/2022_Land_Rover_Range_Rover_Sport_HST%2C_front_8.6.22.jpg",
+    // ── Lincoln ──
+    "Lincoln Navigator": "https://upload.wikimedia.org/wikipedia/commons/4/4e/2018_Lincoln_Navigator_L_Reserve%2C_front_10.27.19.jpg",
+    "Lincoln": "https://upload.wikimedia.org/wikipedia/commons/4/4e/2018_Lincoln_Navigator_L_Reserve%2C_front_10.27.19.jpg",
+    // ── Lotus ──
+    "Lotus Emira": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Lotus_Emira_V6_First_Edition_%282022%29_front.jpg",
+    "Lotus": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Lotus_Emira_V6_First_Edition_%282022%29_front.jpg",
+    // ── Lucid ──
+    "Lucid Air": "https://upload.wikimedia.org/wikipedia/commons/8/8e/2022_Lucid_Air_Grand_Touring%2C_front_5.28.22.jpg",
+    "Lucid": "https://upload.wikimedia.org/wikipedia/commons/8/8e/2022_Lucid_Air_Grand_Touring%2C_front_5.28.22.jpg",
+    // ── Maserati ──
+    "Maserati MC20": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Maserati_MC20_%282020%29_front.jpg",
+    "Maserati": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Maserati_MC20_%282020%29_front.jpg",
+    // ── Mini ──
+    "Mini JCW": "https://upload.wikimedia.org/wikipedia/commons/4/4e/MINI_John_Cooper_Works_GP_%28F56%2C_2020%29_front.jpg",
+    "Mini": "https://upload.wikimedia.org/wikipedia/commons/4/4e/MINI_John_Cooper_Works_GP_%28F56%2C_2020%29_front.jpg",
+    // ── Pagani ──
+    "Pagani Utopia": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Pagani_Utopia_%282022%29_front.jpg",
+    "Pagani": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Pagani_Utopia_%282022%29_front.jpg",
+    // ── Peugeot ──
+    "Peugeot 508": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Peugeot_508_PSE_%282021%29_front.jpg",
+    "Peugeot": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Peugeot_PSE_%282021%29_front.jpg",
+    // ── Pininfarina ──
+    "Pininfarina Battista": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Pininfarina_Battista_%282019%29_front.jpg",
+    "Pininfarina": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Pininfarina_Battista_%282019%29_front.jpg",
+    // ── Polestar ──
+    "Polestar 3": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Polestar_3_%282022%29_front.jpg",
+    "Polestar": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Polestar_3_%282022%29_front.jpg",
+    // ── Ram ──
+    "Ram 1500": "https://upload.wikimedia.org/wikipedia/commons/5/5e/2021_Ram_1500_TRX%2C_front_10.3.20.jpg",
+    "Ram 2500": "https://upload.wikimedia.org/wikipedia/commons/5/5e/2021_Ram_2500_Power_Wagon%2C_front_10.3.20.jpg",
+    "Ram": "https://upload.wikimedia.org/wikipedia/commons/5/5e/2021_Ram_1500_TRX%2C_front_10.3.20.jpg",
+    // ── Renault ──
+    "Renault Megane": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Renault_M%C3%A9gane_RS_Trophy-R_%282019%29_front.jpg",
+    "Renault": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Renault_M%C3%A9gane_RS_Trophy-R_%282019%29_front.jpg",
+    // ── Rimac ──
+    "Rimac Nevera": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Rimac_Nevera_%282021%29_front.jpg",
+    "Rimac": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Rimac_Nevera_%282021%29_front.jpg",
+    // ── Rivian ──
+    "Rivian R1T": "https://upload.wikimedia.org/wikipedia/commons/8/8e/2022_Rivian_R1T_Adventure%2C_front_5.28.22.jpg",
+    "Rivian": "https://upload.wikimedia.org/wikipedia/commons/8/8e/2022_Rivian_R1T_Adventure%2C_front_5.28.22.jpg",
+    // ── Rolls-Royce ──
+    "Rolls Royce Spectre": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Rolls-Royce_Spectre_%282023%29_front.jpg",
+    "Rolls Royce": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Rolls-Royce_Spectre_%282023%29_front.jpg",
+    // ── Skoda ──
+    "Skoda Octavia": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Skoda_Octavia_RS_%28IV%2C_2020%29_front.jpg",
+    "Skoda Kodiaq": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Skoda_Kodiaq_RS_%282019%29_front.jpg",
+    "Skoda": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Skoda_Octavia_RS_%28IV%2C_2020%29_front.jpg",
+    // ── Volkswagen ──
+    "Volkswagen Golf": "https://upload.wikimedia.org/wikipedia/commons/e/e3/VW_Golf_8_R_%282021%29_front.jpg",
+    "Volkswagen": "https://upload.wikimedia.org/wikipedia/commons/e/e3/VW_Golf_8_R_%282021%29_front.jpg",
+    // ── Wuling ──
+    "Wuling": "https://upload.wikimedia.org/wikipedia/commons/f/f3/Wuling_Hongguang_MINI_EV_%282020%29_front.jpg",
+    // ── Chery ──
+    "Chery Tiggo": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Chery_Tiggo_8_Pro_%282021%29_front.jpg",
+    "Chery": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Chery_Tiggo_8_Pro_%282021%29_front.jpg",
+    // ── Geely ──
+    "Geely Coolray": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Geely_Coolray_%282019%29_front.jpg",
+    "Geely": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Geely_Coolray_%282019%29_front.jpg",
+    // ── Haval ──
+    "Haval H6": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Haval_H6_3rd_generation_%282021%29_front.jpg",
+    "Haval": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Haval_H6_3rd_generation_%282021%29_front.jpg",
+    // ── MG ──
+    "MG HS": "https://upload.wikimedia.org/wikipedia/commons/3/3e/MG_HS_%282018%29_front.jpg",
+    "MG": "https://upload.wikimedia.org/wikipedia/commons/3/3e/MG_HS_%282018%29_front.jpg",
+    // ── Tata ──
+    "Tata Safari": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Tata_Safari_%282021%29_front.jpg",
+    "Tata": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Tata_Safari_%282021%29_front.jpg",
+    // ── Mahindra ──
+    "Mahindra XUV500": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Mahindra_XUV500_W10_%282018%29_front.jpg",
+    "Mahindra": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Mahindra_XUV500_W10_%282018%29_front.jpg",
+    // ── Isuzu ──
+    "Isuzu D-Max": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Isuzu_D-Max_V-Cross_%282020%29_front.jpg",
+    "Isuzu": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Isuzu_D-Max_V-Cross_%282020%29_front.jpg",
+    // ── Perodua ──
+    "Perodua Alza": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Perodua_Alza_%282022%29_front.jpg",
+    "Perodua": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Perodua_Alza_%282022%29_front.jpg",
+    // ── Proton ──
+    "Proton X90": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Proton_X90_%282023%29_front.jpg",
+    "Proton": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Proton_X90_%282023%29_front.jpg",
+    // ── Daewoo ──
+    "Daewoo Matiz": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Daewoo_Matiz_%281998%29_front.jpg",
+    "Daewoo": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Daewoo_Matiz_%281998%29_front.jpg",
+    // ── CFMoto ──
+    "CFMoto 450": "https://upload.wikimedia.org/wikipedia/commons/3/3e/CFMoto_450CL-C_%282022%29_front.jpg",
+    "CFMoto": "https://upload.wikimedia.org/wikipedia/commons/3/3e/CFMoto_450CL-C_%282022%29_front.jpg",
+    // ── Benelli ──
+    "Benelli Leoncino": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Benelli_Leoncino_500_%282017%29_front.jpg",
+    "Benelli": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Benelli_Leoncino_500_%282017%29_front.jpg",
+    // ── Bajaj ──
+    "Bajaj Pulsar": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Bajaj_Pulsar_NS200_%282017%29_front.jpg",
+    "Bajaj": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Bajaj_Pulsar_NS200_%282017%29_front.jpg",
+    // ── Hero ──
+    "Hero Xtreme": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Hero_Xtreme_200S_%282019%29_front.jpg",
+    "Hero": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Hero_Xtreme_200S_%282019%29_front.jpg",
+    // ── NIU ──
+    "NIU NQi": "https://upload.wikimedia.org/wikipedia/commons/4/4e/NIU_NQi_GT_%282020%29_front.jpg",
+    "NIU": "https://upload.wikimedia.org/wikipedia/commons/4/4e/NIU_NQi_GT_%282020%29_front.jpg",
+    // ── Freightliner ──
+    "Freightliner Cascadia": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Freightliner_Cascadia_%282018%29_front.jpg",
+    "Freightliner": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Freightliner_Cascadia_%282018%29_front.jpg",
+    // ── Peterbilt ──
+    "Peterbilt 579": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Peterbilt_579_%282012%29_front.jpg",
+    "Peterbilt": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Peterbilt_579_%282012%29_front.jpg",
+    // ── Kenworth ──
+    "Kenworth T680": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Kenworth_T680_%282012%29_front.jpg",
+    "Kenworth": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Kenworth_T680_%282012%29_front.jpg",
+    // ── Hino ──
+    "Hino 258": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Hino_258_%282016%29_front.jpg",
+    "Hino": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Hino_258_%282016%29_front.jpg",
+    // ── Fuso ──
+    "Fuso Canter": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Mitsubishi_Fuso_Canter_%282017%29_front.jpg",
+    "Fuso": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Mitsubishi_Fuso_Canter_%282017%29_front.jpg",
+    // ── Existing brands ──
+    "Nissan Skyline GT-R": "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80",
+    "Nissan GT-R": "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80",
+    "Nissan": "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80",
+    "Honda Super Cub": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+    "Honda CBR": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+    "Honda": "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=800&q=80",
+    "Porsche 911 GT3": "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=800&q=80",
+    "Porsche 911": "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=800&q=80",
+    "Porsche": "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=800&q=80",
+    "Mercedes Citaro": "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=80",
+    "Mercedes-Benz": "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=80",
+    "Mercedes": "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=80",
+    "Ducati Panigale V4": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+    "Ducati Panigale": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+    "Ducati": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+    "Ford F-150 Lightning": "https://images.unsplash.com/photo-1612825173281-9a193378527e?w=800&q=80",
+    "Ford F-150": "https://images.unsplash.com/photo-1612825173281-9a193378527e?w=800&q=80",
+    "Ford": "https://images.unsplash.com/photo-1612825173281-9a193378527e?w=800&q=80",
+    "Tesla Model S": "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800&q=80",
+    "Tesla Model 3": "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800&q=80",
+    "Tesla": "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800&q=80",
+    "Volvo 9700": "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80",
+    "Volvo Coach": "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80",
+    "Volvo": "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80",
+    "Royal Enfield Interceptor": "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800&q=80",
+    "Royal Enfield": "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800&q=80",
+    "BYD K9": "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=800&q=80",
+    "BYD": "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=800&q=80",
+    "Toyota GR Supra": "https://images.unsplash.com/photo-1632245889029-e406faaa34cd?w=800&q=80",
+    "Toyota Supra": "https://images.unsplash.com/photo-1632245889029-e406faaa34cd?w=800&q=80",
+    "Toyota Crown": "https://images.unsplash.com/photo-1632245889029-e406faaa34cd?w=800&q=80",
+    "Toyota": "https://images.unsplash.com/photo-1632245889029-e406faaa34cd?w=800&q=80",
+    "BMW M1000": "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80",
+    "BMW M3": "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80",
+    "BMW": "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80",
+    "Audi RS7": "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&q=80",
+    "Audi": "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&q=80",
+    "Lamborghini Huracan": "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80",
+    "Lamborghini": "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80",
+    "Ferrari 296": "https://images.unsplash.com/photo-1592198084033-aade902d1aae?w=800&q=80",
+    "Ferrari": "https://images.unsplash.com/photo-1592198084033-aade902d1aae?w=800&q=80",
+    "McLaren": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+    "Yamaha YZF-R1": "https://upload.wikimedia.org/wikipedia/commons/6/68/Yamaha_YZF-R1.jpg",
+    "Yamaha YZF": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
     "Yamaha": "https://upload.wikimedia.org/wikipedia/commons/6/68/Yamaha_YZF-R1.jpg",
+    "Kawasaki Ninja ZX-6R": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Kawasaki_Ninja_ZX-6R.jpg",
     "Kawasaki Ninja": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Kawasaki_Ninja_ZX-6R.jpg",
     "Kawasaki": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Kawasaki_Ninja_ZX-6R.jpg",
+    "Suzuki GSX-R1000": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Suzuki_GSX-R1000.jpg",
     "Suzuki GSX": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Suzuki_GSX-R1000.jpg",
     "Suzuki": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Suzuki_GSX-R1000.jpg",
     "Harley-Davidson": "https://upload.wikimedia.org/wikipedia/commons/8/89/Harley-Davidson_Sportster.jpg",
     "Lexus LC": "https://upload.wikimedia.org/wikipedia/commons/c/c0/Lexus_LC_500.jpg",
     "Lexus": "https://upload.wikimedia.org/wikipedia/commons/c/c0/Lexus_LC_500.jpg",
-    "BYD": "https://upload.wikimedia.org/wikipedia/commons/f/f8/BYD_K9_electrical_bus_in_Shanghai%2C_China.jpg",
-    "Toyota Supra": "https://upload.wikimedia.org/wikipedia/commons/5/5e/2022_Toyota_GR_Supra_3.0L_Premium_007.jpg",
-    "Toyota": "https://upload.wikimedia.org/wikipedia/commons/5/5e/2022_Toyota_GR_Supra_3.0L_Premium_007.jpg",
-    "BMW M3": "https://upload.wikimedia.org/wikipedia/commons/f/f3/BMW_M3_Competition.jpg",
-    "BMW": "https://upload.wikimedia.org/wikipedia/commons/f/f3/BMW_M3_Competition.jpg",
-    "Audi RS7": "https://upload.wikimedia.org/wikipedia/commons/f/fc/Audi_RS7_Sportback_2023.jpg",
-    "Audi": "https://upload.wikimedia.org/wikipedia/commons/f/fc/Audi_RS7_Sportback_2023.jpg",
-    "Lamborghini": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Lamborghini_Hurac%C3%A1n_STO.jpg",
-    "Ferrari": "https://upload.wikimedia.org/wikipedia/commons/3/31/Ferrari_458_Italia.jpg",
-    "McLaren": "https://upload.wikimedia.org/wikipedia/commons/a/a7/McLaren_720S_Genf_2018.jpg",
-    "Lamborghini": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Lamborghini_Hurac%C3%A1n_STO.jpg",
-    "Yamaha": "https://upload.wikimedia.org/wikipedia/commons/6/68/Yamaha_YZF-R1.jpg",
-    "Kawasaki": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Kawasaki_Ninja_ZX-6R.jpg",
-    "Suzuki": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Suzuki_GSX-R1000.jpg",
-    "Harley-Davidson": "https://upload.wikimedia.org/wikipedia/commons/8/89/Harley-Davidson_Sportster.jpg",
-    "Toyota Crown": "https://upload.wikimedia.org/wikipedia/commons/5/5e/2022_Toyota_GR_Supra_3.0L_Premium_007.jpg",
-    "Lexus": "https://upload.wikimedia.org/wikipedia/commons/c/c0/Lexus_LC_500.jpg",
     "Mazda RX-7": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Mazda_RX-7_Type_R.jpg",
     "Mazda": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Mazda_RX-7_Type_R.jpg",
-    "Subaru WRX": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Mazda_RX-7_Type_R.jpg",
-    "Subaru": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Mazda_RX-7_Type_R.jpg",
+    "Subaru WRX": "https://upload.wikimedia.org/wikipedia/commons/b/b9/2018_Subaru_WRX_STI_Type_RA.jpg",
+    "Subaru": "https://upload.wikimedia.org/wikipedia/commons/b/b9/2018_Subaru_WRX_STI_Type_RA.jpg",
     "Mitsubishi Lancer": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Mitsubishi_Lancer_Evolution.jpg",
     "Mitsubishi": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Mitsubishi_Lancer_Evolution.jpg",
-    "Ducati Panigale V4": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Ducati_Panigale_V4.jpg",
-    "Yamaha YZF-R1": "https://upload.wikimedia.org/wikipedia/commons/6/68/Yamaha_YZF-R1.jpg",
-    "Kawasaki Ninja": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Kawasaki_Ninja_ZX-6R.jpg",
-    "Suzuki GSX-R1000": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Suzuki_GSX-R1000.jpg",
-    "Harley-Davidson": "https://upload.wikimedia.org/wikipedia/commons/8/89/Harley-Davidson_Sportster.jpg",
-    "Honda CBR": "https://upload.wikimedia.org/wikipedia/commons/9/9a/Tesla_Model_S_long_range.jpg",
-    "BMW M1000": "https://upload.wikimedia.org/wikipedia/commons/f/f3/BMW_M3_Competition.jpg",
-    "KTM": "https://upload.wikimedia.org/wikipedia/commons/6/68/Yamaha_YZF-R1.jpg",
-    "Triumph": "https://upload.wikimedia.org/wikipedia/commons/6/68/Yamaha_YZF-R1.jpg",
+    "KTM": "https://upload.wikimedia.org/wikipedia/commons/3/3c/KTM_1290_Super_Duke_R.jpg",
+    "Triumph": "https://upload.wikimedia.org/wikipedia/commons/0/04/Triumph_Speed_Triple_1200_RS.jpg",
     "MV Agusta": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Ducati_Panigale_V4.jpg",
-    "Royal Enfield": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Royal_Enfield_Interceptor_650.jpg",
     "Piaggio": "https://upload.wikimedia.org/wikipedia/commons/5/54/Honda_Super_Cub_125.jpg",
     "Zero": "https://upload.wikimedia.org/wikipedia/commons/9/9a/Tesla_Model_S_long_range.jpg",
     "Aprilia": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Ducati_Panigale_V4.jpg",
-    "Volvo 9700": "https://upload.wikimedia.org/wikipedia/commons/a/a8/Volvo_9700_hoge_1.jpg",
     "Scania": "https://upload.wikimedia.org/wikipedia/commons/a/a8/Volvo_9700_hoge_1.jpg",
     "MAN": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Mercedes-Benz_Citaro_G_(W639)_Frontline.jpg",
     "Alexander Dennis": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Mercedes-Benz_Citaro_G_(W639)_Frontline.jpg",
@@ -109,17 +357,26 @@ const brandColors = {
 };
 
 function getCarImage(brand, model) {
-    const fullName = brand + " " + (model || "").split(" ")[0];
-    const brandKey = brand.split(" ")[0];
-    
+    const fullName = `${brand} ${model || ''}`.trim();
+
+    // Exact full name match first
+    if (imageDatabase[fullName]) return imageDatabase[fullName];
+
+    // Brand + first word of model
+    const brandModel = `${brand} ${(model || '').split(' ')[0]}`;
+    if (imageDatabase[brandModel]) return imageDatabase[brandModel];
+
+    // Brand only
+    if (imageDatabase[brand]) return imageDatabase[brand];
+
+    // Partial match
     for (const [key, url] of Object.entries(imageDatabase)) {
-        if (fullName.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(brandKey.toLowerCase())) {
-            return url + "?w=400";
-        }
+        if (fullName.toLowerCase().startsWith(key.toLowerCase())) return url;
     }
-    
-    const color = brandColors[brandKey] || "131921";
-    return `https://placehold.co/400x250/${color}/ffffff?text=${encodeURIComponent(brand + " " + model)}`;
+
+    const brandKey = brand.split(' ')[0];
+    const color = brandColors[brandKey] || '131921';
+    return `https://placehold.co/400x250/${color}/ffffff?text=${encodeURIComponent(fullName)}`;
 }
 
 // Filter options data
@@ -230,7 +487,7 @@ let inventory = [
     { id: 87, brand: "Honda", model: "Odyssey", price: 48000, nation: "Japan", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "FWD", bodyStyle: "Van", color: "White", img: getCarImage("Honda", "Odyssey"), engine: "3.5L V6", horsepower: 280, transmission: "10-Speed Auto", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.5 },
     { id: 88, brand: "Chevrolet", model: "Express", price: 38000, nation: "USA", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Van", color: "White", img: getCarImage("Chevrolet", "Express"), engine: "4.3L V6", horsepower: 276, transmission: "8-Speed Auto", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.2 },
     { id: 89, brand: "Nissan", model: "NV3500", price: 45000, nation: "Japan", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Van", color: "White", img: getCarImage("Nissan", "NV"), engine: "5.6L V8", horsepower: 375, transmission: "7-Speed Auto", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.3 },
-    { id: 90, brand: " Kia", model: "Carnival", price: 42000, nation: "South Korea", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "FWD", bodyStyle: "Van", color: "White", img: getCarImage("Kia", "Carnival"), engine: "3.5L V6", horsepower: 290, transmission: "8-Speed Auto", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.4 },
+    { id: 90, brand: "Kia", model: "Carnival", price: 42000, nation: "South Korea", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "FWD", bodyStyle: "Van", color: "White", img: getCarImage("Kia", "Carnival"), engine: "3.5L V6", horsepower: 290, transmission: "8-Speed Auto", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.4 },
 
     // ========== SCOOTERS ==========
     { id: 91, brand: "Honda", model: "PCX 150", price: 3600, nation: "Japan", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Scooter", color: "White", img: getCarImage("Honda", "PCX"), engine: "149cc Single", horsepower: 15, transmission: "CVT", availability: "In Stock", warranty: "2 Years/10k Miles", rating: 4.3 },
@@ -276,12 +533,12 @@ let inventory = [
     { id: 127, brand: "Proton", model: "X90", price: 20000, nation: "Malaysia", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "FWD", bodyStyle: "SUV", color: "White", img: getCarImage("Proton", "X90"), engine: "1.5L Turbo", horsepower: 174, transmission: "6-Speed Auto", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.3 },
     { id: 128, brand: "Suzuki", model: "Ertiga", price: 18000, nation: "Indonesia", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "FWD", bodyStyle: "Van", color: "White", img: getCarImage("Suzuki", "Ertiga"), engine: "1.5L", horsepower: 103, transmission: "5-Speed Manual", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.2 },
     { id: 129, brand: "Daewoo", model: "Matiz", price: 12000, nation: "South Korea", category: "Car", condition: "Used", year: 2015, mileage: 45000, fuel: "Gasoline", drivetrain: "FWD", bodyStyle: "Hatchback", color: "Red", img: getCarImage("Daewoo", "Matiz"), engine: "0.8L", horsepower: 51, transmission: "5-Speed Manual", availability: "In Stock", warranty: "3 Years/30k Miles", rating: 3.8 },
-    { id: 130, brand: " Chevrolet", model: "Joy", price: 15000, nation: "China", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "FWD", bodyStyle: "Hatchback", color: "Red", img: getCarImage("Chevrolet", "Joy"), engine: "1.5L", horsepower: 99, transmission: "5-Speed Manual", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.0 },
+    { id: 130, brand: "Chevrolet", model: "Joy", price: 15000, nation: "China", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "FWD", bodyStyle: "Hatchback", color: "Red", img: getCarImage("Chevrolet", "Joy"), engine: "1.5L", horsepower: 99, transmission: "5-Speed Manual", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.0 },
     
     // ========== MORE MOTORCYCLES ==========
     { id: 131, brand: "CFMoto", model: "450CL-C", price: 5500, nation: "China", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Cruiser", color: "Black", img: getCarImage("CFMoto", "450"), engine: "450cc Parallel Twin", horsepower: 40, transmission: "6-Speed", availability: "In Stock", warranty: "2 Years/20k Miles", rating: 4.2 },
     { id: 132, brand: "Benelli", model: "Leoncino 500", price: 6500, nation: "Italy", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Standard", color: "Gray", img: getCarImage("Benelli", "Leoncino"), engine: "500cc Parallel Twin", horsepower: 47, transmission: "6-Speed", availability: "In Stock", warranty: "2 Years/Unlimited", rating: 4.3 },
-    { id: 133, brand: "Zontes", model: " GK350", price: 4800, nation: "China", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Naked", color: "Black", img: getCarImage("Zontes", "GK350"), engine: "348cc Single", horsepower: 38, transmission: "6-Speed", availability: "In Stock", warranty: "2 Years/20k Miles", rating: 4.1 },
+    { id: 133, brand: "Zontes", model: "GK350", price: 4800, nation: "China", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Naked", color: "Black", img: getCarImage("Zontes", "GK350"), engine: "348cc Single", horsepower: 38, transmission: "6-Speed", availability: "In Stock", warranty: "2 Years/20k Miles", rating: 4.1 },
     { id: 134, brand: "CFMoto", model: "NK150", price: 4200, nation: "China", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Naked", color: "Red", img: getCarImage("CFMoto", "NK150"), engine: "149cc Single", horsepower: 18, transmission: "6-Speed", availability: "In Stock", warranty: "2 Years/20k Miles", rating: 4.0 },
     { id: 135, brand: "Bajaj", model: "Pulsar NS200", price: 3500, nation: "India", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Sport", color: "Black", img: getCarImage("Bajaj", "Pulsar"), engine: "199.5cc Single", horsepower: 24, transmission: "6-Speed", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.2 },
     { id: 136, brand: "Hero", model: "Xtreme 200S", price: 2200, nation: "India", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Sport", color: "Red", img: getCarImage("Hero", "Xtreme"), engine: "199.6cc Single", horsepower: 18, transmission: "5-Speed", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.1 },
@@ -303,18 +560,115 @@ let inventory = [
     { id: 148, brand: "Fuso", model: "Canter", price: 75000, nation: "Japan", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Diesel", drivetrain: "RWD", bodyStyle: "Truck", color: "White", img: getCarImage("Fuso", "Canter"), engine: "3.0L Diesel", horsepower: 175, transmission: "6-Speed Manual", availability: "In Stock", warranty: "5 Years/100k Miles", rating: 4.3 }
 ];
 
-let liveRates = { USD: 1 };
+// ============================================
+// DEALER REGISTRY
+// ============================================
+const dealerRegistry = [
+    { id: 'D001', name: 'Westlands Premium Motors',    city: 'Nairobi',   phone: '+254 712 000 001', email: 'sales@westlandsmotors.co.ke',  verified: true,  rating: 4.8, since: '2021' },
+    { id: 'D002', name: 'Coastal Imports Ltd',          city: 'Mombasa',   phone: '+254 722 000 002', email: 'info@coastalimports.co.ke',     verified: true,  rating: 4.7, since: '2020' },
+    { id: 'D003', name: 'Lakeside Auto Hub',            city: 'Kisumu',    phone: '+254 733 000 003', email: 'contact@lakesideauto.co.ke',    verified: false, rating: 4.3, since: '2023' },
+    { id: 'D004', name: 'Rift Valley Motors',           city: 'Nakuru',    phone: '+254 744 000 004', email: 'sales@riftvalleymotors.co.ke',  verified: true,  rating: 4.5, since: '2022' },
+    { id: 'D005', name: 'Eldoret Speed Centre',         city: 'Eldoret',   phone: '+254 755 000 005', email: 'info@eldoretspeed.co.ke',       verified: false, rating: 4.1, since: '2023' },
+    { id: 'D006', name: 'Thika Road Auto Mall',         city: 'Nairobi',   phone: '+254 766 000 006', email: 'sales@thikaautomall.co.ke',     verified: true,  rating: 4.6, since: '2021' },
+    { id: 'D007', name: 'Nyali Luxury Cars',            city: 'Mombasa',   phone: '+254 777 000 007', email: 'info@nyaliluxury.co.ke',        verified: true,  rating: 4.9, since: '2019' },
+    { id: 'D008', name: 'Karen Motors & Bikes',         city: 'Nairobi',   phone: '+254 788 000 008', email: 'contact@karenmotors.co.ke',     verified: true,  rating: 4.7, since: '2020' },
+    { id: 'D009', name: 'Kisumu Bay Vehicles',          city: 'Kisumu',    phone: '+254 799 000 009', email: 'sales@kisumubayvehicles.co.ke', verified: false, rating: 4.2, since: '2022' },
+    { id: 'D010', name: 'Nakuru Central Autos',         city: 'Nakuru',    phone: '+254 700 000 010', email: 'info@nakuruautos.co.ke',        verified: true,  rating: 4.4, since: '2021' },
+];
+
+function getDealerById(id) {
+    return dealerRegistry.find(d => d.id === id) || null;
+}
+
+// Assign dealers to inventory items deterministically
+function assignDealer(carId) {
+    return dealerRegistry[carId % dealerRegistry.length];
+}
+
+// Track dealer stats in localStorage
+function trackDealerStat(dealerId, stat) {
+    const key = 'dealer_stats_' + dealerId;
+    const stats = JSON.parse(localStorage.getItem(key) || '{"views":0,"wishlists":0,"inquiries":0}');
+    stats[stat] = (stats[stat] || 0) + 1;
+    localStorage.setItem(key, JSON.stringify(stats));
+}
+
+function getDealerStats(dealerId) {
+    return JSON.parse(localStorage.getItem('dealer_stats_' + dealerId) || '{"views":0,"wishlists":0,"inquiries":0}');
+}
+
+
 let compareList = [];
 let currentCurrency = 'USD';
+let liveRates = {};
 let wishlist = [];
 let recentlyViewed = [];
 let priceAlerts = [];
-const ADMIN_PASS = "admin123";
+let pendingListings = JSON.parse(localStorage.getItem('dealership_pending') || '[]');
+const ADMIN_PASS_HASH = btoa('admin123');  // obfuscated; replace with server-side auth in production
+function verifyAdmin(input) { return btoa(input) === ADMIN_PASS_HASH; }
 
 // Load price alerts from localStorage
 const savedAlerts = localStorage.getItem('dealership_priceAlerts');
 if (savedAlerts) {
     priceAlerts = JSON.parse(savedAlerts);
+}
+
+// ============================================
+// SANITIZE HELPER
+// ============================================
+
+function sanitize(str) {
+    return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;');
+}
+
+function showConfirm(message, onConfirm) {
+    const id = 'confirm_' + Date.now();
+    const div = document.createElement('div');
+    div.id = id;
+    div.className = 'modal';
+    div.style.zIndex = 99998;
+    div.innerHTML = `
+        <div class="modal-content" style="max-width:380px;text-align:center">
+            <p style="font-size:1.1rem;margin-bottom:20px">${sanitize(message)}</p>
+            <div style="display:flex;gap:10px;justify-content:center">
+                <button class="btn-primary" id="${id}_yes">Yes</button>
+                <button class="close-btn" id="${id}_no">Cancel</button>
+            </div>
+        </div>`;
+    document.body.appendChild(div);
+    document.getElementById(`${id}_yes`).onclick = () => { div.remove(); onConfirm(); };
+    document.getElementById(`${id}_no`).onclick = () => div.remove();
+}
+
+function showPrompt(message, defaultVal, onSubmit, isPassword = false) {
+    const id = 'prompt_' + Date.now();
+    const div = document.createElement('div');
+    div.id = id;
+    div.className = 'modal';
+    div.style.zIndex = 99998;
+    div.innerHTML = `
+        <div class="modal-content" style="max-width:380px">
+            <p style="margin-bottom:12px">${sanitize(message)}</p>
+            <input type="${isPassword ? 'password' : 'text'}" id="${id}_input"
+                value="${sanitize(defaultVal)}" class="filter-group"
+                style="width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);margin-bottom:15px">
+            <div style="display:flex;gap:10px">
+                <button class="btn-primary" id="${id}_ok" style="flex:1">OK</button>
+                <button class="close-btn" id="${id}_cancel" style="flex:1">Cancel</button>
+            </div>
+        </div>`;
+    document.body.appendChild(div);
+    const input = document.getElementById(`${id}_input`);
+    input.focus();
+    input.onkeydown = (e) => { if (e.key === 'Enter') document.getElementById(`${id}_ok`).click(); };
+    document.getElementById(`${id}_ok`).onclick = () => { const v = input.value; div.remove(); onSubmit(v); };
+    document.getElementById(`${id}_cancel`).onclick = () => div.remove();
 }
 
 // ============================================
@@ -327,10 +681,14 @@ function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
     notification.id = id;
-    notification.innerHTML = `
-        <span>${message}</span>
-        <button class="notification-close" onclick="dismissNotification(${id})">✕</button>
-    `;
+    const span = document.createElement('span');
+    span.textContent = message;
+    const btn = document.createElement('button');
+    btn.className = 'notification-close';
+    btn.textContent = '✕';
+    btn.onclick = () => dismissNotification(id);
+    notification.appendChild(span);
+    notification.appendChild(btn);
     container.appendChild(notification);
     setTimeout(() => dismissNotification(id), 5000);
 }
@@ -520,7 +878,10 @@ const fallbackRates = {
 
 let isLoading = true;
 
+document.getElementById('footerYear').textContent = new Date().getFullYear();
+
 async function init() {
+    checkCookieConsent();
     showLoadingSpinner();
     try {
         const res = await fetch('https://open.er-api.com/v6/latest/USD');
@@ -537,16 +898,41 @@ async function init() {
     renderFeatured();
     render();
     hideLoadingSpinner();
+    setupInfiniteScroll();
+}
+
+function checkCookieConsent() {
+    const consent = localStorage.getItem('cookieConsent');
+    if (consent === null) {
+        document.getElementById('cookieBanner').classList.remove('hidden');
+    }
+}
+
+function acceptCookies() {
+    localStorage.setItem('cookieConsent', 'accepted');
+    document.getElementById('cookieBanner').classList.add('hidden');
+    showNotification('Cookies accepted. Thank you!', 'success');
+}
+
+function declineCookies() {
+    localStorage.setItem('cookieConsent', 'declined');
+    document.getElementById('cookieBanner').classList.add('hidden');
+    showNotification('Non-essential cookies declined.', 'warning');
 }
 
 function showLoadingSpinner() {
     const grid = document.getElementById('vehicleGrid');
-    grid.innerHTML = `
-        <div class="loading-spinner">
-            <div class="spinner"></div>
-            <p>Loading vehicles...</p>
+    grid.innerHTML = Array(8).fill(`
+        <div class="skeleton-card">
+            <div class="skeleton-img"></div>
+            <div class="skeleton-body">
+                <div class="skeleton-line medium"></div>
+                <div class="skeleton-line short"></div>
+                <div class="skeleton-line medium"></div>
+                <div class="skeleton-line short"></div>
+            </div>
         </div>
-    `;
+    `).join('');
 }
 
 function hideLoadingSpinner() {
@@ -556,7 +942,23 @@ function hideLoadingSpinner() {
 // Error handling for images
 function handleImageError(img) {
     img.onerror = null;
-    img.src = 'https://placehold.co/400x250/131921/febd69?text=Image+Not+Available';
+    const card = img.closest('.car-card');
+    const wrap = img.closest('.img-wrap');
+    const brand = img.dataset.brand || '';
+    const model = img.dataset.model || '';
+    const emoji = brand.includes('Bike') || ['Ducati','Yamaha','Kawasaki','Honda','Suzuki','BMW','Harley','Triumph','KTM','MV Agusta','Royal Enfield','Piaggio','Zero','Aprilia','CFMoto','Benelli','Bajaj','Hero','NIU'].some(b => brand.includes(b)) ? '🏍️' : brand.includes('Bus') || brand.includes('Yutong') || brand.includes('BYD') ? '🚌' : '🚗';
+    if (wrap) {
+        wrap.innerHTML = `<div class="img-placeholder"><span>${emoji}</span><span>${brand} ${model}</span></div>`;
+    } else {
+        img.style.display = 'none';
+    }
+}
+
+function toggleAdvancedFilters() {
+    const panel = document.getElementById('advancedFilters');
+    const btn = document.getElementById('advancedToggle');
+    const isHidden = panel.classList.toggle('hidden');
+    btn.textContent = isHidden ? '⚙️ More' : '⚙️ Less';
 }
 
 // ============================================
@@ -595,6 +997,66 @@ function getAvailabilityClass(status) {
 }
 
 // ============================================
+// PAGINATION
+// ============================================
+const PAGE_SIZE = 24;
+let currentPage = 1;
+let filteredInventory = [];
+let isLoadingMore = false;
+
+function renderPage(data, page) {
+    const start = (page - 1) * PAGE_SIZE;
+    const pageItems = data.slice(start, start + PAGE_SIZE);
+    if (page === 1) {
+        renderCards(pageItems);
+    } else {
+        appendCards(pageItems);
+    }
+    updateInfiniteScrollSentinel(data.length, page);
+}
+
+function updateInfiniteScrollSentinel(total, page) {
+    let sentinel = document.getElementById('scrollSentinel');
+    if (!sentinel) {
+        sentinel = document.createElement('div');
+        sentinel.id = 'scrollSentinel';
+        sentinel.style.cssText = 'height:1px;margin-top:20px';
+        document.querySelector('.grid-main').appendChild(sentinel);
+    }
+    const totalPages = Math.ceil(total / PAGE_SIZE);
+    sentinel.dataset.hasMore = page < totalPages ? '1' : '0';
+}
+
+function setupInfiniteScroll() {
+    const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && !isLoadingMore) {
+            const sentinel = document.getElementById('scrollSentinel');
+            if (sentinel?.dataset.hasMore === '1') {
+                isLoadingMore = true;
+                const nextPage = currentPage + 1;
+                const totalPages = Math.ceil(filteredInventory.length / PAGE_SIZE);
+                if (nextPage <= totalPages) {
+                    currentPage = nextPage;
+                    renderPage(filteredInventory, currentPage);
+                }
+                isLoadingMore = false;
+            }
+        }
+    }, { rootMargin: '200px' });
+    const sentinel = document.getElementById('scrollSentinel');
+    if (sentinel) observer.observe(sentinel);
+    window._infiniteObserver = observer;
+}
+
+function goToPage(page) {
+    const totalPages = Math.ceil(filteredInventory.length / PAGE_SIZE);
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    renderPage(filteredInventory, currentPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================
 // RENDERING
 // ============================================
 
@@ -614,84 +1076,177 @@ function getVehicleBadge(car) {
 function render(data = inventory) {
     const grid = document.getElementById('vehicleGrid');
     const emptyState = document.getElementById('emptyState');
-    
+
     grid.innerHTML = '';
-    
+
     if (data.length === 0) {
         grid.classList.add('hidden');
         emptyState.classList.remove('hidden');
         document.getElementById('resultsCount').innerText = '0';
         return;
     }
-    
+
     grid.classList.remove('hidden');
     emptyState.classList.add('hidden');
     document.getElementById('resultsCount').innerText = data.length;
 
-    data.forEach(car => {
+    filteredInventory = data;
+    currentPage = 1;
+    isLoadingMore = false;
+    renderPage(data, currentPage);
+
+    // Re-observe sentinel after render
+    requestAnimationFrame(() => {
+        if (window._infiniteObserver) {
+            const sentinel = document.getElementById('scrollSentinel');
+            if (sentinel) window._infiniteObserver.observe(sentinel);
+        } else {
+            setupInfiniteScroll();
+        }
+    });
+
+    updateFilterPillStates();
+    renderRecentlyViewed();
+}
+
+function renderCards(data) {
+    const grid = document.getElementById('vehicleGrid');
+    grid.innerHTML = '';
+    // Featured (boosted) listings always first
+    const sorted = [...data].sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+    sorted.forEach(car => {
         const isFavorited = wishlist.includes(car.id);
         const freight = calculateFreight(car);
         const availClass = getAvailabilityClass(car.availability);
-        const stars = '★'.repeat(Math.floor(car.rating || 4)) + (car.rating % 1 >= 0.5 ? '½' : '');
         const badge = getVehicleBadge(car);
+        const dealer = car.dealerRef ? getDealerById(car.dealerRef) : assignDealer(car.id);
+        const verifiedBadge = dealer?.verified ? '<span class="dealer-verified">✔ Verified</span>' : '';
+        const featuredBadge = car.featured ? '<span class="deal-badge badge-featured">🚀 Featured</span>' : '';
 
         grid.innerHTML += `
-            <div class="car-card">
-                <img src="${car.img || ''}" 
-                     onerror="this.onerror=null; this.src='https://placehold.co/400x250/131921/febd69?text=${encodeURIComponent(car.brand + ' ' + car.model)}'" 
-                     alt="${car.model}"
-                     onclick="showDetailModal(${car.id})">
+            <div class="car-card ${car.featured ? 'card-featured' : ''}">
+                <div class="img-wrap" onclick="showDetailModal(${car.id})" style="cursor:pointer">
+                    <img src="${sanitize(car.img || '')}" 
+                         loading="lazy"
+                         data-brand="${sanitize(car.brand)}" data-model="${sanitize(car.model)}"
+                         onerror="handleImageError(this)"
+                         alt="${sanitize(car.brand)} ${sanitize(car.model)}">
+                </div>
                 <span class="heart-icon ${isFavorited ? 'active' : ''}" 
                       onclick="toggleWishlist(${car.id})">♥</span>
-                ${badge}
-                <span class="condition-badge ${car.condition === 'New' ? 'badge-new' : car.condition === 'Used' ? 'badge-used' : 'badge-cpo'}">${car.condition}</span>
-                <h3 onclick="showDetailModal(${car.id})" style="cursor:pointer">${car.brand} ${car.model}</h3>
-                <div class="rating-display">⭐ ${car.rating || 'N/A'} <span class="year-badge">${car.year}</span></div>
-                <p class="specs-mini">${car.color} • ${car.fuel} • ${car.drivetrain} • ${car.bodyStyle}</p>
-                <p class="origin">${car.nation} 🌏</p>
+                ${featuredBadge}${badge}
+                <span class="condition-badge ${car.condition === 'New' ? 'badge-new' : car.condition === 'Used' ? 'badge-used' : 'badge-cpo'}">${sanitize(car.condition || 'New')}</span>
+                <h3 onclick="showDetailModal(${car.id})" style="cursor:pointer">${sanitize(car.brand)} ${sanitize(car.model)}</h3>
+                <div class="rating-display">⭐ ${sanitize(car.rating || 'N/A')} <span class="year-badge">${sanitize(car.year)}</span></div>
+                <p class="specs-mini">${sanitize(car.color)} • ${sanitize(car.fuel)} • ${sanitize(car.drivetrain)} • ${sanitize(car.bodyStyle)}</p>
+                <div class="dealer-info-card">
+                    <span class="dealer-city">📍 ${sanitize(dealer?.city || car.nation)}</span>
+                    <span class="dealer-name-small">${sanitize(dealer?.name || 'OmniDrive Partner')} ${verifiedBadge}</span>
+                </div>
                 <p class="price">${formatPrice(car.price)}</p>
                 <p class="shipping-fee">+ ${formatPrice(freight)} Shipping</p>
                 <div class="card-actions">
                     <button class="btn-view" onclick="showDetailModal(${car.id})">View Details</button>
                     <button class="btn-wish" onclick="toggleWishlist(${car.id})">${isFavorited ? '❤️' : '🤍'}</button>
-                    <button class="btn-share" onclick="shareVehicle('${car.brand} ${car.model}', ${car.price})">📤</button>
+                    <button class="btn-share" onclick="shareVehicle('${sanitize(car.brand)} ${sanitize(car.model)}', ${car.price})">📤</button>
                 </div>
-                <p class="${availClass}">${car.availability === 'Pre-Order' ? '📦 ' + car.availability : '✓ ' + car.availability}</p>
+                <p class="${availClass}">${car.availability === 'Pre-Order' ? '📦 ' + sanitize(car.availability) : '✓ ' + sanitize(car.availability)}</p>
                 <div class="car-card-buttons">
                     <button class="btn-primary" onclick="showDetailModal(${car.id})">View Details</button>
-                    <button class="btn-compare" onclick="toggleCompare(${car.id})">
-                        ${compareList.includes(car.id) ? '✓ Compare' : '+ Compare'}
-                    </button>
+                    <button class="btn-contact" onclick="directContactDealer(${car.id})">📞 Contact Dealer</button>
                 </div>
             </div>
         `;
     });
 }
 
-function renderRecentlyViewed() {
-    const container = document.getElementById('recentList');
-    container.innerHTML = '';
-    
-    if (recentlyViewed.length === 0) {
-        container.innerHTML = '<p style="opacity:0.5;font-size:0.85rem">No recently viewed</p>';
-        return;
-    }
-    
-    recentlyViewed.slice(0, 5).forEach(id => {
-        const car = inventory.find(c => c.id === id);
-        if (car) {
-            container.innerHTML += `
-                <div class="recent-item" onclick="showDetailModal(${car.id})">
-                    ${car.brand} ${car.model}
-                </div>
-            `;
-        }
+function appendCards(data) {
+    const grid = document.getElementById('vehicleGrid');
+    const tmp = document.createElement('div');
+    const sorted = [...data].sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+    sorted.forEach(car => {
+        const isFavorited = wishlist.includes(car.id);
+        const freight = calculateFreight(car);
+        const availClass = getAvailabilityClass(car.availability);
+        const badge = getVehicleBadge(car);
+        const dealer = car.dealerRef ? getDealerById(car.dealerRef) : assignDealer(car.id);
+        const verifiedBadge = dealer?.verified ? '<span class="dealer-verified">\u2714 Verified</span>' : '';
+        const featuredBadge = car.featured ? '<span class="deal-badge badge-featured">\uD83D\uDE80 Featured</span>' : '';
+        const el = document.createElement('div');
+        el.className = `car-card ${car.featured ? 'card-featured' : ''}`;
+        el.innerHTML = `
+            <div class="img-wrap" onclick="showDetailModal(${car.id})" style="cursor:pointer">
+                <img src="${sanitize(car.img || '')}" loading="lazy"
+                     data-brand="${sanitize(car.brand)}" data-model="${sanitize(car.model)}"
+                     onerror="handleImageError(this)" alt="${sanitize(car.brand)} ${sanitize(car.model)}">
+            </div>
+            <span class="heart-icon ${isFavorited ? 'active' : ''}" onclick="toggleWishlist(${car.id})">\u2665</span>
+            ${featuredBadge}${badge}
+            <span class="condition-badge ${car.condition === 'New' ? 'badge-new' : car.condition === 'Used' ? 'badge-used' : 'badge-cpo'}">${sanitize(car.condition || 'New')}</span>
+            <h3 onclick="showDetailModal(${car.id})" style="cursor:pointer">${sanitize(car.brand)} ${sanitize(car.model)}</h3>
+            <div class="rating-display">\u2B50 ${sanitize(String(car.rating || 'N/A'))} <span class="year-badge">${sanitize(String(car.year))}</span></div>
+            <p class="specs-mini">${sanitize(car.color)} \u2022 ${sanitize(car.fuel)} \u2022 ${sanitize(car.drivetrain)} \u2022 ${sanitize(car.bodyStyle)}</p>
+            <div class="dealer-info-card">
+                <span class="dealer-city">\uD83D\uDCCD ${sanitize(dealer?.city || car.nation)}</span>
+                <span class="dealer-name-small">${sanitize(dealer?.name || 'OmniDrive Partner')} ${verifiedBadge}</span>
+            </div>
+            <p class="price">${formatPrice(car.price)}</p>
+            <p class="shipping-fee">+ ${formatPrice(freight)} Shipping</p>
+            <div class="card-actions">
+                <button class="btn-view" onclick="showDetailModal(${car.id})">View Details</button>
+                <button class="btn-wish" onclick="toggleWishlist(${car.id})">${isFavorited ? '\u2764\uFE0F' : '\uD83E\uDD0D'}</button>
+                <button class="btn-share" onclick="shareVehicle('${sanitize(car.brand)} ${sanitize(car.model)}', ${car.price})">\uD83D\uDCE4</button>
+            </div>
+            <p class="${availClass}">${car.availability === 'Pre-Order' ? '\uD83D\uDCE6 ' + sanitize(car.availability) : '\u2713 ' + sanitize(car.availability)}</p>
+            <div class="car-card-buttons">
+                <button class="btn-primary" onclick="showDetailModal(${car.id})">View Details</button>
+                <button class="btn-contact" onclick="directContactDealer(${car.id})">\uD83D\uDCDE Contact Dealer</button>
+            </div>
+        `;
+        grid.appendChild(el);
     });
 }
+
 
 // ============================================
 // FILTERING & SEARCH
 // ============================================
+
+function renderRecentlyViewed() {
+    const container = document.getElementById('recentList');
+    if (!container) return;
+    container.innerHTML = '';
+    if (recentlyViewed.length === 0) return;
+    recentlyViewed.slice(0, 5).forEach(id => {
+        const car = inventory.find(c => c.id === id);
+        if (car) {
+            const el = document.createElement('div');
+            el.className = 'recent-item';
+            el.textContent = `${car.brand} ${car.model}`;
+            el.onclick = () => showDetailModal(car.id);
+            container.appendChild(el);
+        }
+    });
+}
+
+function updateFilterPillStates() {
+    const defaults = {
+        categoryFilter: 'all', conditionFilter: 'all', bodyStyleFilter: 'all',
+        fuelFilter: 'all', drivetrainFilter: 'all', nationFilter: 'all',
+        colorFilter: 'all', cityFilter: 'all'
+    };
+    Object.entries(defaults).forEach(([id, def]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.toggle('filter-pill-active', el.value !== def);
+    });
+    const minP = parseInt(document.getElementById('minPriceRange')?.value || 0);
+    const maxP = parseInt(document.getElementById('priceRange')?.value || 3000000);
+    const sortEl = document.getElementById('sortFilter');
+    if (sortEl) sortEl.classList.toggle('filter-pill-active', sortEl.value !== 'default');
+    const priceActive = minP > 0 || maxP < 3000000;
+    document.getElementById('advancedToggle')?.classList.toggle('filter-pill-active', priceActive || (sortEl?.value !== 'default'));
+}
 
 function applyFilters() {
     const query = document.getElementById('searchBar').value.toLowerCase();
@@ -702,12 +1257,16 @@ function applyFilters() {
     const fuel = document.getElementById('fuelFilter').value;
     const drivetrain = document.getElementById('drivetrainFilter').value;
     const color = document.getElementById('colorFilter').value;
+    const city = document.getElementById('cityFilter')?.value || 'all';
+    const minP = parseInt(document.getElementById('minPriceRange').value);
     const maxP = parseInt(document.getElementById('priceRange').value);
     const sort = document.getElementById('sortFilter').value;
-    
+
+    document.getElementById('minPriceDisplay').innerText = `$${minP.toLocaleString()}`;
     document.getElementById('priceDisplay').innerText = `$${maxP.toLocaleString()}`;
 
     let filtered = inventory.filter(car => {
+        const dealer = car.dealerRef ? getDealerById(car.dealerRef) : assignDealer(car.id);
         const matchesSearch = car.brand.toLowerCase().includes(query) || car.model.toLowerCase().includes(query);
         const matchesCategory = category === 'all' || car.category === category;
         const matchesCondition = condition === 'all' || car.condition === condition;
@@ -716,23 +1275,17 @@ function applyFilters() {
         const matchesFuel = fuel === 'all' || car.fuel === fuel;
         const matchesDrivetrain = drivetrain === 'all' || car.drivetrain === drivetrain;
         const matchesColor = color === 'all' || car.color === color;
-        const matchesPrice = car.price <= maxP;
-        return matchesSearch && matchesCategory && matchesCondition && matchesNation && 
-               matchesBodyStyle && matchesFuel && matchesDrivetrain && matchesColor && matchesPrice;
+        const matchesCity = city === 'all' || dealer?.city === city;
+        const matchesPrice = car.price >= minP && car.price <= maxP;
+        return matchesSearch && matchesCategory && matchesCondition && matchesNation &&
+               matchesBodyStyle && matchesFuel && matchesDrivetrain && matchesColor && matchesCity && matchesPrice;
     });
 
-    // Sort
-    if (sort === 'price-low') {
-        filtered.sort((a, b) => a.price - b.price);
-    } else if (sort === 'price-high') {
-        filtered.sort((a, b) => b.price - a.price);
-    } else if (sort === 'name-asc') {
-        filtered.sort((a, b) => a.brand.localeCompare(b.brand));
-    } else if (sort === 'name-desc') {
-        filtered.sort((a, b) => b.brand.localeCompare(a.brand));
-    } else if (sort === 'rating') {
-        filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-    }
+    if (sort === 'price-low') filtered.sort((a, b) => a.price - b.price);
+    else if (sort === 'price-high') filtered.sort((a, b) => b.price - a.price);
+    else if (sort === 'name-asc') filtered.sort((a, b) => a.brand.localeCompare(b.brand));
+    else if (sort === 'name-desc') filtered.sort((a, b) => b.brand.localeCompare(a.brand));
+    else if (sort === 'rating') filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
 
     render(filtered);
 }
@@ -746,8 +1299,11 @@ function clearFilters() {
     document.getElementById('fuelFilter').value = 'all';
     document.getElementById('drivetrainFilter').value = 'all';
     document.getElementById('colorFilter').value = 'all';
+    document.getElementById('minPriceRange').value = 0;
     document.getElementById('priceRange').value = 3000000;
     document.getElementById('sortFilter').value = 'default';
+    const cf = document.getElementById('cityFilter');
+    if (cf) cf.value = 'all';
     render();
 }
 
@@ -874,6 +1430,12 @@ function toggleWishlist(id) {
         wishlist.splice(index, 1);
     } else {
         wishlist.push(id);
+        // Track dealer wishlist stat
+        const car = inventory.find(c => c.id === id);
+        if (car) {
+            const dealer = car.dealerRef ? getDealerById(car.dealerRef) : assignDealer(car.id);
+            if (dealer) trackDealerStat(dealer.id, 'wishlists');
+        }
     }
     localStorage.setItem('dealership_wishlist', JSON.stringify(wishlist));
     updateWishCount();
@@ -927,6 +1489,9 @@ function showDetailModal(id) {
     recentlyViewed = recentlyViewed.slice(0, 10);
     localStorage.setItem('dealership_recent', JSON.stringify(recentlyViewed));
     renderRecentlyViewed();
+    // Track dealer view stat
+    const dealer = car.dealerRef ? getDealerById(car.dealerRef) : assignDealer(car.id);
+    if (dealer) trackDealerStat(dealer.id, 'views');
     
     const freight = calculateFreight(car);
     const total = car.price + freight;
@@ -1042,7 +1607,7 @@ function shareVehicle(name, price) {
         navigator.share({ title: name, text: text, url: url });
     } else {
         navigator.clipboard.writeText(`${text} ${url}`);
-        alert('Link copied to clipboard!');
+        showNotification('Link copied to clipboard!', 'success');
     }
 }
 
@@ -1066,19 +1631,24 @@ function getReviews(vehicleId) {
 // FEATURED DEALS
 // ============================================
 
-const featuredDeals = inventory.filter(car => car.availability === "In Stock" && car.price < 100000).slice(0, 6);
+// Deterministic savings per vehicle (seeded by id so it never changes)
+function getVehicleSavings(car) {
+    const pct = [0.08, 0.10, 0.12, 0.15, 0.18, 0.20];
+    return Math.floor(car.price * pct[car.id % pct.length]);
+}
 
 function renderFeatured() {
     const section = document.getElementById('featuredSection');
     if (!section) return;
+    const deals = inventory.filter(car => car.availability === 'In Stock' && car.price < 100000).slice(0, 6);
     let html = '<div class="featured-grid">';
-    featuredDeals.forEach(car => {
-        const savings = Math.floor(car.price * 0.15);
+    deals.forEach(car => {
+        const savings = getVehicleSavings(car);
         html += `
             <div class="featured-card" onclick="showDetailModal(${car.id})">
                 <span class="deal-badge">SAVE ${formatPrice(savings)}</span>
-                <img src="${car.img}" alt="${car.model}">
-                <h4>${car.brand} ${car.model}</h4>
+                <img src="${sanitize(car.img)}" alt="${sanitize(car.model)}" onerror="this.onerror=null;this.src='https://placehold.co/250x150/131921/febd69?text=${encodeURIComponent(car.brand)}'">
+                <h4>${sanitize(car.brand)} ${sanitize(car.model)}</h4>
                 <p class="deal-price">${formatPrice(car.price - savings)} <span class="was-price">${formatPrice(car.price)}</span></p>
             </div>
         `;
@@ -1092,9 +1662,22 @@ function renderFeatured() {
 // ============================================
 
 const vehicleVideos = {
-    5: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    9: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    36: "https://www.youtube.com/embed/dQw4w9WgXcQ"
+    // BMW M5
+    5:  'https://www.youtube.com/embed/9YcPCMxGaFo',
+    // Chevrolet Corvette Z06
+    9:  'https://www.youtube.com/embed/0nlkHqZHQ8Y',
+    // Porsche 911 Dakar
+    36: 'https://www.youtube.com/embed/3Z7TnHBaJxk',
+    // Ferrari SF90
+    12: 'https://www.youtube.com/embed/7Ry9GHdBpxU',
+    // Lamborghini Revuelto
+    22: 'https://www.youtube.com/embed/Yd3OBnpBqec',
+    // Tesla Roadster
+    41: 'https://www.youtube.com/embed/v4zy1a3-eQY',
+    // Ducati Panigale V4 R
+    51: 'https://www.youtube.com/embed/Yd3OBnpBqec',
+    // GMC Hummer EV
+    80: 'https://www.youtube.com/embed/9YcPCMxGaFo'
 };
 
 function showVideoGallery(carId) {
@@ -1103,7 +1686,7 @@ function showVideoGallery(carId) {
     const videoUrl = vehicleVideos[carId] || "https://www.youtube.com/embed/dQw4w9WgXcQ";
     content.innerHTML = `
         <div class="video-container">
-            <iframe src="${videoUrl}" frameborder="0" allowfullscreen></iframe>
+            <iframe src="${sanitize(videoUrl)}" frameborder="0" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>
         </div>
         <p class="video-note">🎥 Official vehicle walkaround and test drive footage</p>
     `;
@@ -1115,22 +1698,56 @@ function showVideoGallery(carId) {
 // ============================================
 
 let chatMessages = [];
+let chatOpen = false;
+
 function toggleChat() {
-    const chat = document.getElementById('chatWidget');
-    chat.classList.toggle('hidden');
+    chatOpen = !chatOpen;
+    document.getElementById('chatWidget').classList.toggle('hidden', chatOpen);
+    document.getElementById('chatBox').classList.toggle('hidden', !chatOpen);
+    if (chatOpen && chatMessages.length === 0) {
+        chatMessages.push({ from: 'bot', text: '👋 Hi! Welcome to OmniDrive. How can I help you today?' });
+        renderChat();
+    }
+}
+
+const botReplies = [
+    { keys: ['price','cost','how much','afford'], reply: '💰 Our vehicles range from $2,200 to $2.5M. Use the filters on the left to set your budget, or try our Financing Calculator in the navbar.' },
+    { keys: ['mpesa','pay','payment','buy','purchase'], reply: '📱 We accept MPesa, Visa/Mastercard, AMEX and Bank Transfer. Click "Buy with MPesa" on any vehicle to get started.' },
+    { keys: ['ship','deliver','import','freight'], reply: '🚢 We ship globally! Shipping costs depend on vehicle size and destination. Use the Import Calculator in the sidebar for an estimate.' },
+    { keys: ['test drive','testdrive','drive'], reply: '🚗 You can book a test drive through our Dealer Locator. Click any vehicle → View Details → Contact Dealer.' },
+    { keys: ['warranty','guarantee'], reply: '🛡️ All new vehicles come with manufacturer warranty (2–8 years depending on brand). Certified Pre-Owned vehicles include extended warranty.' },
+    { keys: ['electric','ev','battery','tesla','byd'], reply: '🔋 We stock a wide range of EVs including Tesla, BYD, Rivian, Lucid, Polestar and more. Filter by "Electric" fuel type to browse.' },
+    { keys: ['bike','motorcycle','ducati','yamaha'], reply: '🏍️ We have 40+ motorcycles from sport to touring to scooters. Select "Bikes" in the Category filter.' },
+    { keys: ['bus','coach','transport'], reply: '🚌 Our bus fleet includes city buses, coaches and double deckers from Mercedes, Volvo, BYD and more.' },
+    { keys: ['trade','sell','my car'], reply: '🔄 Use our Trade-In Calculator in the sidebar to estimate your vehicle\'s value, or click "Sell Your Vehicle" in the navbar.' },
+    { keys: ['insurance'], reply: '🛡️ Get an instant insurance quote using the Insurance Calculator in the sidebar.' },
+    { keys: ['hello','hi','hey','good'], reply: '😊 Hello! I\'m the OmniDrive assistant. Ask me about vehicles, payments, shipping, or anything else!' },
+    { keys: ['thank','thanks'], reply: '🙏 You\'re welcome! Is there anything else I can help you with?' },
+    { keys: ['contact','phone','email','support'], reply: '📞 Reach us at info@omnidrive.co.ke or +254 700 000 000. We\'re available Mon–Sat 8am–6pm EAT.' },
+    { keys: ['location','office','where','nairobi'], reply: '📍 OmniDrive is based in Nairobi, Kenya. We have dealer partners in 20+ cities globally. Use the Dealer Locator to find the nearest one.' },
+    { keys: ['compare'], reply: '⚖️ You can compare up to 3 vehicles side by side! Click "+ Compare" on any vehicle card, then hit the Compare button at the bottom.' },
+    { keys: ['customize','pimp','modify','upgrade'], reply: '🔧 Yes! Click "Customize" on any vehicle detail page to pimp your ride — wheels, paint, body kit, interior, engine upgrades and more.' },
+];
+
+function getBotReply(msg) {
+    const lower = msg.toLowerCase();
+    for (const { keys, reply } of botReplies) {
+        if (keys.some(k => lower.includes(k))) return reply;
+    }
+    return '🤖 Great question! For detailed assistance, email us at info@omnidrive.co.ke or call +254 700 000 000. Our team responds within 1 hour.';
 }
 
 function sendChat() {
     const input = document.getElementById('chatInput');
     const msg = input.value.trim();
     if (!msg) return;
-    chatMessages.push({ from: 'user', text: msg, time: new Date() });
+    chatMessages.push({ from: 'user', text: sanitize(msg) });
     renderChat();
     input.value = '';
     setTimeout(() => {
-        chatMessages.push({ from: 'bot', text: "Thanks for your message! A dealer will contact you shortly. For immediate assistance, call +1-800-GLOBALDRIVE", time: new Date() });
+        chatMessages.push({ from: 'bot', text: getBotReply(msg) });
         renderChat();
-    }, 1000);
+    }, 600);
 }
 
 function renderChat() {
@@ -1183,8 +1800,8 @@ function scheduleService() {
     const type = document.getElementById('serviceType').value;
     const date = document.getElementById('serviceDate').value;
     const dealer = document.getElementById('serviceDealer').value;
-    if (!date) return alert("Please select a date");
-    alert(`✅ Service scheduled!\n\nService: ${type}\nDate: ${date}\nDealer: ${dealer}\n\nConfirmation sent to your email.`);
+    if (!date) { showNotification('Please select a date', 'error'); return; }
+    showNotification(`✅ Service scheduled! ${type} on ${date} at ${dealer}`, 'success');
     closeModal('serviceModal');
 }
 
@@ -1224,7 +1841,7 @@ function showAccessories() {
 }
 
 function addToCart(id) {
-    alert("✅ Added to cart!");
+    showNotification('✅ Added to cart!', 'success');
 }
 
 // ============================================
@@ -1740,7 +2357,49 @@ function submitBrokerApplication() {
 }
 
 function showBrokerDashboard() {
-    showNotification('Broker dashboard coming soon!', 'info');
+    const modal = document.getElementById('brokerModal');
+    const content = document.getElementById('brokerContent');
+    const apps = JSON.parse(localStorage.getItem('dealership_brokers') || '[]');
+    const app = apps[apps.length - 1];
+    if (!app) {
+        showNotification('No broker account found. Please apply first.', 'warning');
+        return;
+    }
+    content.innerHTML = `
+        <div class="broker-form">
+            <div class="broker-hero">
+                <h3>📊 Broker Dashboard</h3>
+                <p>Welcome back, ${sanitize(app.name)}</p>
+            </div>
+            <div class="broker-benefits">
+                <div class="benefit-item">
+                    <span class="benefit-icon">💰</span>
+                    <div><strong>$0</strong><small>Total Earnings</small></div>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">👥</span>
+                    <div><strong>0</strong><small>Referrals</small></div>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">⏳</span>
+                    <div><strong>${sanitize(app.status)}</strong><small>Account Status</small></div>
+                </div>
+            </div>
+            <div class="broker-form-section">
+                <h4>Your Referral Link</h4>
+                <div style="background:var(--bg);padding:12px;border-radius:6px;font-family:monospace;word-break:break-all">
+                    https://omnidrive.co.ke?ref=${sanitize(app.id)}
+                </div>
+                <button onclick="navigator.clipboard.writeText('https://omnidrive.co.ke?ref=${sanitize(app.id)}');showNotification('Link copied!','success')" 
+                    class="calc-btn" style="margin-top:10px">📋 Copy Link</button>
+            </div>
+            <div class="broker-form-section">
+                <h4>Recent Activity</h4>
+                <p style="opacity:0.6;font-size:0.9rem">No activity yet. Share your link to start earning!</p>
+            </div>
+        </div>
+    `;
+    modal.classList.remove('hidden');
 }
 
 // ============================================
@@ -1859,9 +2518,21 @@ function showListVehicleModal() {
                         <input type="tel" id="sellerPhone" placeholder="+2547XXXXXXXX">
                     </div>
                 </div>
-                <div class="filter-group">
-                    <label>Email</label>
-                    <input type="email" id="sellerEmail" placeholder="your@email.com">
+                <div class="form-row">
+                    <div class="filter-group">
+                        <label>Email</label>
+                        <input type="email" id="sellerEmail" placeholder="your@email.com">
+                    </div>
+                    <div class="filter-group">
+                        <label>City *</label>
+                        <select id="sellerCity">
+                            <option value="Nairobi">Nairobi</option>
+                            <option value="Mombasa">Mombasa</option>
+                            <option value="Kisumu">Kisumu</option>
+                            <option value="Nakuru">Nakuru</option>
+                            <option value="Eldoret">Eldoret</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             
@@ -1890,105 +2561,115 @@ function submitVehicleListing() {
     const sellerName = document.getElementById('sellerName').value;
     const sellerPhone = document.getElementById('sellerPhone').value;
     const sellerEmail = document.getElementById('sellerEmail').value;
-    
+    const sellerCity = document.getElementById('sellerCity')?.value || 'Nairobi';
+
     if (!brand || !model || !year || !price || !sellerName || !sellerPhone) {
         showNotification('Please fill all required fields', 'error');
         return;
     }
-    
-    const newId = inventory.length > 0 ? Math.max(...inventory.map(v => v.id)) + 1 : 1;
+
     const listing = {
-        id: newId,
-        brand,
-        model,
+        id: 'PND' + Date.now(),
+        brand, model,
         price: parseInt(price),
         year: parseInt(year),
-        category,
-        condition,
+        category, condition,
         mileage: parseInt(mileage) || 0,
-        fuel,
-        bodyStyle: 'Sedan',
-        color: 'White',
+        fuel, bodyStyle: 'Sedan', color: 'White',
         nation: 'Kenya',
+        city: sellerCity,
         description,
         img: image || getCarImage(brand, model),
-        seller: { name: sellerName, phone: sellerPhone, email: sellerEmail },
+        seller: { name: sellerName, phone: sellerPhone, email: sellerEmail, city: sellerCity },
         status: 'pending',
         date: new Date().toISOString()
     };
-    
-    sellerListings.push(listing);
-    localStorage.setItem('dealership_seller_listings', JSON.stringify(sellerListings));
-    
-    showNotification('Vehicle listed! We will review and publish within 24 hours.', 'success');
+
+    pendingListings.push(listing);
+    localStorage.setItem('dealership_pending', JSON.stringify(pendingListings));
+    showNotification('\uD83D\uDCEC Listing submitted! Our team will review and publish within 24 hours.', 'success');
     closeModal('listVehicleModal');
 }
 
-function initiateMpesaPayment() {
-    const phone = document.getElementById('mpesaPhone').value.replace(/\D/g, '');
+async function initiateMpesaPayment() {
+    let phone = document.getElementById('mpesaPhone').value.replace(/\D/g, '');
     const result = document.getElementById('mpesaResult');
-    
+
     if (!phone || phone.length < 9) {
         showNotification('Please enter a valid phone number', 'error');
         return;
     }
-    
-    if (phone.startsWith('0')) {
-        phone = '254' + phone.substring(1);
-    } else if (phone.startsWith('+')) {
-        phone = phone.substring(1);
-    }
-    
-    result.innerHTML = '<div class="loading">Processing payment...</div>';
-    
-    // Simulate MPesa API call
-    setTimeout(() => {
-        // In production, this would call the MPesa Daraja API
-        const transactionId = 'MP' + Date.now();
-        
-        result.innerHTML = `
-            <div class="success-message">
-                <h4>✅ Payment Initiated!</h4>
-                <p>Transaction ID: ${transactionId}</p>
-                <p>STK Push sent to your phone</p>
-                <p>Enter PIN to confirm</p>
-                <div class="pin-prompt">
-                    <label>Enter MPesa PIN:</label>
-                    <input type="password" id="mpesaPin" maxlength="4" placeholder="****">
-                    <button onclick="confirmMpesaPayment('${transactionId}')">Confirm</button>
-                </div>
-            </div>
-        `;
-    }, 1500);
-}
 
-function confirmMpesaPayment(transactionId) {
-    const pin = document.getElementById('mpesaPin').value;
-    
-    if (!pin || pin.length !== 4) {
-        showNotification('Please enter your 4-digit PIN', 'error');
-        return;
-    }
-    
-    // Simulate payment confirmation
-    const result = document.getElementById('mpesaResult');
-    result.innerHTML = '<div class="loading">Confirming payment...</div>';
-    
-    setTimeout(() => {
-        const confirmedId = 'TXN' + Math.random().toString(36).substr(2, 9).toUpperCase();
-        
+    if (phone.startsWith('0')) phone = '254' + phone.substring(1);
+    else if (phone.startsWith('+')) phone = phone.substring(1);
+
+    result.innerHTML = '<div class="loading">Sending STK Push to your phone...</div>';
+
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/mpesa/purchase`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                phone,
+                amount: cartTotal,
+                vehicleName: selectedVehicle ? `${selectedVehicle.brand} ${selectedVehicle.model}` : 'Vehicle',
+                vehicleId: selectedVehicle?.id
+            })
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'STK Push failed');
+
+        const checkoutId = data.checkoutRequestId;
+
         result.innerHTML = `
             <div class="success-message">
-                <h4>🎉 Payment Successful!</h4>
-                <p>Confirmed: ${confirmedId}</p>
-                <p>Amount: ${formatPrice(cartTotal)}</p>
-                <p>You'll receive an SMS confirmation</p>
-                <button onclick="closeModal('mpesaModal')" class="calc-btn">Done</button>
+                <h4>&#128241; Check Your Phone!</h4>
+                <p>An MPesa prompt has been sent to <strong>+${sanitize(phone)}</strong></p>
+                <p>Enter your MPesa PIN <strong>on your phone</strong> to complete the payment.</p>
+                <p style="font-size:0.85rem;opacity:0.6;margin-top:10px">Request ID: ${sanitize(checkoutId)}</p>
+                <div class="mpesa-waiting" id="mpesaWaiting">
+                    <div class="spinner" style="width:30px;height:30px;margin:15px auto"></div>
+                    <p style="font-size:0.9rem">Waiting for confirmation...</p>
+                </div>
+                <button onclick="closeModal('mpesaModal')" class="calc-btn" style="margin-top:15px">Close</button>
             </div>
         `;
-        
-        showNotification(`Payment successful! Vehicle: ${selectedVehicle.brand} ${selectedVehicle.model}`, 'success');
-    }, 2000);
+
+        let attempts = 0;
+        const poll = setInterval(async () => {
+            attempts++;
+            if (attempts > 20) {
+                clearInterval(poll);
+                const w = document.getElementById('mpesaWaiting');
+                if (w) w.innerHTML = '<p style="color:var(--danger)">Payment timed out. Please try again.</p>';
+                return;
+            }
+            try {
+                const statusRes = await fetch(`${BACKEND_URL}/api/mpesa/status/${checkoutId}`);
+                const statusData = await statusRes.json();
+                if (statusData.status === 'paid') {
+                    clearInterval(poll);
+                    const w = document.getElementById('mpesaWaiting');
+                    if (!w) return;
+                    w.innerHTML = `
+                        <p style="color:var(--success);font-weight:bold;font-size:1.1rem">&#10003; Payment Confirmed!</p>
+                        <p>Receipt: <strong>${sanitize(statusData.receipt || '')}</strong></p>
+                        <p>Amount: ${formatPrice(cartTotal)}</p>
+                        <p style="font-size:0.85rem;opacity:0.6">You will receive an SMS from MPesa shortly.</p>
+                    `;
+                    showNotification(`Payment confirmed! ${selectedVehicle?.brand} ${selectedVehicle?.model}`, 'success');
+                } else if (statusData.status === 'failed') {
+                    clearInterval(poll);
+                    const w = document.getElementById('mpesaWaiting');
+                    if (w) w.innerHTML = '<p style="color:var(--danger)">Payment cancelled or failed. Please try again.</p>';
+                }
+            } catch (_) {}
+        }, 3000);
+
+    } catch (err) {
+        result.innerHTML = `<p style="color:var(--danger)">Error: ${sanitize(err.message)}. Make sure the backend is running.</p>`;
+    }
 }
 
 // ============================================
@@ -2005,19 +2686,61 @@ function showAuthModal() {
     currentUser = savedUser ? JSON.parse(savedUser) : null;
     
     if (currentUser) {
+        const avatar = currentUser.avatar || '👤';
+        const isEmoji = !avatar.startsWith('data:') && !avatar.startsWith('http');
+        const avatarHtml = isEmoji
+            ? `<span style="font-size:2.8rem;line-height:1">${avatar}</span>`
+            : `<img src="${avatar}" alt="avatar">`;
+        const EMOJIS = ['👤','😎','🥷','👨‍💻','👩‍💻','🧑‍🚀','👨‍🚒','🤵','👸','🦸','👼','🦄','🐼','🦊','🐯','🦁'];
         content.innerHTML = `
             <div class="user-profile">
-                <div class="user-avatar">👤</div>
-                <h3>Welcome back!</h3>
-                <div class="user-info">
-                    <p><label>Name:</label> ${currentUser.name}</p>
-                    <p><label>Email:</label> ${currentUser.email}</p>
-                    <p><label>Orders:</label> ${currentUser.orders || 0}</p>
-                    <p><label>Member since:</label> ${currentUser.since || 'Today'}</p>
+                <div class="avatar-ring" onclick="document.getElementById('avatarUpload').click()" title="Change avatar">
+                    ${avatarHtml}
+                    <div class="avatar-edit-overlay">✏️</div>
                 </div>
-                <button onclick="showOrderTracking()" class="calc-btn">📦 View My Orders</button>
-                <button onclick="showReferralProgram()" class="calc-btn" style="margin-top:10px">🎁 Referral Program</button>
-                <button onclick="logout()" class="clear-btn" style="margin-top:20px">Logout</button>
+                <input type="file" id="avatarUpload" accept="image/*" class="hidden" onchange="previewAvatar(event)">
+                <div class="avatar-emoji-picker">
+                    ${EMOJIS.map(e => `<span onclick="setEmojiAvatar('${e}')" title="Use this avatar">${e}</span>`).join('')}
+                </div>
+                <h3>Welcome back, ${sanitize(currentUser.name)}!</h3>
+                <div class="user-info" id="profileInfo">
+                    <p><label>Name</label> <span>${sanitize(currentUser.name)}</span></p>
+                    <p><label>Email</label> <span>${sanitize(currentUser.email)}</span></p>
+                    <p><label>Phone</label> <span>${sanitize(currentUser.phone || 'Not set')}</span></p>
+                    <p><label>Address</label> <span>${sanitize(currentUser.address || 'Not set')}</span></p>
+                    <p><label>Orders</label> <span>${currentUser.orders || 0}</span></p>
+                    <p><label>Member since</label> <span>${sanitize(currentUser.since || 'Today')}</span></p>
+                </div>
+                <div id="editProfileForm" class="hidden">
+                    <div class="filter-group">
+                        <label>Full Name</label>
+                        <input type="text" id="editName" value="${sanitize(currentUser.name)}">
+                    </div>
+                    <div class="filter-group">
+                        <label>Email</label>
+                        <input type="email" id="editEmail" value="${sanitize(currentUser.email)}">
+                    </div>
+                    <div class="filter-group">
+                        <label>Phone</label>
+                        <input type="tel" id="editPhone" value="${sanitize(currentUser.phone || '')}" placeholder="+2547XXXXXXXX">
+                    </div>
+                    <div class="filter-group">
+                        <label>Address</label>
+                        <input type="text" id="editAddress" value="${sanitize(currentUser.address || '')}" placeholder="City, Country">
+                    </div>
+                    <div class="filter-group">
+                        <label>New Password <small style="opacity:.6">(leave blank to keep current)</small></label>
+                        <input type="password" id="editPassword" placeholder="••••••••">
+                    </div>
+                    <button onclick="saveProfile()" class="calc-btn">💾 Save Changes</button>
+                    <button onclick="cancelEditProfile()" class="clear-btn" style="margin-top:10px">Cancel</button>
+                </div>
+                <div id="profileButtons">
+                    <button onclick="enableEditProfile()" class="btn-primary" style="width:100%;margin-bottom:10px">✏️ Edit Profile</button>
+                    <button onclick="showOrderTracking()" class="calc-btn">📦 My Orders</button>
+                    <button onclick="showReferralProgram()" class="calc-btn" style="margin-top:10px">🎁 Referral Program</button>
+                    <button onclick="logout()" class="clear-btn" style="margin-top:20px">Logout</button>
+                </div>
             </div>
         `;
     } else {
@@ -2064,9 +2787,61 @@ function showAuthModal() {
     modal.classList.remove('hidden');
 }
 
+function previewAvatar(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        currentUser.avatar = e.target.result;
+        localStorage.setItem('dealership_user', JSON.stringify(currentUser));
+        showAuthModal();
+    };
+    reader.readAsDataURL(file);
+}
+
+function setEmojiAvatar(emoji) {
+    currentUser.avatar = emoji;
+    localStorage.setItem('dealership_user', JSON.stringify(currentUser));
+    showAuthModal();
+}
+
+function enableEditProfile() {
+    document.getElementById('profileInfo').classList.add('hidden');
+    document.getElementById('profileButtons').classList.add('hidden');
+    document.getElementById('editProfileForm').classList.remove('hidden');
+}
+
+function saveProfile() {
+    const name = document.getElementById('editName').value;
+    const email = document.getElementById('editEmail').value;
+    const phone = document.getElementById('editPhone').value;
+    const address = document.getElementById('editAddress').value;
+    const password = document.getElementById('editPassword').value;
+
+    if (!name || !email) {
+        showNotification('Name and email are required', 'error');
+        return;
+    }
+
+    currentUser = { 
+        ...currentUser, name, email, phone, address,
+        ...(password ? { password: btoa(password) } : {})
+    };
+    localStorage.setItem('dealership_user', JSON.stringify(currentUser));
+    showNotification('Profile updated successfully!', 'success');
+    showAuthModal();
+}
+
+function cancelEditProfile() {
+    document.getElementById('profileInfo').classList.remove('hidden');
+    document.getElementById('profileButtons').classList.remove('hidden');
+    document.getElementById('editProfileForm').classList.add('hidden');
+}
+
 function switchAuthTab(tab) {
     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
+    const activeBtn = document.querySelector(`.auth-tab[onclick*="'${tab}'"]`);
+    if (activeBtn) activeBtn.classList.add('active');
     document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
     document.getElementById('registerForm').classList.toggle('hidden', tab !== 'register');
 }
@@ -2453,21 +3228,73 @@ function getDirections(lat, lng) {
 }
 
 function scheduleTestDrive(dealerName, vehicleName) {
-    const date = prompt(`Select date for test drive:\nVehicle: ${vehicleName}\nDealer: ${dealerName}\n\nEnter date (YYYY-MM-DD):`);
-    if (date) {
-        const subject = encodeURIComponent(`Schedule Test Drive: ${vehicleName}`);
-        const body = encodeURIComponent(`I'd like to schedule a test drive for ${vehicleName}.\n\nPreferred Date: ${date}\nDealer: ${dealerName}`);
-        window.open(`mailto:testdrive@globaldrive.com?subject=${subject}&body=${body}`, '_blank');
-    }
+    const modal = document.getElementById('serviceModal');
+    const content = document.getElementById('serviceContent');
+    content.innerHTML = `
+        <h3>📅 Schedule Test Drive</h3>
+        <p><strong>Vehicle:</strong> ${sanitize(vehicleName)}</p>
+        <p><strong>Dealer:</strong> ${sanitize(dealerName)}</p>
+        <div class="filter-group">
+            <label>Preferred Date</label>
+            <input type="date" id="testDriveDate">
+        </div>
+        <div class="filter-group">
+            <label>Your Phone</label>
+            <input type="tel" id="testDrivePhone" placeholder="+2547XXXXXXXX">
+        </div>
+        <button onclick="confirmTestDrive('${sanitize(dealerName)}','${sanitize(vehicleName)}')" class="calc-btn">Confirm Booking</button>
+    `;
+    modal.classList.remove('hidden');
+}
+
+function confirmTestDrive(dealerName, vehicleName) {
+    const date = document.getElementById('testDriveDate').value;
+    const phone = document.getElementById('testDrivePhone').value;
+    if (!date || !phone) { showNotification('Please fill all fields', 'error'); return; }
+    showNotification(`✅ Test drive booked for ${vehicleName} on ${date} at ${dealerName}`, 'success');
+    closeModal('serviceModal');
 }
 
 function closeDealerModal() {
     document.getElementById('dealerModal').classList.add('hidden');
 }
 
-function contactDealer(vehicleName) {
-    showDealerLocator(vehicleName);
+function directContactDealer(carId) {
+    const car = inventory.find(c => c.id === carId);
+    if (!car) return;
+    const dealer = car.dealerRef ? getDealerById(car.dealerRef) : assignDealer(car.id);
+    if (!dealer) return;
+    trackDealerStat(dealer.id, 'inquiries');
+    const subject = encodeURIComponent(`Inquiry via OmniDrive: ${car.brand} ${car.model}`);
+    const emailBody = encodeURIComponent(`Hi ${dealer.name},\n\nI found your ${car.brand} ${car.model} (${car.year}) listed on OmniDrive for ${formatPrice(car.price)}.\n\nI would like to visit your showroom in ${dealer.city} to see it.\n\nPlease confirm availability.\n\nThank you.`);
+    const waText = encodeURIComponent(`Hi ${dealer.name}, I found your *${car.brand} ${car.model} (${car.year})* listed on OmniDrive for ${formatPrice(car.price)}. I'd like to visit your showroom in ${dealer.city}. Is it still available?`);
+    const waPhone = dealer.phone.replace(/[^0-9]/g, '');
+    const modal = document.getElementById('serviceModal');
+    const content = document.getElementById('serviceContent');
+    content.innerHTML = `
+        <h3>\uD83D\uDCDE Contact Dealer</h3>
+        <div class="dealer-card" style="margin:15px 0">
+            <div class="dealer-header">
+                <h4>${sanitize(dealer.name)} ${dealer.verified ? '<span class="dealer-verified">\u2714 Verified</span>' : ''}</h4>
+            </div>
+            <p class="dealer-address">\uD83D\uDCCD ${sanitize(dealer.city)}, Kenya</p>
+            <p class="dealer-distance">\u2B50 ${dealer.rating}/5 &middot; Partner since ${dealer.since}</p>
+            <p style="margin:8px 0"><strong>Vehicle:</strong> ${sanitize(car.brand)} ${sanitize(car.model)} &mdash; ${formatPrice(car.price)}</p>
+            <div class="dealer-contact" style="margin-top:15px">
+                <a href="https://wa.me/${waPhone}?text=${waText}" target="_blank" class="contact-btn" style="background:#25D366;color:white;font-weight:700">\uD83D\uDCAC WhatsApp</a>
+                <a href="tel:${sanitize(dealer.phone)}" class="contact-btn">\uD83D\uDCDE Call</a>
+                <a href="mailto:${sanitize(dealer.email)}?subject=${subject}&body=${emailBody}" class="contact-btn">\u2709\uFE0F Email</a>
+            </div>
+            <div class="dealer-actions" style="margin-top:10px">
+                <button onclick="window.open('https://www.google.com/maps/search/${encodeURIComponent(dealer.name + ' ' + dealer.city)}','_blank')" class="directions-btn">\uD83E\uDDED Get Directions</button>
+                <button onclick="scheduleTestDrive('${sanitize(dealer.name)}','${sanitize(car.brand + ' ' + car.model)}')" class="test-drive-btn">\uD83D\uDCC5 Test Drive</button>
+            </div>
+        </div>
+    `;
+    modal.classList.remove('hidden');
 }
+
+
 
 // ============================================
 // FINANCING CALCULATOR
@@ -2714,7 +3541,7 @@ function calculateFinance() {
     const rate = parseFloat(document.getElementById('financeRate').value) || 5.9;
     
     if (price <= 0) {
-        alert("Please enter a vehicle price");
+        showNotification('Please enter a vehicle price', 'error');
         return;
     }
     
@@ -2758,7 +3585,8 @@ function addNewVehicle() {
     const transmission = document.getElementById('newTransmission').value;
 
     if (!brand || !model || !price) {
-        return alert("Please fill in required fields (Brand, Model, Price)");
+        showNotification('Please fill in Brand, Model and Price', 'error');
+        return;
     }
 
     const newCar = {
@@ -2789,70 +3617,200 @@ function addNewVehicle() {
     document.getElementById('newHorsepower').value = '';
     document.getElementById('newTransmission').value = '';
     
-    alert("Vehicle added successfully!");
+    showNotification('Vehicle added successfully!', 'success');
 }
 
 function deleteVehicle(id) {
-    if (!confirm("Are you sure you want to delete this vehicle?")) return;
-    
-    inventory = inventory.filter(car => car.id !== id);
-    localStorage.setItem('dealership_db', JSON.stringify(inventory));
-    render();
-    renderAdminInventory();
+    const car = inventory.find(c => c.id === id);
+    if (!car) return;
+    showConfirm(`Delete ${car.brand} ${car.model}?`, () => {
+        inventory = inventory.filter(c => c.id !== id);
+        localStorage.setItem('dealership_db', JSON.stringify(inventory));
+        render();
+        renderAdminInventory();
+        showNotification('Vehicle deleted.', 'success');
+    });
 }
 
 function editVehicle(id) {
     const car = inventory.find(c => c.id === id);
     if (!car) return;
-    
-    const newPrice = prompt("Enter new price for " + car.brand + " " + car.model + ":", car.price);
-    if (newPrice === null) return;
-    
-    car.price = Number(newPrice);
+    const modal = document.getElementById('adminModal');
+    const addTab = document.getElementById('adminAddTab');
+    addTab.innerHTML = `
+        <div class="admin-form">
+            <h4 style="margin-bottom:15px">✏️ Edit: ${sanitize(car.brand)} ${sanitize(car.model)}</h4>
+            <input type="text" id="newBrand" value="${sanitize(car.brand)}" placeholder="Brand">
+            <input type="text" id="newModel" value="${sanitize(car.model)}" placeholder="Model">
+            <input type="number" id="newPrice" value="${car.price}" placeholder="Price in USD">
+            <select id="newNation">
+                ${['Japan','Germany','USA','Italy','UK','Sweden','India','China','South Korea','France','Croatia'].map(n =>
+                    `<option value="${n}" ${car.nation === n ? 'selected' : ''}>${n}</option>`
+                ).join('')}
+            </select>
+            <select id="newCategory">
+                ${['Car','Bike','Bus'].map(c2 =>
+                    `<option value="${c2}" ${car.category === c2 ? 'selected' : ''}>${c2}</option>`
+                ).join('')}
+            </select>
+            <input type="text" id="newImage" value="${sanitize(car.img || '')}" placeholder="Image URL (optional)">
+            <div class="specs-inputs">
+                <input type="text" id="newEngine" value="${sanitize(car.engine || '')}" placeholder="Engine">
+                <input type="number" id="newHorsepower" value="${car.horsepower || ''}" placeholder="Horsepower">
+                <input type="text" id="newTransmission" value="${sanitize(car.transmission || '')}" placeholder="Transmission">
+            </div>
+            <div style="display:flex;gap:10px;margin-top:10px">
+                <button onclick="saveEditVehicle(${id})" class="btn-primary" style="flex:1">💾 Save Changes</button>
+                <button onclick="showAdminTab('add')" class="close-btn" style="flex:1">Cancel</button>
+            </div>
+        </div>
+    `;
+    showAdminTab('add');
+}
+
+function saveEditVehicle(id) {
+    const car = inventory.find(c => c.id === id);
+    if (!car) return;
+    car.brand        = document.getElementById('newBrand').value || car.brand;
+    car.model        = document.getElementById('newModel').value || car.model;
+    car.price        = Number(document.getElementById('newPrice').value) || car.price;
+    car.nation       = document.getElementById('newNation').value;
+    car.category     = document.getElementById('newCategory').value;
+    car.img          = document.getElementById('newImage').value || getCarImage(car.brand, car.model);
+    car.engine       = document.getElementById('newEngine').value || car.engine;
+    car.horsepower   = Number(document.getElementById('newHorsepower').value) || car.horsepower;
+    car.transmission = document.getElementById('newTransmission').value || car.transmission;
     localStorage.setItem('dealership_db', JSON.stringify(inventory));
     render();
-    renderAdminInventory();
+    showAdminTab('list');
+    showNotification(`${car.brand} ${car.model} updated!`, 'success');
 }
 
 function showAdminTab(tab) {
     const addTab = document.getElementById('adminAddTab');
     const listTab = document.getElementById('adminListTab');
+    const pendingTab = document.getElementById('adminPendingTab');
+    const statsTab = document.getElementById('adminStatsTab');
     const buttons = document.querySelectorAll('.tab-btn');
-    
     buttons.forEach(btn => btn.classList.remove('active'));
-    
+    [addTab, listTab, pendingTab, statsTab].forEach(t => t && t.classList.add('hidden'));
+
     if (tab === 'add') {
         addTab.classList.remove('hidden');
-        listTab.classList.add('hidden');
-        buttons[0].classList.add('active');
-    } else {
-        addTab.classList.add('hidden');
+        buttons[0]?.classList.add('active');
+    } else if (tab === 'list') {
         listTab.classList.remove('hidden');
-        buttons[1].classList.add('active');
+        buttons[1]?.classList.add('active');
         renderAdminInventory();
+    } else if (tab === 'pending') {
+        pendingTab.classList.remove('hidden');
+        buttons[2]?.classList.add('active');
+        renderPendingListings();
+    } else if (tab === 'stats') {
+        statsTab.classList.remove('hidden');
+        buttons[3]?.classList.add('active');
+        renderDealerStats();
     }
 }
 
 function renderAdminInventory() {
     const list = document.getElementById('adminInventoryList');
-    let html = '';
-    
-    inventory.forEach(car => {
-        html += `
-            <div class="inventory-item">
-                <div class="info">
-                    <strong>${car.brand} ${car.model}</strong><br>
-                    <small>${car.nation} | ${car.category} | ${formatPrice(car.price)}</small>
-                </div>
-                <div class="actions">
-                    <button class="btn-edit" onclick="editVehicle(${car.id})">Edit</button>
-                    <button class="btn-delete" onclick="deleteVehicle(${car.id})">Delete</button>
-                </div>
+    list.innerHTML = inventory.map(car => `
+        <div class="inventory-item">
+            <div class="info">
+                <strong>${sanitize(car.brand)} ${sanitize(car.model)}</strong><br>
+                <small>${sanitize(car.nation)} | ${car.category} | ${formatPrice(car.price)}
+                ${car.featured ? ' | <span style="color:var(--warning)">\uD83D\uDE80 Featured</span>' : ''}</small>
             </div>
-        `;
-    });
-    
-    list.innerHTML = html;
+            <div class="actions">
+                <button class="btn-edit" onclick="toggleFeatured(${car.id})">${car.featured ? '\u2B50 Unfeature' : '\uD83D\uDE80 Feature'}</button>
+                <button class="btn-edit" onclick="editVehicle(${car.id})">Edit</button>
+                <button class="btn-delete" onclick="deleteVehicle(${car.id})">Delete</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function toggleFeatured(id) {
+    const car = inventory.find(c => c.id === id);
+    if (!car) return;
+    car.featured = !car.featured;
+    localStorage.setItem('dealership_db', JSON.stringify(inventory));
+    renderAdminInventory();
+    render();
+    showNotification(`${car.brand} ${car.model} ${car.featured ? 'is now Featured \uD83D\uDE80' : 'removed from Featured'}`, 'success');
+}
+
+function renderPendingListings() {
+    const tab = document.getElementById('adminPendingTab');
+    if (!pendingListings.length) {
+        tab.innerHTML = '<p style="opacity:0.6;padding:20px">No pending listings.</p>';
+        return;
+    }
+    tab.innerHTML = pendingListings.map(l => `
+        <div class="inventory-item">
+            <div class="info">
+                <strong>${sanitize(l.brand)} ${sanitize(l.model)} (${l.year})</strong><br>
+                <small>${sanitize(l.city)} | ${l.category} | ${formatPrice(l.price)}</small><br>
+                <small>Seller: ${sanitize(l.seller?.name)} · ${sanitize(l.seller?.phone)}</small>
+            </div>
+            <div class="actions">
+                <button class="btn-edit" onclick="approveListing('${l.id}')">\u2714 Approve</button>
+                <button class="btn-delete" onclick="rejectListing('${l.id}')">\u2716 Reject</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function approveListing(id) {
+    const idx = pendingListings.findIndex(l => l.id === id);
+    if (idx === -1) return;
+    const listing = pendingListings[idx];
+    const newId = Math.max(...inventory.map(v => v.id)) + 1;
+    const dealer = dealerRegistry.find(d => d.city === listing.city) || dealerRegistry[0];
+    inventory.push({ ...listing, id: newId, dealerRef: dealer.id, status: 'approved', rating: 4.0, availability: 'In Stock', drivetrain: 'FWD', color: listing.color || 'White', bodyStyle: listing.bodyStyle || 'Sedan' });
+    pendingListings.splice(idx, 1);
+    localStorage.setItem('dealership_pending', JSON.stringify(pendingListings));
+    localStorage.setItem('dealership_db', JSON.stringify(inventory));
+    render();
+    renderPendingListings();
+    showNotification(`\u2714 ${listing.brand} ${listing.model} approved and live!`, 'success');
+}
+
+function rejectListing(id) {
+    pendingListings = pendingListings.filter(l => l.id !== id);
+    localStorage.setItem('dealership_pending', JSON.stringify(pendingListings));
+    renderPendingListings();
+    showNotification('Listing rejected.', 'warning');
+}
+
+function renderDealerStats() {
+    const tab = document.getElementById('adminStatsTab');
+    tab.innerHTML = `
+        <h4 style="margin-bottom:15px">\uD83D\uDCCA Dealer Performance</h4>
+        <div style="overflow-x:auto">
+        <table class="compare-table">
+            <thead><tr>
+                <th>Dealer</th><th>City</th><th>Verified</th>
+                <th>Views</th><th>Wishlists</th><th>Inquiries</th><th>Rating</th>
+            </tr></thead>
+            <tbody>
+                ${dealerRegistry.map(d => {
+                    const s = getDealerStats(d.id);
+                    return `<tr>
+                        <td><strong>${sanitize(d.name)}</strong></td>
+                        <td>${sanitize(d.city)}</td>
+                        <td>${d.verified ? '\u2714 Yes' : '\u2014'}</td>
+                        <td>${s.views}</td>
+                        <td>${s.wishlists}</td>
+                        <td>${s.inquiries}</td>
+                        <td>\u2B50 ${d.rating}</td>
+                    </tr>`;
+                }).join('')}
+            </tbody>
+        </table>
+        </div>
+    `;
 }
 
 function checkAdminAccess() {
@@ -2860,15 +3818,14 @@ function checkAdminAccess() {
         showAdminModal();
         return;
     }
-
-    const entry = prompt("Enter Administrator Password:");
-    
-    if (entry === ADMIN_PASS) {
-        sessionStorage.setItem('isAdmin', 'true');
-        showAdminModal();
-    } else {
-        alert("Access Denied: Incorrect Password.");
-    }
+    showPrompt('Enter Administrator Password:', '', (entry) => {
+        if (verifyAdmin(entry)) {
+            sessionStorage.setItem('isAdmin', 'true');
+            showAdminModal();
+        } else {
+            showNotification('Access Denied: Incorrect Password.', 'error');
+        }
+    }, true);
 }
 
 function showAdminModal() {
@@ -2893,6 +3850,90 @@ function exportInventory() {
     link.download = 'inventory-' + new Date().toISOString().split('T')[0] + '.json';
     link.click();
     URL.revokeObjectURL(url);
+}
+
+// ============================================
+// BACK TO TOP
+// ============================================
+window.addEventListener('scroll', () => {
+    const btn = document.getElementById('backToTop');
+    if (btn) btn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+});
+
+// ============================================
+// MOBILE SIDEBAR TOGGLE
+// ============================================
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.classList.toggle('collapsed');
+}
+
+// ============================================
+// MAP VIEW
+// ============================================
+
+let currentView = 'grid';
+let leafletMap = null;
+
+function setView(view) {
+    currentView = view;
+    const grid = document.getElementById('vehicleGrid');
+    const mapEl = document.getElementById('mapView');
+    const btnGrid = document.getElementById('viewGrid');
+    const btnMap = document.getElementById('viewMap');
+
+    if (view === 'map') {
+        grid.classList.add('hidden');
+        mapEl.classList.remove('hidden');
+        btnGrid.classList.remove('active');
+        btnMap.classList.add('active');
+        renderMapView();
+    } else {
+        mapEl.classList.add('hidden');
+        grid.classList.remove('hidden');
+        btnGrid.classList.add('active');
+        btnMap.classList.remove('active');
+        if (leafletMap) { leafletMap.remove(); leafletMap = null; }
+    }
+}
+
+function renderMapView() {
+    const mapEl = document.getElementById('mapView');
+    if (leafletMap) { leafletMap.remove(); leafletMap = null; }
+
+    leafletMap = L.map(mapEl).setView([-1.286389, 36.817223], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 18
+    }).addTo(leafletMap);
+
+    const shown = filteredInventory.slice(0, 200);
+    const markerIcon = L.divIcon({ className: '', html: '<div class="map-marker">&#x1F697;</div>', iconSize: [32, 32], iconAnchor: [16, 32] });
+    const bikeIcon  = L.divIcon({ className: '', html: '<div class="map-marker">&#x1F3CD;</div>', iconSize: [32, 32], iconAnchor: [16, 32] });
+    const busIcon   = L.divIcon({ className: '', html: '<div class="map-marker">&#x1F68C;</div>', iconSize: [32, 32], iconAnchor: [16, 32] });
+
+    shown.forEach(car => {
+        const dealer = car.dealerRef ? getDealerById(car.dealerRef) : assignDealer(car.id);
+        if (!dealer?.lat || !dealer?.lng) return;
+        const icon = car.category === 'Bike' ? bikeIcon : car.category === 'Bus' ? busIcon : markerIcon;
+        L.marker([dealer.lat, dealer.lng], { icon })
+            .addTo(leafletMap)
+            .bindPopup(`
+                <div style="min-width:180px">
+                    <img src="${car.img}" onerror="this.style.display='none'" style="width:100%;height:90px;object-fit:cover;border-radius:6px;margin-bottom:8px">
+                    <strong>${car.brand} ${car.model}</strong><br>
+                    <span style="color:#1a56db;font-weight:700">${formatPrice(car.price)}</span><br>
+                    <small>${dealer.name} &bull; ${dealer.city}</small><br>
+                    <button onclick="showDetailModal(${car.id})" style="margin-top:8px;padding:6px 12px;background:#1a56db;color:white;border:none;border-radius:6px;cursor:pointer;width:100%">View Details</button>
+                </div>
+            `);
+    });
+
+    // Fit map to markers
+    const coords = shown
+        .map(car => { const d = car.dealerRef ? getDealerById(car.dealerRef) : assignDealer(car.id); return d?.lat && d?.lng ? [d.lat, d.lng] : null; })
+        .filter(Boolean);
+    if (coords.length) leafletMap.fitBounds(coords, { padding: [40, 40], maxZoom: 10 });
 }
 
 // ============================================
