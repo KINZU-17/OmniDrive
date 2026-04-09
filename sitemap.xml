@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-        <loc>https://kinzu-17.github.io/omnidrive/</loc>
-        <lastmod>2025-01-01</lastmod>
+        <loc>https://omnidrive.co.ke/</loc>
+        <lastmod>2025-07-01</lastmod>
         <changefreq>daily</changefreq>
         <priority>1.0</priority>
     </url>
     <url>
-        <loc>https://kinzu-17.github.io/omnidrive/privacy.html</loc>
-        <lastmod>2025-01-01</lastmod>
+        <loc>https://omnidrive.co.ke/dealer-register.html</loc>
+        <lastmod>2025-07-01</lastmod>
         <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://omnidrive.co.ke/privacy.html</loc>
+        <lastmod>2025-07-01</lastmod>
+        <changefreq>yearly</changefreq>
         <priority>0.3</priority>
     </url>
     <url>
-        <loc>https://kinzu-17.github.io/omnidrive/terms.html</loc>
-        <lastmod>2025-01-01</lastmod>
-        <changefreq>monthly</changefreq>
+        <loc>https://omnidrive.co.ke/terms.html</loc>
+        <lastmod>2025-07-01</lastmod>
+        <changefreq>yearly</changefreq>
         <priority>0.3</priority>
-    </url>
-    <url>
-        <loc>https://kinzu-17.github.io/omnidrive/dealer-register.html</loc>
-        <lastmod>2025-01-01</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.6</priority>
     </url>
 </urlset>

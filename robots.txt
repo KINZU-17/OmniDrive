@@ -1,6 +1,9 @@
 User-agent: *
 Allow: /
-Disallow: /assets/
+Allow: /assets/
 Disallow: /.env
+Disallow: /omnidrive.db
+Disallow: /api/
+Disallow: /admin.html
 
 Sitemap: https://omnidrive.co.ke/sitemap.xml

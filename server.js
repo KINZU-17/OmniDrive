@@ -291,10 +291,36 @@ app.get('/api/admin/dealers', adminAuth, (req, res) => {
     return res.json(dealers);
 });
 
-app.patch('/api/admin/dealers/:id', adminAuth, (req, res) => {
+app.patch('/api/admin/dealers/:id', adminAuth, async (req, res) => {
     const { status } = req.body;
     if (!['pending','approved','rejected'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
     db.prepare('UPDATE dealer_applications SET status=? WHERE id=?').run(status, req.params.id);
+    const dealer = db.prepare('SELECT * FROM dealer_applications WHERE id=?').get(req.params.id);
+    if (dealer?.email && process.env.SMTP_USER) {
+        const isApproved = status === 'approved';
+        await mailer.sendMail({
+            from: `"OmniDrive" <${process.env.SMTP_USER}>`,
+            to: dealer.email,
+            subject: isApproved ? '🎉 Welcome to OmniDrive — Your Dealership is Live!' : 'OmniDrive Application Update',
+            html: isApproved ? `
+                <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:30px;border:1px solid #eee;border-radius:10px">
+                    <h2 style="color:#e47911">🚗 Welcome to OmniDrive, ${dealer.name}!</h2>
+                    <p>Your dealership application has been <strong>approved</strong>. You are now a verified OmniDrive partner.</p>
+                    <table style="width:100%;border-collapse:collapse;margin:20px 0">
+                        <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Plan</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${dealer.plan}</td></tr>
+                        <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>City</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${dealer.city}</td></tr>
+                        <tr><td style="padding:8px"><strong>Contact</strong></td><td style="padding:8px">${dealer.phone}</td></tr>
+                    </table>
+                    <p>Visit <a href="https://omnidrive.co.ke">omnidrive.co.ke</a> to start listing your vehicles.</p>
+                    <p style="color:#888;font-size:0.85rem">OmniDrive.co.ke — Connecting you to the drive of your choice</p>
+                </div>` : `
+                <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:30px">
+                    <h2>OmniDrive Application Update</h2>
+                    <p>Hi ${dealer.name}, unfortunately your dealership application was not approved at this time.</p>
+                    <p>Please contact us at info@omnidrive.co.ke for more information.</p>
+                </div>`
+        }).catch(e => console.error('[Email] Dealer approval email failed:', e.message));
+    }
     return res.json({ success: true });
 });
 
@@ -316,10 +342,29 @@ app.get('/api/admin/listings', adminAuth, (req, res) => {
     return res.json(listings);
 });
 
-app.patch('/api/admin/listings/:id', adminAuth, (req, res) => {
+app.patch('/api/admin/listings/:id', adminAuth, async (req, res) => {
     const { status } = req.body;
     if (!['pending','approved','rejected'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
     db.prepare('UPDATE pending_listings SET status=? WHERE id=?').run(status, req.params.id);
+    const listing = db.prepare('SELECT * FROM pending_listings WHERE id=?').get(req.params.id);
+    if (listing?.seller_email && process.env.SMTP_USER) {
+        await mailer.sendMail({
+            from: `"OmniDrive" <${process.env.SMTP_USER}>`,
+            to: listing.seller_email,
+            subject: status === 'approved' ? `✅ Your ${listing.brand} ${listing.model} is now live on OmniDrive!` : 'OmniDrive Listing Update',
+            html: status === 'approved' ? `
+                <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:30px;border:1px solid #eee;border-radius:10px">
+                    <h2 style="color:#e47911">🚗 Your listing is live!</h2>
+                    <p>Your <strong>${listing.brand} ${listing.model} (${listing.year})</strong> is now visible to thousands of buyers on OmniDrive.</p>
+                    <p>Buyers can contact you directly at <strong>${listing.seller_phone}</strong>.</p>
+                    <p style="color:#888;font-size:0.85rem">OmniDrive.co.ke</p>
+                </div>` : `
+                <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:30px">
+                    <h2>OmniDrive Listing Update</h2>
+                    <p>Your listing for <strong>${listing.brand} ${listing.model}</strong> was not approved. Contact info@omnidrive.co.ke for details.</p>
+                </div>`
+        }).catch(e => console.error('[Email] Listing approval email failed:', e.message));
+    }
     return res.json({ success: true });
 });
 
