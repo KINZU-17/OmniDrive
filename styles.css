@@ -89,53 +89,6 @@
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Animated road + sliding car */
-.splash-road {
-    position: absolute;
-    bottom: 80px;
-    left: 0;
-    right: 0;
-    height: 48px;
-    z-index: 2;
-    overflow: hidden;
-}
-
-.splash-road::before {
-    content: '';
-    position: absolute;
-    bottom: 18px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: repeating-linear-gradient(
-        90deg,
-        rgba(38,132,255,0.5) 0px, rgba(38,132,255,0.5) 40px,
-        transparent 40px, transparent 80px
-    );
-    animation: roadScroll 0.6s linear infinite;
-}
-
-@keyframes roadScroll {
-    from { background-position: 0 0; }
-    to   { background-position: 80px 0; }
-}
-
-.splash-car {
-    position: absolute;
-    bottom: 22px;
-    font-size: 2rem;
-    animation: carDrive 8s linear infinite;
-    filter: drop-shadow(0 4px 12px rgba(38,132,255,0.5));
-    transform: scaleX(-1);
-}
-
-@keyframes carDrive {
-    0%   { left: -8%;  opacity: 0; }
-    8%   { opacity: 1; }
-    92%  { opacity: 1; }
-    100% { left: 108%; opacity: 0; }
-}
-
 /* Content */
 .splash-content {
     position: relative;
@@ -2298,7 +2251,7 @@ button {
     .filter-bar {
         margin: 0 0 12px;
         padding: 8px 12px;
-        top: 56px;
+        top: 106px;
     }
 
     .filter-bar-meta {
@@ -2459,13 +2412,7 @@ button {
     }
 
     /* ── Customize ── */
-    .customize-vehicle {
-        grid-template-columns: 1fr;
-    }
-
-    .customize-options {
-        grid-template-columns: 1fr;
-    }
+    .pimp-cards { flex-wrap: nowrap; overflow-x: auto; }
 
     /* ── Broker/Seller ── */
     .broker-benefits, .seller-benefits {
@@ -3244,106 +3191,148 @@ button {
 /* ==============================
    VEHICLE CUSTOMIZATION
    ============================== */
-.customize-vehicle {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
+.pimp-layout {
+    display: flex;
+    flex-direction: column;
     gap: 20px;
 }
 
-.customize-preview {
-    text-align: center;
-    padding: 20px;
+.pimp-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
     background: var(--bg);
+    padding: 16px;
     border-radius: 12px;
 }
 
-.customize-preview img {
-    width: 100%;
-    max-height: 250px;
+.pimp-vehicle-img {
+    width: 160px;
+    height: 100px;
     object-fit: cover;
     border-radius: 8px;
-    margin-bottom: 15px;
+    flex-shrink: 0;
 }
 
-.customize-preview h3 {
-    margin: 10px 0;
-}
-
-.base-price {
-    font-size: 1.2rem;
-    color: var(--primary);
-    font-weight: bold;
-}
-
-.customize-options {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    max-height: 500px;
+.pimp-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-height: 420px;
     overflow-y: auto;
+    padding-right: 4px;
 }
 
-.customize-section {
-    background: var(--bg);
-    padding: 15px;
-    border-radius: 8px;
-}
-
-.customize-section h4 {
-    margin: 0 0 10px 0;
-    font-size: 0.95rem;
+.pimp-section h4 {
+    margin: 0 0 10px;
     color: var(--primary);
+    font-size: 0.95rem;
 }
 
-.customize-section select {
-    width: 100%;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
+.pimp-cards {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.pimp-card {
+    width: 130px;
     background: var(--card);
-    color: var(--text);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s;
+    flex-shrink: 0;
+}
+
+.pimp-card:hover { transform: translateY(-2px); border-color: var(--primary); }
+.pimp-card-active { border-color: var(--primary) !important; box-shadow: 0 0 0 3px rgba(var(--primary-rgb, 255,107,107), 0.25); }
+
+.pimp-card img {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    display: block;
+}
+
+.pimp-card-info {
+    padding: 6px 8px 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pimp-card-name { font-size: 0.75rem; font-weight: 600; line-height: 1.2; }
+.pimp-card-price { font-size: 0.72rem; color: var(--primary); }
+
+.pimp-add-btn {
+    width: 100%;
+    padding: 5px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    font-size: 0.78rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.pimp-add-btn:hover { opacity: 0.85; }
+
+.pimp-cart-panel {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.pimp-cart-panel h4 { margin: 0 0 12px; color: var(--primary); }
+
+.pimp-cart-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.88rem;
+}
+
+.pimp-cart-item span:first-child { flex: 1; }
+.pimp-cart-price { font-weight: bold; color: var(--primary); white-space: nowrap; }
+
+.pimp-remove {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0 4px;
+}
+
+.pimp-empty { color: var(--text-muted, #888); font-size: 0.88rem; margin: 0; }
+
+.pimp-totals { margin: 12px 0; }
+
+.pimp-total-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
     font-size: 0.9rem;
 }
 
-.customize-summary {
-    grid-column: 1 / -1;
-    background: var(--bg);
-    padding: 20px;
-    border-radius: 12px;
-    margin-top: 20px;
-}
-
-.summary-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-}
-
-.summary-row.total {
+.pimp-grand {
     border-bottom: none;
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     font-weight: bold;
     color: var(--primary);
 }
 
-.custom-costs {
-    color: var(--primary);
-}
+.pimp-cart-footer .customize-buttons { margin-top: 12px; }
 
-.customize-buttons {
-    grid-column: 1 / -1;
-    display: flex;
-    gap: 15px;
-    margin-top: 20px;
-}
-
-.customize-buttons button {
-    flex: 1;
-    padding: 15px;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
+@media (max-width: 768px) {
+    .pimp-header { flex-direction: column; align-items: flex-start; }
+    .pimp-vehicle-img { width: 100%; height: 160px; }
+    .pimp-cards { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; }
 }
 
 .btn-customize {
@@ -3677,6 +3666,12 @@ button {
     }
 }
 
+@media (max-width: 600px) {
+    .compare-tray {
+        bottom: 60px;
+    }
+}
+
 /* ==============================
    TOUCH IMPROVEMENTS
    ============================== */
@@ -3789,4 +3784,339 @@ button {
         font-size: 1.3rem;
         padding: 4px;
     }
+}
+
+/* ==============================
+   STATS BAR
+   ============================== */
+.stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: clamp(20px, 5vw, 60px);
+    padding: 28px 20px;
+    background: var(--gradient-primary);
+    margin: 0 0 40px;
+    flex-wrap: wrap;
+}
+
+.stats-bar .stat-item {
+    text-align: center;
+    color: white;
+}
+
+.stats-bar .stat-num {
+    display: block;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 900;
+    line-height: 1;
+}
+
+.stats-bar .stat-lbl {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ==============================
+   WHATSAPP BUTTON
+   ============================== */
+.btn-whatsapp {
+    background: #25D366;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-whatsapp:hover { background: #1da851; }
+
+/* ==============================
+   TEST DRIVE BUTTON
+   ============================== */
+.btn-test-drive {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-test-drive:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    transform: translateY(-1px);
+}
+
+/* ==============================
+   RECOMMENDATIONS BUTTON (navbar)
+   ============================== */
+.btn-recs {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-recs:hover { background: linear-gradient(135deg, #7c3aed, #5b21b6); }
+
+/* ==============================
+   MOBILE HAMBURGER MENU
+   ============================== */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    padding: 8px;
+    background: transparent;
+    border: none;
+}
+
+.hamburger span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s;
+}
+
+.nav-tools.mobile-open {
+    display: flex !important;
+    flex-direction: column;
+    width: 100%;
+    background: #0d1117;
+    padding: 10px 0;
+    gap: 8px;
+    max-height: 70vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+    .hamburger { display: flex; }
+    .nav-tools { display: none; }
+    .nav-tools.mobile-open { display: flex; }
+    .tagline { display: none; }
+}
+
+/* ==============================
+   CARD QUICK-BUY OVERLAY
+   ============================== */
+.car-card .img-wrap::after {
+    content: '👁 Quick View';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(26, 86, 219, 0.85);
+    color: white;
+    text-align: center;
+    padding: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.25s;
+}
+
+.car-card:hover .img-wrap::after { opacity: 1; }
+
+/* ==============================
+   NEWSLETTER MODAL INPUT
+   ============================== */
+#newsletterModal .filter-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+}
+
+/* ==============================
+   SCHEDULE BTN
+   ============================== */
+.schedule-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--success);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.2s;
+}
+
+.schedule-btn:hover { background: #047857; }
+
+/* ==============================
+   IMPROVED CARD PADDING
+   ============================== */
+.car-card h3,
+.car-card .rating-display,
+.car-card .specs-mini,
+.car-card .dealer-info-card,
+.car-card .price,
+.car-card .shipping-fee,
+.car-card .card-actions,
+.car-card .availability,
+.car-card .urgency,
+.car-card .car-card-buttons,
+.car-card .condition-badge {
+    padding-left: 14px;
+    padding-right: 14px;
+}
+
+.car-card h3 { padding-top: 10px; }
+.car-card .car-card-buttons { padding-bottom: 14px; }
+
+/* ==============================
+   STICKY BUY NOW BUTTON
+   ============================== */
+.sticky-buy {
+    position: sticky;
+    bottom: 0;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+    margin-top: 20px;
+}
+
+.sticky-buy button { flex: 1; padding: 14px; font-size: 1rem; font-weight: 700; border-radius: 8px; border: none; cursor: pointer; }
+.sticky-buy .sticky-mpesa { background: #25D366; color: white; }
+.sticky-buy .sticky-wish { background: var(--bg); color: var(--text); border: 1px solid var(--border) !important; }
+
+/* ==============================
+   VIDEO NOTE
+   ============================== */
+.video-note {
+    text-align: center;
+    margin-top: 15px;
+    opacity: 0.7;
+    font-size: 0.9rem;
+}
+
+/* ==============================
+   RACE MODE
+   ============================== */
+.race-modal-content { max-width: 780px; }
+
+.race-nav-btn { background: linear-gradient(135deg, #e74c3c, #c0392b) !important; color: white !important; font-weight: bold; }
+
+.race-lobby { display: flex; flex-direction: column; gap: 20px; }
+
+.race-title-banner { text-align: center; background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; padding: 20px; border-radius: 12px; }
+.race-title-banner h2 { margin: 0; font-size: 2rem; letter-spacing: 2px; }
+.race-subtitle { margin: 4px 0 0; opacity: 0.7; font-size: 0.9rem; letter-spacing: 1px; }
+
+.race-mode-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.race-mode-card { background: var(--card); border: 2px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; }
+.race-mode-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+.race-mode-active { border-color: #e74c3c !important; background: rgba(231,76,60,0.08) !important; }
+.race-mode-icon { font-size: 2.5rem; margin-bottom: 8px; }
+.race-mode-card h3 { margin: 0 0 6px; }
+.race-mode-card p { margin: 0; font-size: 0.82rem; opacity: 0.7; }
+
+.race-section-label { margin: 0; color: var(--primary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+
+.race-car-grid { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; }
+.race-car-card { min-width: 120px; background: var(--card); border: 2px solid var(--border); border-radius: 10px; overflow: hidden; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+.race-car-card:hover { border-color: var(--primary); }
+.race-car-selected { border-color: #e74c3c !important; box-shadow: 0 0 0 3px rgba(231,76,60,0.25); }
+.race-car-card img { width: 100%; height: 70px; object-fit: cover; display: block; }
+.race-car-info { padding: 6px 8px; }
+.race-car-name { display: block; font-size: 0.72rem; font-weight: 600; line-height: 1.2; }
+.race-car-hp { display: block; font-size: 0.7rem; color: #e74c3c; margin-top: 2px; }
+
+.race-opponents { display: flex; flex-direction: column; gap: 8px; }
+.race-opponent-card { display: flex; align-items: center; gap: 12px; background: var(--card); border: 2px solid var(--border); border-radius: 10px; padding: 10px 14px; cursor: pointer; transition: all 0.2s; }
+.race-opponent-card:hover { border-color: var(--primary); }
+.race-opp-selected { border-color: #e74c3c !important; background: rgba(231,76,60,0.06) !important; }
+.race-opp-avatar { font-size: 1.8rem; }
+.race-opp-name { font-weight: 700; font-size: 0.9rem; }
+.race-opp-car { font-size: 0.78rem; opacity: 0.65; }
+.race-opp-skill { margin-left: auto; font-size: 0.75rem; font-weight: bold; padding: 3px 8px; border-radius: 20px; background: var(--bg); }
+
+.race-start-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; border-radius: 12px; font-size: 1.2rem; font-weight: bold; cursor: pointer; letter-spacing: 1px; transition: opacity 0.2s; }
+.race-start-btn:hover { opacity: 0.88; }
+
+/* Arena */
+.race-arena { display: flex; flex-direction: column; gap: 16px; }
+.race-arena-header { display: flex; justify-content: space-between; align-items: center; background: #1a1a2e; color: white; padding: 12px 16px; border-radius: 10px; font-weight: bold; font-size: 1rem; }
+#raceTimer { font-size: 1.4rem; color: #f39c12; font-family: monospace; }
+
+/* Drag */
+.drag-track { display: flex; flex-direction: column; gap: 14px; }
+.drag-lane { display: flex; align-items: center; gap: 10px; }
+.drag-label { min-width: 180px; font-size: 0.82rem; font-weight: 600; }
+.drag-bar-wrap { flex: 1; background: var(--bg); border-radius: 20px; height: 22px; overflow: hidden; border: 1px solid var(--border); }
+.drag-bar { height: 100%; width: 0%; border-radius: 20px; transition: width 0.05s linear; }
+.player-bar { background: linear-gradient(90deg, #e74c3c, #f39c12); }
+.opp-bar { background: linear-gradient(90deg, #3498db, #9b59b6); }
+.drag-speed { min-width: 60px; font-size: 0.8rem; font-weight: bold; text-align: right; }
+
+.drag-lights { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px; }
+.light { width: 28px; height: 28px; border-radius: 50%; background: #333; border: 2px solid #555; display: inline-block; transition: background 0.2s; }
+.light-on { background: #e74c3c !important; box-shadow: 0 0 12px #e74c3c; }
+#lgo { font-size: 1.4rem; font-weight: bold; color: #2ecc71; }
+
+/* Drift */
+.drift-arena { align-items: center; }
+.drift-track { width: 100%; background: #1a1a2e; border-radius: 12px; padding: 20px; position: relative; overflow: hidden; min-height: 160px; }
+.drift-road { position: relative; display: flex; justify-content: center; align-items: center; }
+.drift-car-wrap { position: relative; display: inline-block; }
+.drift-car-img { width: 160px; height: 90px; object-fit: cover; border-radius: 8px; }
+.drift-smoke { position: absolute; right: -40px; top: 20px; font-size: 1.4rem; pointer-events: none; }
+.drift-skid { position: absolute; bottom: 0; left: 0; right: 0; height: 30px; }
+.skid-mark { position: absolute; bottom: 0; width: 6px; height: 24px; background: rgba(255,255,255,0.15); border-radius: 3px; animation: fadeSkid 2s forwards; }
+@keyframes fadeSkid { to { opacity: 0; transform: translateY(10px); } }
+@keyframes driftShake { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-6deg)} 75%{transform:rotate(6deg)} }
+.drift-shake { animation: driftShake 0.2s ease; }
+
+.drift-score-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
+.drift-score-box { background: var(--card); border-radius: 10px; padding: 14px; text-align: center; border: 1px solid var(--border); }
+.drift-score-box span:first-child { display: block; font-size: 0.75rem; opacity: 0.65; margin-bottom: 4px; }
+.drift-big-score { font-size: 2rem; font-weight: bold; color: var(--primary); }
+#driftTimer { font-size: 1.4rem; color: #f39c12; font-family: monospace; }
+
+.drift-tap-btn { width: 100%; padding: 20px; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; border-radius: 12px; font-size: 1.4rem; font-weight: bold; cursor: pointer; transition: transform 0.1s; user-select: none; }
+.drift-tap-btn:active { transform: scale(0.96); }
+.drift-hint { margin: 0; font-size: 0.82rem; opacity: 0.6; text-align: center; }
+
+/* Result */
+.race-result { text-align: center; padding: 24px; border-radius: 14px; margin-top: 10px; }
+.race-win { background: linear-gradient(135deg, rgba(46,204,113,0.12), rgba(39,174,96,0.08)); border: 2px solid #2ecc71; }
+.race-lose { background: linear-gradient(135deg, rgba(231,76,60,0.1), rgba(192,57,43,0.06)); border: 2px solid #e74c3c; }
+.race-result-icon { font-size: 3rem; margin-bottom: 8px; }
+.race-result h2 { margin: 0 0 8px; font-size: 1.8rem; }
+.race-reward { background: rgba(243,156,18,0.12); border: 1px solid #f39c12; border-radius: 8px; padding: 12px 16px; margin: 12px 0; font-size: 0.9rem; }
+.race-lose-msg { opacity: 0.7; font-size: 0.9rem; }
+.race-result-btns { display: flex; gap: 12px; justify-content: center; margin-top: 16px; }
+.race-result-btns button { padding: 12px 24px; border-radius: 8px; font-size: 0.95rem; cursor: pointer; }
+
+@media (max-width: 600px) {
+    .race-mode-pick { grid-template-columns: 1fr; }
+    .drag-label { min-width: 120px; font-size: 0.75rem; }
 }

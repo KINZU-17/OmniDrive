@@ -1,4 +1,4 @@
-const CACHE = 'omnidrive-v2';
+const CACHE = 'omnidrive-v3';
 const ASSETS = [
     '/',
     '/index.html',

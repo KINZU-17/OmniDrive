@@ -118,6 +118,9 @@
             
             <button onclick="showPriceAlerts()" class="finance-btn" title="Price Alerts">🔔</button>
             
+            <button onclick="showRaceMode()" class="finance-btn race-nav-btn" title="Race Mode">🏎️ Race</button>
+            <button onclick="showDealerLocator('')" class="finance-btn" title="Find Nearest Dealer">📍 Dealers</button>
+            
             <button onclick="showMpesaPayment(1, 50000)" class="finance-btn" title="MPesa Payment">💳</button>
             
             <button onclick="showAuthModal()" class="finance-btn" title="Account">👤</button>
@@ -129,7 +132,12 @@
             <button onclick="showListVehicleModal()" class="finance-btn" title="Sell Your Vehicle">💰</button>
             
             <button onclick="showVinCheck()" class="finance-btn" title="VIN Check">🔍</button>
+            <button onclick="showRecommendations()" class="btn-recs" title="AI Recommendations">✨ For You</button>
+            <button onclick="showNewsletterModal()" class="finance-btn" title="Newsletter">📧</button>
         </div>
+        <button class="hamburger" onclick="document.querySelector('.nav-tools').classList.toggle('mobile-open')" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
     </header>
 
     <!-- ========================
@@ -145,9 +153,6 @@
             <div class="splash-vehicle-item" style="animation-delay:0.3s">🚌<span>Buses</span></div>
             <div class="splash-vehicle-item" style="animation-delay:0.45s">🚛<span>Trucks</span></div>
             <div class="splash-vehicle-item" style="animation-delay:0.6s">🚐<span>Vans</span></div>
-        </div>
-        <div class="splash-road">
-            <div class="splash-car">🚗</div>
         </div>
         <div class="splash-content">
             <div class="splash-logo-wrap">
@@ -645,6 +650,17 @@
             </div>
             <h2>🚗 List Your Vehicle for Sale</h2>
             <div id="listVehicleContent"></div>
+        </div>
+    </div>
+
+    <!-- Race Mode Modal -->
+    <div id="raceModeModal" class="modal hidden">
+        <div class="modal-content race-modal-content">
+            <div class="modal-header">
+                <button class="back-btn" onclick="closeModal('raceModeModal')">← Back</button>
+                <button class="close-btn" onclick="closeModal('raceModeModal')">✕ Exit</button>
+            </div>
+            <div id="raceModeContent"></div>
         </div>
     </div>
 

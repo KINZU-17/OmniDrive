@@ -14,6 +14,13 @@ OmniDrive is Kenya's premier online vehicle marketplace - a comprehensive digita
 - **Live Currency Conversion**: Real-time pricing in USD, EUR, JPY, KES, GBP via Open Exchange Rates API
 - **Intelligent Filtering**: Search by brand, model, category, condition, body style, fuel type, drivetrain, color, price range, and rating
 - **Advanced Comparison**: Compare up to 3 vehicles side-by-side with sticky tray
+- **AI Recommendations**: Smart suggestions based on wishlist & browsing history
+- **Test Drive Booking**: Book with calendar UI + WhatsApp confirmation
+- **Animated Stats Counter**: Live vehicle/dealer/country counts
+- **Newsletter Signup**: Email subscription with localStorage persistence
+- **Wishlist Export**: Download wishlist as a text file
+- **WhatsApp Direct Contact**: One-tap dealer contact from any vehicle card
+- **Dark Mode Auto-Detect**: Respects system `prefers-color-scheme`
 - **Vehicle Badges**: Hot Deal 🔥, New Arrival 🆕, Top Rated ⭐, Luxury 💎, Electric 🔋
 - **Vehicle Customization (Pimp Your Ride)**:
   - Wheels: Stock to Gold Plated ($120-$8,000)
@@ -63,10 +70,10 @@ OmniDrive is Kenya's premier online vehicle marketplace - a comprehensive digita
 
 | Category | Count | Examples |
 |----------|-------|----------|
-| **Cars** | 110+ | Economy to Luxury, SUV, Sedan, Coupe, Convertible |
-| **Bikes** | 45+ | Sports, Touring, Scooters, Adventure, Electric |
+| **Cars** | 125+ | Economy to Luxury, SUV, Sedan, Coupe, Convertible |
+| **Bikes** | 50+ | Sports, Touring, Scooters, Adventure, Electric |
 | **Buses** | 10+ | City Coaches, Electric, Double Decker |
-| **Trucks** | 15+ | Pickups, Heavy Duty, Commercial |
+| **Trucks** | 20+ | Pickups, Heavy Duty, Commercial |
 | **Vans** | 10+ | Passenger, Cargo, Mini-vans |
 
 ### 🚗 Car Brands (Global)

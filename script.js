@@ -1,5 +1,5 @@
-const BACKEND_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:3000'
+const BACKEND_URL = ['localhost', '127.0.0.1'].includes(window.location.hostname) || window.location.hostname.endsWith('.ngrok-free.app') || window.location.hostname.endsWith('.ngrok-free.dev')
+    ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:3000' : `https://${window.location.hostname}`)
     : 'https://omnidrive-backend-production.up.railway.app';
 
 
@@ -81,38 +81,38 @@ function dismissSplash() {
 
 const imageDatabase = {
     // ── Acura ──
-    "Acura NSX": "https://upload.wikimedia.org/wikipedia/commons/3/3c/2017_Acura_NSX_%28facelift%2C_red%29%2C_front_8.21.19.jpg",
-    "Acura MDX": "https://upload.wikimedia.org/wikipedia/commons/e/e3/2022_Acura_MDX_Type_S%2C_front_8.6.22.jpg",
-    "Acura TLX": "https://upload.wikimedia.org/wikipedia/commons/4/4e/2021_Acura_TLX_Type_S%2C_front_7.9.21.jpg",
-    "Acura": "https://upload.wikimedia.org/wikipedia/commons/3/3c/2017_Acura_NSX_%28facelift%2C_red%29%2C_front_8.21.19.jpg",
+    "Acura NSX": "assets/vehicles/acura-nsx.jpg",
+    "Acura MDX": "assets/vehicles/acura-nsx.jpg",
+    "Acura TLX": "assets/vehicles/acura-nsx.jpg",
+    "Acura": "assets/vehicles/acura-nsx.jpg",
     // ── Alfa Romeo ──
-    "Alfa Romeo Giulia": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Alfa_Romeo_Giulia_Quadrifoglio_%28facelift%2C_red%29%2C_front_8.6.22.jpg",
-    "Alfa Romeo": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Alfa_Romeo_Giulia_Quadrifoglio_%28facelift%2C_red%29%2C_front_8.6.22.jpg",
+    "Alfa Romeo Giulia": "assets/vehicles/alfa-romeo-giulia.jpg",
+    "Alfa Romeo": "assets/vehicles/alfa-romeo-giulia.jpg",
     // ── Aston Martin ──
-    "Aston Martin DB12": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Aston_Martin_DB12_%282023%29_front.jpg",
-    "Aston Martin": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Aston_Martin_DB12_%282023%29_front.jpg",
+    "Aston Martin DB12": "assets/vehicles/aston-martin-db12.jpg",
+    "Aston Martin": "assets/vehicles/aston-martin-db12.jpg",
     // ── Bentley ──
-    "Bentley Continental": "https://upload.wikimedia.org/wikipedia/commons/8/8b/Bentley_Continental_GT_V8_%28facelift%2C_silver%29%2C_front_8.6.22.jpg",
-    "Bentley": "https://upload.wikimedia.org/wikipedia/commons/8/8b/Bentley_Continental_GT_V8_%28facelift%2C_silver%29%2C_front_8.6.22.jpg",
+    "Bentley Continental": "assets/vehicles/bentley-continental.jpg",
+    "Bentley": "assets/vehicles/bentley-continental.jpg",
     // ── Bugatti ──
-    "Bugatti Chiron": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Bugatti_Chiron_-_Goodwood_Festival_of_Speed_2017.jpg",
-    "Bugatti": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Bugatti_Chiron_-_Goodwood_Festival_of_Speed_2017.jpg",
+    "Bugatti Chiron": "assets/vehicles/bugatti-chiron.jpg",
+    "Bugatti": "assets/vehicles/bugatti-chiron.jpg",
     // ── Buick ──
     "Buick Enclave": "https://upload.wikimedia.org/wikipedia/commons/8/8e/2018_Buick_Enclave_Avenir%2C_front_11.3.18.jpg",
     "Buick": "https://upload.wikimedia.org/wikipedia/commons/8/8e/2018_Buick_Enclave_Avenir%2C_front_11.3.18.jpg",
     // ── Cadillac ──
-    "Cadillac Escalade": "https://upload.wikimedia.org/wikipedia/commons/5/5e/2021_Cadillac_Escalade_Sport%2C_front_10.3.20.jpg",
-    "Cadillac": "https://upload.wikimedia.org/wikipedia/commons/5/5e/2021_Cadillac_Escalade_Sport%2C_front_10.3.20.jpg",
+    "Cadillac Escalade": "assets/vehicles/cadillac-escalade.jpg",
+    "Cadillac": "assets/vehicles/cadillac-escalade.jpg",
     // ── Chevrolet ──
-    "Chevrolet Corvette": "https://upload.wikimedia.org/wikipedia/commons/6/sixty/2023_Chevrolet_Corvette_Z06%2C_front_9.3.22.jpg",
-    "Chevrolet Silverado": "https://upload.wikimedia.org/wikipedia/commons/a/a5/2022_Chevrolet_Silverado_1500_ZR2%2C_front_5.28.22.jpg",
-    "Chevrolet": "https://upload.wikimedia.org/wikipedia/commons/6/sixty/2023_Chevrolet_Corvette_Z06%2C_front_9.3.22.jpg",
+    "Chevrolet Corvette": "assets/vehicles/chevrolet-corvette.jpg",
+    "Chevrolet Silverado": "assets/vehicles/ford-f150.jpg",
+    "Chevrolet": "assets/vehicles/chevrolet-corvette.jpg",
     // ── Chrysler ──
     "Chrysler Pacifica": "https://upload.wikimedia.org/wikipedia/commons/3/3e/2021_Chrysler_Pacifica_Touring_L%2C_front_10.3.20.jpg",
     "Chrysler": "https://upload.wikimedia.org/wikipedia/commons/3/3e/2021_Chrysler_Pacifica_Touring_L%2C_front_10.3.20.jpg",
     // ── Dodge ──
-    "Dodge Challenger": "https://upload.wikimedia.org/wikipedia/commons/b/b5/2018_Dodge_Challenger_SRT_Hellcat_Widebody%2C_front_6.15.19.jpg",
-    "Dodge": "https://upload.wikimedia.org/wikipedia/commons/b/b5/2018_Dodge_Challenger_SRT_Hellcat_Widebody%2C_front_6.15.19.jpg",
+    "Dodge Challenger": "assets/vehicles/dodge-challenger.jpg",
+    "Dodge": "assets/vehicles/dodge-challenger.jpg",
     // ── Cupra ──
     "Cupra Formentor": "https://upload.wikimedia.org/wikipedia/commons/2/2e/CUPRA_Formentor_VZ5_%282022%29_front.jpg",
     "Cupra": "https://upload.wikimedia.org/wikipedia/commons/2/2e/CUPRA_Formentor_VZ5_%282022%29_front.jpg",
@@ -126,53 +126,53 @@ const imageDatabase = {
     "Genesis GV80": "https://upload.wikimedia.org/wikipedia/commons/e/e5/2021_Genesis_GV80_2.5T%2C_front_10.3.20.jpg",
     "Genesis": "https://upload.wikimedia.org/wikipedia/commons/e/e5/2021_Genesis_GV80_2.5T%2C_front_10.3.20.jpg",
     // ── GMC ──
-    "GMC Sierra": "https://upload.wikimedia.org/wikipedia/commons/4/4e/2019_GMC_Sierra_Denali_1500%2C_front_10.27.19.jpg",
-    "GMC Hummer": "https://upload.wikimedia.org/wikipedia/commons/5/5e/2022_GMC_Hummer_EV_Edition_1%2C_front_5.28.22.jpg",
-    "GMC": "https://upload.wikimedia.org/wikipedia/commons/4/4e/2019_GMC_Sierra_Denali_1500%2C_front_10.27.19.jpg",
+    "GMC Sierra": "assets/vehicles/ford-f150.jpg",
+    "GMC Hummer": "assets/vehicles/gmc-hummer-ev.jpg",
+    "GMC": "assets/vehicles/gmc-hummer-ev.jpg",
     // ── Hennessey ──
     "Hennessey Venom": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Hennessey_Venom_F5_2020_NY_Auto_Show.jpg",
     "Hennessey": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Hennessey_Venom_F5_2020_NY_Auto_Show.jpg",
     // ── Hyundai ──
-    "Hyundai Ioniq": "https://upload.wikimedia.org/wikipedia/commons/8/8e/2022_Hyundai_IONIQ_5_AWD%2C_front_8.6.22.jpg",
-    "Hyundai": "https://upload.wikimedia.org/wikipedia/commons/8/8e/2022_Hyundai_IONIQ_5_AWD%2C_front_8.6.22.jpg",
+    "Hyundai Ioniq": "assets/vehicles/hyundai-ioniq5.jpg",
+    "Hyundai": "assets/vehicles/hyundai-ioniq5.jpg",
     // ── Infiniti ──
     "Infiniti QX80": "https://upload.wikimedia.org/wikipedia/commons/2/2e/2018_Infiniti_QX80%2C_front_10.27.19.jpg",
     "Infiniti": "https://upload.wikimedia.org/wikipedia/commons/2/2e/2018_Infiniti_QX80%2C_front_10.27.19.jpg",
     // ── Jaguar ──
-    "Jaguar F-PACE": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Jaguar_F-PACE_SVR_%282021%29_front.jpg",
-    "Jaguar": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Jaguar_F-PACE_SVR_%282021%29_front.jpg",
+    "Jaguar F-PACE": "assets/vehicles/jaguar-fpace.jpg",
+    "Jaguar": "assets/vehicles/jaguar-fpace.jpg",
     // ── Jeep ──
-    "Jeep Wrangler": "https://upload.wikimedia.org/wikipedia/commons/3/3e/2021_Jeep_Wrangler_Rubicon_392%2C_front_10.3.20.jpg",
-    "Jeep Grand Cherokee": "https://upload.wikimedia.org/wikipedia/commons/5/5e/2021_Jeep_Grand_Cherokee_L_Overland%2C_front_10.3.20.jpg",
-    "Jeep": "https://upload.wikimedia.org/wikipedia/commons/3/3e/2021_Jeep_Wrangler_Rubicon_392%2C_front_10.3.20.jpg",
+    "Jeep Wrangler": "assets/vehicles/jeep-wrangler.jpg",
+    "Jeep Grand Cherokee": "assets/vehicles/jeep-wrangler.jpg",
+    "Jeep": "assets/vehicles/jeep-wrangler.jpg",
     // ── Kia ──
-    "Kia EV9": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Kia_EV9_GT-Line_%282023%29_front.jpg",
+    "Kia EV9": "assets/vehicles/kia-ev9.jpg",
     "Kia Carnival": "https://upload.wikimedia.org/wikipedia/commons/4/4e/2022_Kia_Carnival_SX_Prestige%2C_front_5.28.22.jpg",
-    "Kia": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Kia_EV9_GT-Line_%282023%29_front.jpg",
+    "Kia": "assets/vehicles/kia-ev9.jpg",
     // ── Koenigsegg ──
     "Koenigsegg Regera": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Koenigsegg_Regera_-_Goodwood_Festival_of_Speed_2016.jpg",
     "Koenigsegg": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Koenigsegg_Regera_-_Goodwood_Festival_of_Speed_2016.jpg",
     // ── Land Rover ──
-    "Land Rover Range Rover": "https://upload.wikimedia.org/wikipedia/commons/e/e3/2022_Land_Rover_Range_Rover_Sport_HST%2C_front_8.6.22.jpg",
-    "Land Rover": "https://upload.wikimedia.org/wikipedia/commons/e/e3/2022_Land_Rover_Range_Rover_Sport_HST%2C_front_8.6.22.jpg",
+    "Land Rover Range Rover": "assets/vehicles/land-rover-rr.jpg",
+    "Land Rover": "assets/vehicles/land-rover-rr.jpg",
     // ── Lincoln ──
     "Lincoln Navigator": "https://upload.wikimedia.org/wikipedia/commons/4/4e/2018_Lincoln_Navigator_L_Reserve%2C_front_10.27.19.jpg",
     "Lincoln": "https://upload.wikimedia.org/wikipedia/commons/4/4e/2018_Lincoln_Navigator_L_Reserve%2C_front_10.27.19.jpg",
     // ── Lotus ──
-    "Lotus Emira": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Lotus_Emira_V6_First_Edition_%282022%29_front.jpg",
-    "Lotus": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Lotus_Emira_V6_First_Edition_%282022%29_front.jpg",
+    "Lotus Emira": "assets/vehicles/lotus-emira.jpg",
+    "Lotus": "assets/vehicles/lotus-emira.jpg",
     // ── Lucid ──
-    "Lucid Air": "https://upload.wikimedia.org/wikipedia/commons/8/8e/2022_Lucid_Air_Grand_Touring%2C_front_5.28.22.jpg",
-    "Lucid": "https://upload.wikimedia.org/wikipedia/commons/8/8e/2022_Lucid_Air_Grand_Touring%2C_front_5.28.22.jpg",
+    "Lucid Air": "assets/vehicles/lucid-air.jpg",
+    "Lucid": "assets/vehicles/lucid-air.jpg",
     // ── Maserati ──
-    "Maserati MC20": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Maserati_MC20_%282020%29_front.jpg",
-    "Maserati": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Maserati_MC20_%282020%29_front.jpg",
+    "Maserati MC20": "assets/vehicles/maserati-mc20.jpg",
+    "Maserati": "assets/vehicles/maserati-mc20.jpg",
     // ── Mini ──
     "Mini JCW": "https://upload.wikimedia.org/wikipedia/commons/4/4e/MINI_John_Cooper_Works_GP_%28F56%2C_2020%29_front.jpg",
     "Mini": "https://upload.wikimedia.org/wikipedia/commons/4/4e/MINI_John_Cooper_Works_GP_%28F56%2C_2020%29_front.jpg",
     // ── Pagani ──
-    "Pagani Utopia": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Pagani_Utopia_%282022%29_front.jpg",
-    "Pagani": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Pagani_Utopia_%282022%29_front.jpg",
+    "Pagani Utopia": "assets/vehicles/pagani-utopia.jpg",
+    "Pagani": "assets/vehicles/pagani-utopia.jpg",
     // ── Peugeot ──
     "Peugeot 508": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Peugeot_508_PSE_%282021%29_front.jpg",
     "Peugeot": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Peugeot_PSE_%282021%29_front.jpg",
@@ -180,8 +180,8 @@ const imageDatabase = {
     "Pininfarina Battista": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Pininfarina_Battista_%282019%29_front.jpg",
     "Pininfarina": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Pininfarina_Battista_%282019%29_front.jpg",
     // ── Polestar ──
-    "Polestar 3": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Polestar_3_%282022%29_front.jpg",
-    "Polestar": "https://upload.wikimedia.org/wikipedia/commons/6/6e/Polestar_3_%282022%29_front.jpg",
+    "Polestar 3": "assets/vehicles/polestar-3.jpg",
+    "Polestar": "assets/vehicles/polestar-3.jpg",
     // ── Ram ──
     "Ram 1500": "https://upload.wikimedia.org/wikipedia/commons/5/5e/2021_Ram_1500_TRX%2C_front_10.3.20.jpg",
     "Ram 2500": "https://upload.wikimedia.org/wikipedia/commons/5/5e/2021_Ram_2500_Power_Wagon%2C_front_10.3.20.jpg",
@@ -193,18 +193,18 @@ const imageDatabase = {
     "Rimac Nevera": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Rimac_Nevera_%282021%29_front.jpg",
     "Rimac": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Rimac_Nevera_%282021%29_front.jpg",
     // ── Rivian ──
-    "Rivian R1T": "https://upload.wikimedia.org/wikipedia/commons/8/8e/2022_Rivian_R1T_Adventure%2C_front_5.28.22.jpg",
-    "Rivian": "https://upload.wikimedia.org/wikipedia/commons/8/8e/2022_Rivian_R1T_Adventure%2C_front_5.28.22.jpg",
+    "Rivian R1T": "assets/vehicles/rivian-r1t.jpg",
+    "Rivian": "assets/vehicles/rivian-r1t.jpg",
     // ── Rolls-Royce ──
-    "Rolls Royce Spectre": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Rolls-Royce_Spectre_%282023%29_front.jpg",
-    "Rolls Royce": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Rolls-Royce_Spectre_%282023%29_front.jpg",
+    "Rolls Royce Spectre": "assets/vehicles/rolls-royce-spectre.jpg",
+    "Rolls Royce": "assets/vehicles/rolls-royce-spectre.jpg",
     // ── Skoda ──
     "Skoda Octavia": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Skoda_Octavia_RS_%28IV%2C_2020%29_front.jpg",
     "Skoda Kodiaq": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Skoda_Kodiaq_RS_%282019%29_front.jpg",
     "Skoda": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Skoda_Octavia_RS_%28IV%2C_2020%29_front.jpg",
     // ── Volkswagen ──
-    "Volkswagen Golf": "https://upload.wikimedia.org/wikipedia/commons/e/e3/VW_Golf_8_R_%282021%29_front.jpg",
-    "Volkswagen": "https://upload.wikimedia.org/wikipedia/commons/e/e3/VW_Golf_8_R_%282021%29_front.jpg",
+    "Volkswagen Golf": "assets/vehicles/volkswagen-golf-r.jpg",
+    "Volkswagen": "assets/vehicles/volkswagen-golf-r.jpg",
     // ── Wuling ──
     "Wuling": "https://upload.wikimedia.org/wikipedia/commons/f/f3/Wuling_Hongguang_MINI_EV_%282020%29_front.jpg",
     // ── Chery ──
@@ -214,11 +214,11 @@ const imageDatabase = {
     "Geely Coolray": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Geely_Coolray_%282019%29_front.jpg",
     "Geely": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Geely_Coolray_%282019%29_front.jpg",
     // ── Haval ──
-    "Haval H6": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Haval_H6_3rd_generation_%282021%29_front.jpg",
-    "Haval": "https://upload.wikimedia.org/wikipedia/commons/5/5e/Haval_H6_3rd_generation_%282021%29_front.jpg",
+    "Haval H6": "assets/vehicles/haval-h6.jpg",
+    "Haval": "assets/vehicles/haval-h6.jpg",
     // ── MG ──
-    "MG HS": "https://upload.wikimedia.org/wikipedia/commons/3/3e/MG_HS_%282018%29_front.jpg",
-    "MG": "https://upload.wikimedia.org/wikipedia/commons/3/3e/MG_HS_%282018%29_front.jpg",
+    "MG HS": "assets/vehicles/mg-hs.jpg",
+    "MG": "assets/vehicles/mg-hs.jpg",
     // ── Tata ──
     "Tata Safari": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Tata_Safari_%282021%29_front.jpg",
     "Tata": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Tata_Safari_%282021%29_front.jpg",
@@ -268,79 +268,79 @@ const imageDatabase = {
     "Fuso Canter": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Mitsubishi_Fuso_Canter_%282017%29_front.jpg",
     "Fuso": "https://upload.wikimedia.org/wikipedia/commons/4/4e/Mitsubishi_Fuso_Canter_%282017%29_front.jpg",
     // ── Existing brands ──
-    "Nissan Skyline GT-R": "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80",
-    "Nissan GT-R": "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80",
-    "Nissan": "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80",
-    "Honda Super Cub": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
-    "Honda CBR": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
-    "Honda": "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=800&q=80",
-    "Porsche 911 GT3": "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=800&q=80",
-    "Porsche 911": "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=800&q=80",
-    "Porsche": "https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?w=800&q=80",
-    "Mercedes Citaro": "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=80",
-    "Mercedes-Benz": "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=80",
-    "Mercedes": "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=80",
-    "Ducati Panigale V4": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
-    "Ducati Panigale": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
-    "Ducati": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
-    "Ford F-150 Lightning": "https://images.unsplash.com/photo-1612825173281-9a193378527e?w=800&q=80",
-    "Ford F-150": "https://images.unsplash.com/photo-1612825173281-9a193378527e?w=800&q=80",
-    "Ford": "https://images.unsplash.com/photo-1612825173281-9a193378527e?w=800&q=80",
-    "Tesla Model S": "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800&q=80",
-    "Tesla Model 3": "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800&q=80",
-    "Tesla": "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800&q=80",
-    "Volvo 9700": "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80",
-    "Volvo Coach": "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80",
-    "Volvo": "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80",
-    "Royal Enfield Interceptor": "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800&q=80",
-    "Royal Enfield": "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=800&q=80",
-    "BYD K9": "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=800&q=80",
-    "BYD": "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=800&q=80",
-    "Toyota GR Supra": "https://images.unsplash.com/photo-1632245889029-e406faaa34cd?w=800&q=80",
-    "Toyota Supra": "https://images.unsplash.com/photo-1632245889029-e406faaa34cd?w=800&q=80",
-    "Toyota Crown": "https://images.unsplash.com/photo-1632245889029-e406faaa34cd?w=800&q=80",
-    "Toyota": "https://images.unsplash.com/photo-1632245889029-e406faaa34cd?w=800&q=80",
-    "BMW M1000": "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80",
-    "BMW M3": "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80",
-    "BMW": "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800&q=80",
-    "Audi RS7": "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&q=80",
-    "Audi": "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800&q=80",
+    "Nissan Skyline GT-R": "assets/vehicles/nissan-gtr.jpg",
+    "Nissan GT-R": "assets/vehicles/nissan-gtr.jpg",
+    "Nissan": "assets/vehicles/nissan-gtr.jpg",
+    "Honda Super Cub": "assets/vehicles/honda-pcx.jpg",
+    "Honda CBR": "assets/vehicles/honda-cbr1000.jpg",
+    "Honda": "assets/vehicles/honda-civic-type-r.jpg",
+    "Porsche 911 GT3": "assets/vehicles/porsche-911.jpg",
+    "Porsche 911": "assets/vehicles/porsche-911.jpg",
+    "Porsche": "assets/vehicles/porsche-911.jpg",
+    "Mercedes Citaro": "assets/vehicles/mercedes-citaro.jpg",
+    "Mercedes-Benz": "assets/vehicles/mercedes-sprinter.jpg",
+    "Mercedes": "assets/vehicles/mercedes-citaro.jpg",
+    "Ducati Panigale V4": "assets/vehicles/ducati-panigale.jpg",
+    "Ducati Panigale": "assets/vehicles/ducati-panigale.jpg",
+    "Ducati": "assets/vehicles/ducati-panigale.jpg",
+    "Ford F-150 Lightning": "assets/vehicles/ford-f150.jpg",
+    "Ford F-150": "assets/vehicles/ford-f150.jpg",
+    "Ford": "assets/vehicles/ford-f150.jpg",
+    "Tesla Model S": "assets/vehicles/tesla-model-s.jpg",
+    "Tesla Model 3": "assets/vehicles/tesla-model-s.jpg",
+    "Tesla": "assets/vehicles/tesla-model-s.jpg",
+    "Volvo 9700": "assets/vehicles/volvo-9700.jpg",
+    "Volvo Coach": "assets/vehicles/volvo-9700.jpg",
+    "Volvo": "assets/vehicles/volvo-9700.jpg",
+    "Royal Enfield Interceptor": "assets/vehicles/royal-enfield.jpg",
+    "Royal Enfield": "assets/vehicles/royal-enfield.jpg",
+    "BYD K9": "assets/vehicles/byd-k9.jpg",
+    "BYD": "assets/vehicles/byd-k9.jpg",
+    "Toyota GR Supra": "assets/vehicles/toyota-gr-corolla.jpg",
+    "Toyota Supra": "assets/vehicles/toyota-gr-corolla.jpg",
+    "Toyota Crown": "assets/vehicles/toyota-gr-corolla.jpg",
+    "Toyota": "assets/vehicles/toyota-gr-corolla.jpg",
+    "BMW M1000": "assets/vehicles/bmw-m1000rr.jpg",
+    "BMW M3": "assets/vehicles/bmw-m5.jpg",
+    "BMW": "assets/vehicles/bmw-m5.jpg",
+    "Audi RS7": "assets/vehicles/audi-rs7.jpg",
+    "Audi": "assets/vehicles/audi-rs7.jpg",
     "Lamborghini Huracan": "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80",
     "Lamborghini": "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=80",
-    "Ferrari 296": "https://images.unsplash.com/photo-1592198084033-aade902d1aae?w=800&q=80",
-    "Ferrari": "https://images.unsplash.com/photo-1592198084033-aade902d1aae?w=800&q=80",
-    "McLaren": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
-    "Yamaha YZF-R1": "https://upload.wikimedia.org/wikipedia/commons/6/68/Yamaha_YZF-R1.jpg",
-    "Yamaha YZF": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
-    "Yamaha": "https://upload.wikimedia.org/wikipedia/commons/6/68/Yamaha_YZF-R1.jpg",
-    "Kawasaki Ninja ZX-6R": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Kawasaki_Ninja_ZX-6R.jpg",
-    "Kawasaki Ninja": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Kawasaki_Ninja_ZX-6R.jpg",
-    "Kawasaki": "https://upload.wikimedia.org/wikipedia/commons/b/b7/Kawasaki_Ninja_ZX-6R.jpg",
-    "Suzuki GSX-R1000": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Suzuki_GSX-R1000.jpg",
-    "Suzuki GSX": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Suzuki_GSX-R1000.jpg",
-    "Suzuki": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Suzuki_GSX-R1000.jpg",
-    "Harley-Davidson": "https://upload.wikimedia.org/wikipedia/commons/8/89/Harley-Davidson_Sportster.jpg",
-    "Lexus LC": "https://upload.wikimedia.org/wikipedia/commons/c/c0/Lexus_LC_500.jpg",
-    "Lexus": "https://upload.wikimedia.org/wikipedia/commons/c/c0/Lexus_LC_500.jpg",
-    "Mazda RX-7": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Mazda_RX-7_Type_R.jpg",
-    "Mazda": "https://upload.wikimedia.org/wikipedia/commons/9/9e/Mazda_RX-7_Type_R.jpg",
-    "Subaru WRX": "https://upload.wikimedia.org/wikipedia/commons/b/b9/2018_Subaru_WRX_STI_Type_RA.jpg",
-    "Subaru": "https://upload.wikimedia.org/wikipedia/commons/b/b9/2018_Subaru_WRX_STI_Type_RA.jpg",
-    "Mitsubishi Lancer": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Mitsubishi_Lancer_Evolution.jpg",
-    "Mitsubishi": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Mitsubishi_Lancer_Evolution.jpg",
-    "KTM": "https://upload.wikimedia.org/wikipedia/commons/3/3c/KTM_1290_Super_Duke_R.jpg",
-    "Triumph": "https://upload.wikimedia.org/wikipedia/commons/0/04/Triumph_Speed_Triple_1200_RS.jpg",
+    "Ferrari 296": "assets/vehicles/ferrari-sf90.jpg",
+    "Ferrari": "assets/vehicles/ferrari-sf90.jpg",
+    "McLaren": "assets/vehicles/mclaren-750s.jpg",
+    "Yamaha YZF-R1": "assets/vehicles/yamaha-r1.jpg",
+    "Yamaha YZF": "assets/vehicles/yamaha-r1.jpg",
+    "Yamaha": "assets/vehicles/yamaha-r1.jpg",
+    "Kawasaki Ninja ZX-6R": "assets/vehicles/kawasaki-ninja.jpg",
+    "Kawasaki Ninja": "assets/vehicles/kawasaki-ninja.jpg",
+    "Kawasaki": "assets/vehicles/kawasaki-ninja.jpg",
+    "Suzuki GSX-R1000": "assets/vehicles/suzuki-gsxr.jpg",
+    "Suzuki GSX": "assets/vehicles/suzuki-gsxr.jpg",
+    "Suzuki": "assets/vehicles/suzuki-gsxr.jpg",
+    "Harley-Davidson": "assets/vehicles/harley-davidson.jpg",
+    "Lexus LC": "assets/vehicles/lexus-lfa.jpg",
+    "Lexus": "assets/vehicles/lexus-lfa.jpg",
+    "Mazda RX-7": "assets/vehicles/mazda-mx5.jpg",
+    "Mazda": "assets/vehicles/mazda-mx5.jpg",
+    "Subaru WRX": "assets/vehicles/subaru-wrx.jpg",
+    "Subaru": "assets/vehicles/subaru-wrx.jpg",
+    "Mitsubishi Lancer": "assets/vehicles/mitsubishi-lancer.jpg",
+    "Mitsubishi": "assets/vehicles/mitsubishi-lancer.jpg",
+    "KTM": "assets/vehicles/ktm-super-duke.jpg",
+    "Triumph": "assets/vehicles/triumph-speed-triple.jpg",
     "MV Agusta": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Ducati_Panigale_V4.jpg",
     "Piaggio": "https://upload.wikimedia.org/wikipedia/commons/5/54/Honda_Super_Cub_125.jpg",
     "Zero": "https://upload.wikimedia.org/wikipedia/commons/9/9a/Tesla_Model_S_long_range.jpg",
     "Aprilia": "https://upload.wikimedia.org/wikipedia/commons/3/3f/Ducati_Panigale_V4.jpg",
-    "Scania": "https://upload.wikimedia.org/wikipedia/commons/a/a8/Volvo_9700_hoge_1.jpg",
-    "MAN": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Mercedes-Benz_Citaro_G_(W639)_Frontline.jpg",
+    "Scania": "assets/vehicles/volvo-9700.jpg",
+    "MAN": "assets/vehicles/mercedes-citaro.jpg",
     "Alexander Dennis": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Mercedes-Benz_Citaro_G_(W639)_Frontline.jpg",
-    "New Flyer": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Mercedes-Benz_Citaro_G_(W639)_Frontline.jpg",
-    "Gillig": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Mercedes-Benz_Citaro_G_(W639)_Frontline.jpg",
-    "Wrightbus": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Mercedes-Benz_Citaro_G_(W639)_Frontline.jpg",
-    "Yutong": "https://upload.wikimedia.org/wikipedia/commons/f/f8/BYD_K9_electrical_bus_in_Shanghai%2C_China.jpg"
+    "New Flyer": "assets/vehicles/mercedes-citaro.jpg",
+    "Gillig": "assets/vehicles/mercedes-citaro.jpg",
+    "Wrightbus": "assets/vehicles/mercedes-citaro.jpg",
+    "Yutong": "assets/vehicles/yutong-e12.jpg"
 };
 
 const brandColors = {
@@ -374,9 +374,10 @@ function getCarImage(brand, model) {
         if (fullName.toLowerCase().startsWith(key.toLowerCase())) return url;
     }
 
-    const brandKey = brand.split(' ')[0];
-    const color = brandColors[brandKey] || '131921';
-    return `https://placehold.co/400x250/${color}/ffffff?text=${encodeURIComponent(fullName)}`;
+    // imagin.studio live fallback with correct make/model
+    const makeSlug = brand.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const modelSlug = (model || '').toLowerCase().split(' ')[0].replace(/[^a-z0-9-]/g, '');
+    return `https://cdn.imagin.studio/getimage?customer=img&make=${makeSlug}&modelFamily=${modelSlug}&paintId=color-white&angle=01&width=800`;
 }
 
 // Filter options data
@@ -557,7 +558,37 @@ let inventory = [
     { id: 145, brand: "Peterbilt", model: "579", price: 195000, nation: "USA", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Diesel", drivetrain: "RWD", bodyStyle: "Truck", color: "Red", img: getCarImage("Peterbilt", "579"), engine: "12.9L Diesel", horsepower: 515, transmission: "18-Speed Auto", availability: "In Stock", warranty: "2 Years/200k Miles", rating: 4.6 },
     { id: 146, brand: "Kenworth", model: "T680", price: 185000, nation: "USA", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Diesel", drivetrain: "RWD", bodyStyle: "Truck", color: "White", img: getCarImage("Kenworth", "T680"), engine: "12.9L Diesel", horsepower: 485, transmission: "18-Speed Auto", availability: "In Stock", warranty: "2 Years/200k Miles", rating: 4.5 },
     { id: 147, brand: "Hino", model: "258", price: 95000, nation: "Japan", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Diesel", drivetrain: "RWD", bodyStyle: "Truck", color: "White", img: getCarImage("Hino", "258"), engine: "7.6L Diesel", horsepower: 260, transmission: "6-Speed Auto", availability: "In Stock", warranty: "5 Years/150k Miles", rating: 4.4 },
-    { id: 148, brand: "Fuso", model: "Canter", price: 75000, nation: "Japan", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Diesel", drivetrain: "RWD", bodyStyle: "Truck", color: "White", img: getCarImage("Fuso", "Canter"), engine: "3.0L Diesel", horsepower: 175, transmission: "6-Speed Manual", availability: "In Stock", warranty: "5 Years/100k Miles", rating: 4.3 }
+    { id: 148, brand: "Fuso", model: "Canter", price: 75000, nation: "Japan", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Diesel", drivetrain: "RWD", bodyStyle: "Truck", color: "White", img: getCarImage("Fuso", "Canter"), engine: "3.0L Diesel", horsepower: 175, transmission: "6-Speed Manual", availability: "In Stock", warranty: "5 Years/100k Miles", rating: 4.3 },
+
+    // ========== NEW: AFRICAN MARKET FAVOURITES ==========
+    { id: 149, brand: "Toyota", model: "Probox", price: 12000, nation: "Japan", category: "Car", condition: "Used", year: 2018, mileage: 62000, fuel: "Gasoline", drivetrain: "FWD", bodyStyle: "Wagon", color: "White", img: getCarImage("Toyota", "Probox"), engine: "1.5L", horsepower: 109, transmission: "5-Speed Manual", availability: "In Stock", warranty: "1 Year/20k Miles", rating: 4.4 },
+    { id: 150, brand: "Toyota", model: "Premio", price: 16000, nation: "Japan", category: "Car", condition: "Used", year: 2019, mileage: 48000, fuel: "Gasoline", drivetrain: "FWD", bodyStyle: "Sedan", color: "Silver", img: getCarImage("Toyota", "Premio"), engine: "1.8L", horsepower: 132, transmission: "CVT", availability: "In Stock", warranty: "1 Year/20k Miles", rating: 4.5 },
+    { id: 151, brand: "Toyota", model: "Fielder", price: 14000, nation: "Japan", category: "Car", condition: "Used", year: 2018, mileage: 55000, fuel: "Hybrid", drivetrain: "FWD", bodyStyle: "Wagon", color: "White", img: getCarImage("Toyota", "Fielder"), engine: "1.5L Hybrid", horsepower: 74, transmission: "CVT", availability: "In Stock", warranty: "1 Year/20k Miles", rating: 4.6 },
+    { id: 152, brand: "Mazda", model: "Demio", price: 10000, nation: "Japan", category: "Car", condition: "Used", year: 2017, mileage: 70000, fuel: "Gasoline", drivetrain: "FWD", bodyStyle: "Hatchback", color: "Red", img: getCarImage("Mazda", "Demio"), engine: "1.3L", horsepower: 91, transmission: "CVT", availability: "In Stock", warranty: "1 Year/20k Miles", rating: 4.2 },
+    { id: 153, brand: "Nissan", model: "X-Trail", price: 22000, nation: "Japan", category: "Car", condition: "Used", year: 2019, mileage: 45000, fuel: "Gasoline", drivetrain: "AWD", bodyStyle: "SUV", color: "Black", img: getCarImage("Nissan", "X-Trail"), engine: "2.0L", horsepower: 147, transmission: "CVT", availability: "In Stock", warranty: "2 Years/30k Miles", rating: 4.4 },
+    { id: 154, brand: "Subaru", model: "Forester", price: 24000, nation: "Japan", category: "Car", condition: "Used", year: 2020, mileage: 38000, fuel: "Gasoline", drivetrain: "AWD", bodyStyle: "SUV", color: "Blue", img: getCarImage("Subaru", "Forester"), engine: "2.5L", horsepower: 182, transmission: "CVT", availability: "In Stock", warranty: "2 Years/30k Miles", rating: 4.5 },
+    { id: 155, brand: "Honda", model: "Fit", price: 9500, nation: "Japan", category: "Car", condition: "Used", year: 2016, mileage: 80000, fuel: "Gasoline", drivetrain: "FWD", bodyStyle: "Hatchback", color: "White", img: getCarImage("Honda", "Fit"), engine: "1.3L", horsepower: 99, transmission: "CVT", availability: "In Stock", warranty: "1 Year/15k Miles", rating: 4.3 },
+    { id: 156, brand: "Mitsubishi", model: "Outlander", price: 26000, nation: "Japan", category: "Car", condition: "Used", year: 2020, mileage: 40000, fuel: "Gasoline", drivetrain: "AWD", bodyStyle: "SUV", color: "Gray", img: getCarImage("Mitsubishi", "Outlander"), engine: "2.4L", horsepower: 166, transmission: "CVT", availability: "In Stock", warranty: "2 Years/30k Miles", rating: 4.3 },
+
+    // ========== NEW: ELECTRIC VEHICLES ==========
+    { id: 157, brand: "Polestar", model: "2", price: 52000, nation: "Sweden", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Electric", drivetrain: "AWD", bodyStyle: "Sedan", color: "Black", img: getCarImage("Polestar", "2"), engine: "Dual Motor AWD", horsepower: 476, transmission: "1-Speed", availability: "In Stock", warranty: "5 Years/60k Miles", rating: 4.6 },
+    { id: 158, brand: "BYD", model: "Seal", price: 38000, nation: "China", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Electric", drivetrain: "AWD", bodyStyle: "Sedan", color: "Blue", img: getCarImage("BYD", "Seal"), engine: "Dual Motor AWD", horsepower: 523, transmission: "1-Speed", availability: "In Stock", warranty: "6 Years/100k Miles", rating: 4.5 },
+    { id: 159, brand: "BYD", model: "Atto 3", price: 32000, nation: "China", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Electric", drivetrain: "FWD", bodyStyle: "SUV", color: "White", img: getCarImage("BYD", "Atto"), engine: "Single Motor FWD", horsepower: 201, transmission: "1-Speed", availability: "In Stock", warranty: "6 Years/100k Miles", rating: 4.4 },
+    { id: 160, brand: "Nio", model: "ET5", price: 55000, nation: "China", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Electric", drivetrain: "AWD", bodyStyle: "Sedan", color: "White", img: getCarImage("Nio", "ET5"), engine: "Dual Motor AWD", horsepower: 483, transmission: "1-Speed", availability: "In Stock", warranty: "5 Years/75k Miles", rating: 4.6 },
+    { id: 161, brand: "Tesla", model: "Model Y", price: 48000, nation: "USA", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Electric", drivetrain: "AWD", bodyStyle: "SUV", color: "White", img: getCarImage("Tesla", "Model Y"), engine: "Dual Motor AWD", horsepower: 384, transmission: "1-Speed", availability: "In Stock", warranty: "4 Years/50k Miles", rating: 4.7 },
+    { id: 162, brand: "Tesla", model: "Cybertruck", price: 80000, nation: "USA", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Electric", drivetrain: "AWD", bodyStyle: "Truck", color: "Silver", img: getCarImage("Tesla", "Cybertruck"), engine: "Tri Motor AWD", horsepower: 845, transmission: "1-Speed", availability: "Low Stock", warranty: "4 Years/50k Miles", rating: 4.5 },
+
+    // ========== NEW: BUDGET BIKES ==========
+    { id: 163, brand: "TVS", model: "Apache RTR 200", price: 2800, nation: "India", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Sport", color: "Black", img: getCarImage("TVS", "Apache"), engine: "197.75cc Single", horsepower: 20, transmission: "5-Speed", availability: "In Stock", warranty: "3 Years/30k Miles", rating: 4.3 },
+    { id: 164, brand: "Bajaj", model: "Dominar 400", price: 4200, nation: "India", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Touring", color: "Black", img: getCarImage("Bajaj", "Dominar"), engine: "373cc Single", horsepower: 40, transmission: "6-Speed", availability: "In Stock", warranty: "3 Years/30k Miles", rating: 4.4 },
+    { id: 165, brand: "Yamaha", model: "MT-07", price: 9500, nation: "Japan", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Naked", color: "Gray", img: getCarImage("Yamaha", "MT-07"), engine: "689cc Parallel Twin", horsepower: 73, transmission: "6-Speed", availability: "In Stock", warranty: "2 Years/20k Miles", rating: 4.6 },
+    { id: 166, brand: "Honda", model: "CB500F", price: 7200, nation: "Japan", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Naked", color: "Red", img: getCarImage("Honda", "CB500"), engine: "471cc Parallel Twin", horsepower: 47, transmission: "6-Speed", availability: "In Stock", warranty: "2 Years/20k Miles", rating: 4.5 },
+    { id: 167, brand: "Kawasaki", model: "Z400", price: 5500, nation: "Japan", category: "Bike", condition: "New", year: 2026, mileage: 0, fuel: "Gasoline", drivetrain: "RWD", bodyStyle: "Naked", color: "Green", img: getCarImage("Kawasaki", "Z400"), engine: "399cc Parallel Twin", horsepower: 45, transmission: "6-Speed", availability: "In Stock", warranty: "2 Years/Unlimited", rating: 4.4 },
+
+    // ========== NEW: COMMERCIAL TRUCKS ==========
+    { id: 168, brand: "Isuzu", model: "FRR", price: 65000, nation: "Japan", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Diesel", drivetrain: "RWD", bodyStyle: "Truck", color: "White", img: getCarImage("Isuzu", "FRR"), engine: "5.2L Diesel", horsepower: 215, transmission: "6-Speed Manual", availability: "In Stock", warranty: "5 Years/150k Miles", rating: 4.5 },
+    { id: 169, brand: "Mitsubishi", model: "Canter FE", price: 55000, nation: "Japan", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Diesel", drivetrain: "RWD", bodyStyle: "Truck", color: "White", img: getCarImage("Mitsubishi", "Canter"), engine: "3.0L Diesel", horsepower: 150, transmission: "6-Speed Manual", availability: "In Stock", warranty: "5 Years/100k Miles", rating: 4.3 },
+    { id: 170, brand: "Toyota", model: "Dyna", price: 48000, nation: "Japan", category: "Car", condition: "New", year: 2026, mileage: 0, fuel: "Diesel", drivetrain: "RWD", bodyStyle: "Truck", color: "White", img: getCarImage("Toyota", "Dyna"), engine: "4.0L Diesel", horsepower: 150, transmission: "5-Speed Manual", availability: "In Stock", warranty: "5 Years/100k Miles", rating: 4.4 }
 ];
 
 // ============================================
@@ -644,6 +675,7 @@ function showConfirm(message, onConfirm) {
     document.body.appendChild(div);
     document.getElementById(`${id}_yes`).onclick = () => { div.remove(); onConfirm(); };
     document.getElementById(`${id}_no`).onclick = () => div.remove();
+    div.onclick = (e) => { if (e.target === div) div.remove(); };
 }
 
 function showPrompt(message, defaultVal, onSubmit, isPassword = false) {
@@ -656,8 +688,8 @@ function showPrompt(message, defaultVal, onSubmit, isPassword = false) {
         <div class="modal-content" style="max-width:380px">
             <p style="margin-bottom:12px">${sanitize(message)}</p>
             <input type="${isPassword ? 'password' : 'text'}" id="${id}_input"
-                value="${sanitize(defaultVal)}" class="filter-group"
-                style="width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);margin-bottom:15px">
+                value="${sanitize(defaultVal)}"
+                style="width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);margin-bottom:15px;display:block;box-sizing:border-box">
             <div style="display:flex;gap:10px">
                 <button class="btn-primary" id="${id}_ok" style="flex:1">OK</button>
                 <button class="close-btn" id="${id}_cancel" style="flex:1">Cancel</button>
@@ -665,10 +697,11 @@ function showPrompt(message, defaultVal, onSubmit, isPassword = false) {
         </div>`;
     document.body.appendChild(div);
     const input = document.getElementById(`${id}_input`);
-    input.focus();
+    setTimeout(() => input.focus(), 50);
     input.onkeydown = (e) => { if (e.key === 'Enter') document.getElementById(`${id}_ok`).click(); };
     document.getElementById(`${id}_ok`).onclick = () => { const v = input.value; div.remove(); onSubmit(v); };
     document.getElementById(`${id}_cancel`).onclick = () => div.remove();
+    div.onclick = (e) => { if (e.target === div) div.remove(); };
 }
 
 // ============================================
@@ -680,17 +713,17 @@ function showNotification(message, type = 'info') {
     const id = Date.now();
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
-    notification.id = id;
+    notification.id = 'notif_' + id;
     const span = document.createElement('span');
     span.textContent = message;
     const btn = document.createElement('button');
     btn.className = 'notification-close';
     btn.textContent = '✕';
-    btn.onclick = () => dismissNotification(id);
+    btn.onclick = () => dismissNotification('notif_' + id);
     notification.appendChild(span);
     notification.appendChild(btn);
     container.appendChild(notification);
-    setTimeout(() => dismissNotification(id), 5000);
+    setTimeout(() => dismissNotification('notif_' + id), 5000);
 }
 
 function dismissNotification(id) {
@@ -1292,6 +1325,8 @@ function applyFilters() {
 
 function clearFilters() {
     document.getElementById('searchBar').value = '';
+    const mobileSearch = document.getElementById('mobileSearchInput');
+    if (mobileSearch) mobileSearch.value = '';
     document.getElementById('categoryFilter').value = 'all';
     document.getElementById('conditionFilter').value = 'all';
     document.getElementById('nationFilter').value = 'all';
@@ -1333,7 +1368,7 @@ function toggleCompare(id) {
         tray.classList.add('hidden');
     }
     document.getElementById('compareText').innerText = `${compareList.length} Vehicles Selected`;
-    render();
+    // No full re-render needed — just update tray
 }
 
 function clearCompare() {
@@ -1358,57 +1393,48 @@ function showComparison() {
     
     // Image row
     html += '<tr><td><strong>Image</strong></td>';
-    selected.forEach(car => {
-        html += `<td><img src="${car.img}" alt="${car.model}"></td>`;
-    });
+    selected.forEach(car => { html += `<td><img src="${sanitize(car.img)}" alt="${sanitize(car.model)}"></td>`; });
+    html += '</tr>';
     
     // Price row
     html += '<tr><td><strong>Price</strong></td>';
-    selected.forEach(car => {
-        html += `<td>${formatPrice(car.price)}</td>`;
-    });
+    selected.forEach(car => { html += `<td>${formatPrice(car.price)}</td>`; });
+    html += '</tr>';
     
     // Origin row
     html += '<tr><td><strong>Origin</strong></td>';
-    selected.forEach(car => {
-        html += `<td>${car.nation}</td>`;
-    });
+    selected.forEach(car => { html += `<td>${sanitize(car.nation)}</td>`; });
+    html += '</tr>';
     
     // Category row
     html += '<tr><td><strong>Category</strong></td>';
-    selected.forEach(car => {
-        html += `<td>${car.category}</td>`;
-    });
+    selected.forEach(car => { html += `<td>${sanitize(car.category)}</td>`; });
+    html += '</tr>';
     
     // Engine row
     html += '<tr><td><strong>Engine</strong></td>';
-    selected.forEach(car => {
-        html += `<td>${car.engine || 'N/A'}</td>`;
-    });
+    selected.forEach(car => { html += `<td>${sanitize(car.engine || 'N/A')}</td>`; });
+    html += '</tr>';
     
     // Horsepower row
     html += '<tr><td><strong>Horsepower</strong></td>';
-    selected.forEach(car => {
-        html += `<td>${car.horsepower || 'N/A'} hp</td>`;
-    });
+    selected.forEach(car => { html += `<td>${sanitize(String(car.horsepower || 'N/A'))} hp</td>`; });
+    html += '</tr>';
     
     // Transmission row
     html += '<tr><td><strong>Transmission</strong></td>';
-    selected.forEach(car => {
-        html += `<td>${car.transmission || 'N/A'}</td>`;
-    });
+    selected.forEach(car => { html += `<td>${sanitize(car.transmission || 'N/A')}</td>`; });
+    html += '</tr>';
     
     // Availability row
     html += '<tr><td><strong>Availability</strong></td>';
-    selected.forEach(car => {
-        html += `<td>${car.availability}</td>`;
-    });
+    selected.forEach(car => { html += `<td>${sanitize(car.availability)}</td>`; });
+    html += '</tr>';
     
     // Shipping row
     html += '<tr><td><strong>Shipping</strong></td>';
-    selected.forEach(car => {
-        html += `<td>${formatPrice(calculateFreight(car))}</td>`;
-    });
+    selected.forEach(car => { html += `<td>${formatPrice(calculateFreight(car))}</td>`; });
+    html += '</tr>';
     
     html += '</tbody></table>';
     
@@ -1439,7 +1465,14 @@ function toggleWishlist(id) {
     }
     localStorage.setItem('dealership_wishlist', JSON.stringify(wishlist));
     updateWishCount();
-    render();
+    // Update only the affected card hearts instead of re-rendering everything
+    const isFav = wishlist.includes(id);
+    document.querySelectorAll(`.heart-icon[onclick="toggleWishlist(${id})"]`).forEach(el => {
+        el.classList.toggle('active', isFav);
+    });
+    document.querySelectorAll(`.btn-wish[onclick="toggleWishlist(${id})"]`).forEach(el => {
+        el.textContent = isFav ? '\u2764\uFE0F' : '\uD83E\uDD0D';
+    });
 }
 
 function showWishlistModal() {
@@ -1450,7 +1483,9 @@ function showWishlistModal() {
         content.innerHTML = '<p>Your wishlist is empty</p>';
     } else {
         const items = inventory.filter(car => wishlist.includes(car.id));
-        let html = '';
+        let html = `<div style="text-align:right;margin-bottom:12px">
+            <button onclick="exportWishlist()" class="btn-primary" style="padding:8px 16px;font-size:.85rem">📄 Export List</button>
+        </div>`;
         items.forEach(car => {
             html += `
                 <div class="inventory-item">
@@ -1520,10 +1555,10 @@ function showDetailModal(id) {
             <h3>📝 About This Vehicle</h3>
             <p>${desc}</p>
             <div class="specs-grid">
-                <div class="spec-item"><label>🔑 VIN</label><span>${car.id}GD2024</span></div>
-                <div class="spec-item"><label>📅 Year</label><span>2024</span></div>
-                <div class="spec-item"><label>🏭 Manufacturer</label><span>${car.brand} Motors</span></div>
-                <div class="spec-item"><label>🌍 Country</label><span>${car.nation}</span></div>
+                <div class="spec-item"><label>🔑 VIN</label><span>${car.id}GD${car.year}</span></div>
+                <div class="spec-item"><label>📅 Year</label><span>${car.year}</span></div>
+                <div class="spec-item"><label>🏭 Manufacturer</label><span>${sanitize(car.brand)} Motors</span></div>
+                <div class="spec-item"><label>🌍 Country</label><span>${sanitize(car.nation)}</span></div>
             </div>
         </div>
         
@@ -1554,11 +1589,11 @@ function showDetailModal(id) {
             </div>
             <div class="info-item">
                 <label>Fuel Type</label>
-                <span>${car.category === 'Bike' ? (car.horsepower < 50 ? 'Gasoline' : 'Gasoline') : (car.nation === 'China' || car.nation === 'USA' && car.brand === 'Tesla' ? 'Electric' : 'Gasoline/Diesel')}</span>
+                <span>${sanitize(car.fuel)}</span>
             </div>
             <div class="info-item">
                 <label>Warranty</label>
-                <span>${car.category === 'Car' ? '3 Years' : '2 Years'}</span>
+                <span>${sanitize(car.warranty || (car.category === 'Car' ? '3 Years' : '2 Years'))}</span>
             </div>
             <div class="info-item">
                 <label>Category</label>
@@ -1587,7 +1622,9 @@ function showDetailModal(id) {
             <button class="btn-compare" onclick="toggleCompare(${car.id}); closeDetailModal();">
                 ${compareList.includes(car.id) ? '✓ Added to Compare' : '+ Add to Compare'}
             </button>
-            <button class="btn-contact" onclick="contactDealer('${car.brand} ${car.model}')">📞 Contact Dealer</button>
+            <button class="btn-contact" onclick="directContactDealer(${car.id})">📞 Contact Dealer</button>
+            <button class="btn-whatsapp" onclick="whatsappContact('${car.brand}','${car.model}',${car.price})">💬 WhatsApp</button>
+            <button class="btn-test-drive" onclick="showTestDriveBooking(${car.id})">🚗 Test Drive</button>
             <button class="btn-customize" onclick="showVehicleCustomization(${car.id})">🔧 Customize</button>
             <button class="btn-buy" onclick="showMpesaPayment(${car.id}, ${car.price + calculateFreight(car)})">💳 Buy with MPesa</button>
         </div>
@@ -2035,7 +2072,7 @@ const customizationOptions = {
         { id: 'aero', name: 'Aero Package', price: 4500 },
         { id: 'hood', name: 'Carbon Hood', price: 2800 },
         { id: 'spoiler', name: 'Racing Spoiler', price: 1800 },
-        { id: ' diffuser', name: 'Rear Diffuser', price: 1200 }
+        { id: 'diffuser', name: 'Rear Diffuser', price: 1200 }
     ],
     interior: [
         { id: 'stock', name: 'Stock Interior', price: 0 },
@@ -2085,164 +2122,213 @@ const customizationOptions = {
 
 let vehicleCustomization = {};
 let customTotal = 0;
+let pimpCart = [];
+
+const pimpImages = {
+    wheels: {
+        stock: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&q=80',
+        sport: 'https://images.unsplash.com/photo-1611016186353-9af58c69a533?w=200&q=80',
+        performance: 'https://images.unsplash.com/photo-1600712242805-5f78671b24da?w=200&q=80',
+        forged: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=200&q=80',
+        gold: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=200&q=80'
+    },
+    paint: {
+        stock: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=200&q=80',
+        metallic: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=200&q=80',
+        matte: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=200&q=80',
+        pearl: 'https://images.unsplash.com/photo-1502877338535-766e1452684a?w=200&q=80',
+        chrome: 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=200&q=80',
+        wrapping: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=200&q=80',
+        candy: 'https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?w=200&q=80',
+        flip: 'https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=200&q=80'
+    },
+    body: {
+        stock: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=200&q=80',
+        bodykit: 'https://images.unsplash.com/photo-1547744152-14d985cb937f?w=200&q=80',
+        widebody: 'https://images.unsplash.com/photo-1612544448445-b8232cff3b6c?w=200&q=80',
+        carbon: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&q=80',
+        aero: 'https://images.unsplash.com/photo-1600712242805-5f78671b24da?w=200&q=80',
+        hood: 'https://images.unsplash.com/photo-1563720223185-11003d516935?w=200&q=80',
+        spoiler: 'https://images.unsplash.com/photo-1571607388263-1044f9ea01dd?w=200&q=80',
+        ' diffuser': 'https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?w=200&q=80'
+    },
+    interior: {
+        stock: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=200&q=80',
+        leather: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&q=80',
+        nappa: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=200&q=80',
+        alcantara: 'https://images.unsplash.com/photo-1547744152-14d985cb937f?w=200&q=80',
+        stitching: 'https://images.unsplash.com/photo-1612544448445-b8232cff3b6c?w=200&q=80',
+        carbon: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&q=80',
+        lighting: 'https://images.unsplash.com/photo-1563720223185-11003d516935?w=200&q=80',
+        sound: 'https://images.unsplash.com/photo-1545454675-3531b543be5d?w=200&q=80'
+    },
+    engine: {
+        stock: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=200&q=80',
+        tune: 'https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=200&q=80',
+        intake: 'https://images.unsplash.com/photo-1600712242805-5f78671b24da?w=200&q=80',
+        exhaust: 'https://images.unsplash.com/photo-1571607388263-1044f9ea01dd?w=200&q=80',
+        turbo: 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=200&q=80',
+        super: 'https://images.unsplash.com/photo-1612544448445-b8232cff3b6c?w=200&q=80',
+        ecu: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&q=80',
+        cooling: 'https://images.unsplash.com/photo-1563720223185-11003d516935?w=200&q=80'
+    },
+    audio: {
+        stock: 'https://images.unsplash.com/photo-1545454675-3531b543be5d?w=200&q=80',
+        premium: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&q=80',
+        focal: 'https://images.unsplash.com/photo-1547744152-14d985cb937f?w=200&q=80',
+        bose: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=200&q=80',
+        subwoofer: 'https://images.unsplash.com/photo-1571607388263-1044f9ea01dd?w=200&q=80',
+        amp: 'https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?w=200&q=80'
+    },
+    windows: {
+        stock: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=200&q=80',
+        tint: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=200&q=80',
+        privacy: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=200&q=80',
+        laminated: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=200&q=80'
+    },
+    accessories: {
+        none: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=200&q=80',
+        spoiler: 'https://images.unsplash.com/photo-1571607388263-1044f9ea01dd?w=200&q=80',
+        roofrack: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&q=80',
+        bike: 'https://images.unsplash.com/photo-1563720223185-11003d516935?w=200&q=80',
+        cargo: 'https://images.unsplash.com/photo-1606016159991-dfe4f2746ad5?w=200&q=80',
+        led: 'https://images.unsplash.com/photo-1580274455191-1c62238fa333?w=200&q=80',
+        lights: 'https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?w=200&q=80',
+        ground: 'https://images.unsplash.com/photo-1612544448445-b8232cff3b6c?w=200&q=80'
+    }
+};
 
 function showVehicleCustomization(vehicleId) {
     const vehicle = inventory.find(v => v.id === vehicleId);
     if (!vehicle) return;
     
     selectedVehicle = vehicle;
-    vehicleCustomization = {
-        vehicleId: vehicle.id,
-        basePrice: vehicle.price,
-        wheels: 'stock',
-        paint: 'stock',
-        body: 'stock',
-        interior: 'stock',
-        engine: 'stock',
-        audio: 'stock',
-        windows: 'stock',
-        accessories: 'none'
-    };
+    vehicleCustomization = { vehicleId: vehicle.id, basePrice: vehicle.price };
+    pimpCart = [];
     
     const modal = document.getElementById('customizeModal');
     const content = document.getElementById('customizeContent');
     
     content.innerHTML = renderCustomizationUI(vehicle);
     modal.classList.remove('hidden');
-    updateCustomizationTotal();
+    renderPimpCart();
 }
 
 function renderCustomizationUI(vehicle) {
-    let total = vehicle.price;
-    let html = `
-        <div class="customize-vehicle">
-            <div class="customize-preview">
-                <img src="${vehicle.img || ''}" alt="${vehicle.model}">
-                <h3>${vehicle.brand} ${vehicle.model}</h3>
-                <p class="base-price">Base: ${formatPrice(vehicle.price)}</p>
-            </div>
-            
-            <div class="customize-options">
-                <div class="customize-section">
-                    <h4>🛞 Wheels</h4>
-                    <select onchange="updateCustomization('wheels', this.value)">
-                        ${customizationOptions.wheels.map(w => `<option value="${w.id}">${w.name} (+${formatPrice(w.price)})</option>`).join('')}
-                    </select>
-                </div>
-                
-                <div class="customize-section">
-                    <h4>🎨 Paint</h4>
-                    <select onchange="updateCustomization('paint', this.value)">
-                        ${customizationOptions.paint.map(p => `<option value="${p.id}">${p.name} (+${formatPrice(p.price)})</option>`).join('')}
-                    </select>
-                </div>
-                
-                <div class="customize-section">
-                    <h4>🚗 Body Kit</h4>
-                    <select onchange="updateCustomization('body', this.value)">
-                        ${customizationOptions.body.map(b => `<option value="${b.id}">${b.name} (+${formatPrice(b.price)})</option>`).join('')}
-                    </select>
-                </div>
-                
-                <div class="customize-section">
-                    <h4>💺 Interior</h4>
-                    <select onchange="updateCustomization('interior', this.value)">
-                        ${customizationOptions.interior.map(i => `<option value="${i.id}">${i.name} (+${formatPrice(i.price)})</option>`).join('')}
-                    </select>
-                </div>
-                
-                <div class="customize-section">
-                    <h4>⚙️ Engine</h4>
-                    <select onchange="updateCustomization('engine', this.value)">
-                        ${customizationOptions.engine.map(e => `<option value="${e.id}">${e.name} (+${formatPrice(e.price)})</option>`).join('')}
-                    </select>
-                </div>
-                
-                <div class="customize-section">
-                    <h4>🔊 Audio</h4>
-                    <select onchange="updateCustomization('audio', this.value)">
-                        ${customizationOptions.audio.map(a => `<option value="${a.id}">${a.name} (+${formatPrice(a.price)})</option>`).join('')}
-                    </select>
-                </div>
-                
-                <div class="customize-section">
-                    <h4>🪟 Windows</h4>
-                    <select onchange="updateCustomization('windows', this.value)">
-                        ${customizationOptions.windows.map(w => `<option value="${w.id}">${w.name} (+${formatPrice(w.price)})</option>`).join('')}
-                    </select>
-                </div>
-                
-                <div class="customize-section">
-                    <h4>🎁 Accessories</h4>
-                    <select onchange="updateCustomization('accessories', this.value)">
-                        ${customizationOptions.accessories.map(a => `<option value="${a.id}">${a.name} (+${formatPrice(a.price)})</option>`).join('')}
-                    </select>
+    const sections = [
+        { key: 'wheels', label: '🛞 Wheels', items: customizationOptions.wheels },
+        { key: 'paint', label: '🎨 Paint', items: customizationOptions.paint },
+        { key: 'body', label: '🚗 Body Kit', items: customizationOptions.body },
+        { key: 'interior', label: '💺 Interior', items: customizationOptions.interior },
+        { key: 'engine', label: '⚙️ Engine', items: customizationOptions.engine },
+        { key: 'audio', label: '🔊 Audio', items: customizationOptions.audio },
+        { key: 'windows', label: '🪟 Windows', items: customizationOptions.windows },
+        { key: 'accessories', label: '🎁 Accessories', items: customizationOptions.accessories }
+    ];
+
+    return `
+        <div class="pimp-layout">
+            <div class="pimp-header">
+                <img src="${vehicle.img || ''}" alt="${vehicle.model}" class="pimp-vehicle-img">
+                <div>
+                    <h3>${vehicle.brand} ${vehicle.model}</h3>
+                    <p class="base-price">Base Price: ${formatPrice(vehicle.price)}</p>
                 </div>
             </div>
-            
-            <div class="customize-summary">
-                <div class="summary-row">
-                    <span>Base Price:</span>
-                    <span>${formatPrice(vehicle.price)}</span>
-                </div>
-                <div class="summary-row custom-costs">
-                    <span>Customizations:</span>
-                    <span id="customCost">${formatPrice(0)}</span>
-                </div>
-                <div class="summary-row total">
-                    <span>Total:</span>
-                    <span id="customTotal">${formatPrice(vehicle.price)}</span>
-                </div>
+
+            <div class="pimp-sections">
+                ${sections.map(s => `
+                    <div class="pimp-section">
+                        <h4>${s.label}</h4>
+                        <div class="pimp-cards">
+                            ${s.items.filter(item => item.price > 0).map(item => `
+                                <div class="pimp-card" id="pcard-${s.key}-${item.id}">
+                                    <img src="${(pimpImages[s.key] && pimpImages[s.key][item.id]) || 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=200&q=80'}" alt="${item.name}" loading="lazy">
+                                    <div class="pimp-card-info">
+                                        <span class="pimp-card-name">${item.name}</span>
+                                        <span class="pimp-card-price">+${formatPrice(item.price)}</span>
+                                    </div>
+                                    <button class="pimp-add-btn" onclick="addPimpToCart('${s.key}', '${item.id}', '${item.name}', ${item.price}, '${s.label}')">+ Add</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('')}
             </div>
-            
-            <div class="customize-buttons">
-                <button onclick="resetCustomization()" class="btn-secondary">Reset</button>
-                <button onclick="proceedToPaymentCustom()" class="calc-btn">💳 Proceed to Payment</button>
+
+            <div class="pimp-cart-panel">
+                <h4>🛒 Your Pimp Cart</h4>
+                <div id="pimpCartItems"><p class="pimp-empty">No upgrades added yet.</p></div>
+                <div class="pimp-cart-footer">
+                    <div class="pimp-totals">
+                        <div class="pimp-total-row"><span>Base:</span><span>${formatPrice(vehicle.price)}</span></div>
+                        <div class="pimp-total-row"><span>Upgrades:</span><span id="pimpUpgradeCost">${formatPrice(0)}</span></div>
+                        <div class="pimp-total-row pimp-grand"><span>Grand Total:</span><span id="pimpGrandTotal">${formatPrice(vehicle.price)}</span></div>
+                    </div>
+                    <div class="customize-buttons">
+                        <button onclick="clearPimpCart()" class="btn-secondary">🗑 Clear</button>
+                        <button onclick="proceedToPaymentCustom()" class="calc-btn">💳 Buy Now</button>
+                    </div>
+                </div>
             </div>
         </div>
     `;
-    return html;
 }
 
-function updateCustomization(category, value) {
-    vehicleCustomization[category] = value;
-    updateCustomizationTotal();
+const MULTI_SELECT_CATEGORIES = ['accessories'];
+
+function addPimpToCart(category, id, name, price, label) {
+    const isMulti = MULTI_SELECT_CATEGORIES.includes(category);
+    const cartKey = isMulti ? `${category}-${id}` : category;
+    const existing = pimpCart.findIndex(i => i.cartKey === cartKey);
+
+    if (existing >= 0) {
+        // toggle off
+        document.getElementById(`pcard-${category}-${id}`)?.classList.remove('pimp-card-active');
+        pimpCart.splice(existing, 1);
+        renderPimpCart();
+        return;
+    }
+
+    if (!isMulti) {
+        // remove previous selection in same category
+        const prev = pimpCart.findIndex(i => i.category === category);
+        if (prev >= 0) {
+            const old = pimpCart[prev];
+            document.getElementById(`pcard-${old.category}-${old.id}`)?.classList.remove('pimp-card-active');
+            pimpCart.splice(prev, 1);
+        }
+    }
+
+    pimpCart.push({ category, id, name, price, label, cartKey });
+    document.getElementById(`pcard-${category}-${id}`)?.classList.add('pimp-card-active');
+    renderPimpCart();
 }
 
-function updateCustomizationTotal() {
-    if (!selectedVehicle) return;
-    
-    let customCost = 0;
-    
-    customCost += customizationOptions.wheels.find(w => w.id === vehicleCustomization.wheels)?.price || 0;
-    customCost += customizationOptions.paint.find(p => p.id === vehicleCustomization.paint)?.price || 0;
-    customCost += customizationOptions.body.find(b => b.id === vehicleCustomization.body)?.price || 0;
-    customCost += customizationOptions.interior.find(i => i.id === vehicleCustomization.interior)?.price || 0;
-    customCost += customizationOptions.engine.find(e => e.id === vehicleCustomization.engine)?.price || 0;
-    customCost += customizationOptions.audio.find(a => a.id === vehicleCustomization.audio)?.price || 0;
-    customCost += customizationOptions.windows.find(w => w.id === vehicleCustomization.windows)?.price || 0;
-    customCost += customizationOptions.accessories.find(a => a.id === vehicleCustomization.accessories)?.price || 0;
-    
-    customTotal = selectedVehicle.price + customCost;
-    
-    document.getElementById('customCost').innerText = formatPrice(customCost);
-    document.getElementById('customTotal').innerText = formatPrice(customTotal);
+function renderPimpCart() {
+    const container = document.getElementById('pimpCartItems');
+    if (!container) return;
+    if (pimpCart.length === 0) {
+        container.innerHTML = '<p class="pimp-empty">No upgrades added yet.</p>';
+    } else {
+        container.innerHTML = pimpCart.map(item => `
+            <div class="pimp-cart-item">
+                <span>${item.label.split(' ').slice(1).join(' ')}: ${item.name}</span>
+                <span class="pimp-cart-price">+${formatPrice(item.price)}</span>
+                <button onclick="addPimpToCart('${item.category}','${item.id}','${item.name}',${item.price},'${item.label}')" class="pimp-remove">✕</button>
+            </div>
+        `).join('');
+    }
+    const upgradeCost = pimpCart.reduce((s, i) => s + i.price, 0);
+    customTotal = (selectedVehicle?.price || 0) + upgradeCost;
+    document.getElementById('pimpUpgradeCost').innerText = formatPrice(upgradeCost);
+    document.getElementById('pimpGrandTotal').innerText = formatPrice(customTotal);
 }
 
-function resetCustomization() {
-    vehicleCustomization = {
-        vehicleId: selectedVehicle.id,
-        basePrice: selectedVehicle.price,
-        wheels: 'stock',
-        paint: 'stock',
-        body: 'stock',
-        interior: 'stock',
-        engine: 'stock',
-        audio: 'stock',
-        windows: 'stock',
-        accessories: 'none'
-    };
-    showVehicleCustomization(selectedVehicle.id);
+function clearPimpCart() {
+    pimpCart.forEach(i => document.getElementById(`pcard-${i.category}-${i.id}`)?.classList.remove('pimp-card-active'));
+    pimpCart = [];
+    renderPimpCart();
 }
 
 function proceedToPaymentCustom() {
@@ -2868,7 +2954,7 @@ function doRegister() {
     const phone = document.getElementById('regPhone').value;
     
     if (!name || !email || !password) {
-        showNotification('Please fill all fields', 'error');
+        showNotification('Please fill all required fields', 'error');
         return;
     }
     
@@ -3129,14 +3215,13 @@ function getUserLocation() {
 }
 
 function calculateDistance(lat1, lng1, lat2, lng2) {
-    const R = 3959;
+    const R = 6371; // km
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLng = (lng2 - lng1) * Math.PI / 180;
     const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
         Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
         Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
 function findNearestDealers(userLat, userLng, limit = 5) {
@@ -3149,42 +3234,35 @@ function findNearestDealers(userLat, userLng, limit = 5) {
 function showDealerLocator(vehicleName) {
     const modal = document.getElementById('dealerModal');
     const content = document.getElementById('dealerContent');
-    
     content.innerHTML = `
-        <div class="dealer-search">
-            <button onclick="locateAndFindDealers('${vehicleName}')" class="locate-btn">
-                📍 Find Nearest Dealers
-            </button>
-            <p class="dealer-note">Click to find dealers near your location</p>
-        </div>
-        <div id="dealerList"></div>
+        <div id="dealerList"><p class="loading">🔍 Locating you…</p></div>
     `;
-    
     modal.classList.remove('hidden');
+    locateAndFindDealers(vehicleName);
 }
 
 async function locateAndFindDealers(vehicleName) {
     const listEl = document.getElementById('dealerList');
-    listEl.innerHTML = '<p class="loading">🔍 Finding dealers near you...</p>';
-    
+    if (!listEl) return;
+    listEl.innerHTML = '<p class="loading">🔍 Locating you…</p>';
+
     const userLoc = await getUserLocation();
-    
+
     if (!userLoc) {
         listEl.innerHTML = `
-            <p class="dealer-note">⚠️ Could not get your location. Showing all dealers:</p>
+            <p class="dealer-note">⚠️ Location access denied. <button onclick="locateAndFindDealers('${vehicleName}')" class="locate-btn" style="display:inline;padding:6px 14px;font-size:0.85rem">🔄 Try Again</button></p>
             <div class="dealer-grid">
-                ${dealers.slice(0, 10).map(d => createDealerCard(d, vehicleName)).join('')}
+                ${dealers.map(d => createDealerCard(d, vehicleName)).join('')}
             </div>
         `;
         return;
     }
-    
-    const nearest = findNearestDealers(userLoc.lat, userLoc.lng, 10);
-    
+
+    const nearest = findNearestDealers(userLoc.lat, userLoc.lng, dealers.length);
     listEl.innerHTML = `
         <div class="nearest-header">
             <h4>📍 Dealers Near You</h4>
-            <span class="distance-badge">Closest First</span>
+            <span class="distance-badge">Sorted by Distance</span>
         </div>
         <div class="dealer-grid">
             ${nearest.map(d => createDealerCard(d, vehicleName)).join('')}
@@ -3193,29 +3271,28 @@ async function locateAndFindDealers(vehicleName) {
 }
 
 function createDealerCard(dealer, vehicleName) {
-    const distanceText = dealer.distance ? `${dealer.distance.toFixed(1)} miles away` : '';
-    const isNearest = dealer.distance < 50;
-    
+    const distKm = dealer.distance;
+    const distText = distKm != null ? (distKm < 1 ? 'Less than 1 km away' : `${distKm.toFixed(0)} km away`) : '';
+    const isNearest = distKm != null && distKm < 100;
+    const waPhone = dealer.phone.replace(/[^0-9]/g, '');
+    const waText = encodeURIComponent(`Hi ${dealer.name}! I found you on OmniDrive${vehicleName ? ` and I'm interested in the ${vehicleName}` : ''}. Are you available?`);
     return `
         <div class="dealer-card ${isNearest ? 'nearest' : ''}">
             <div class="dealer-header">
-                <h4>${dealer.name}</h4>
-                ${isNearest ? '<span class="nearest-tag"> Nearest</span>' : ''}
+                <h4>${dealer.name} ${dealer.verified ? '<span class="dealer-verified">✔ Verified</span>' : ''}</h4>
+                ${isNearest ? '<span class="nearest-tag">📍 Nearest</span>' : ''}
             </div>
             <p class="dealer-address">📍 ${dealer.address}</p>
-            <p class="dealer-distance">${distanceText}</p>
+            ${distText ? `<p class="dealer-distance"><strong>${distText}</strong></p>` : ''}
             <p class="dealer-hours">🕐 ${dealer.hours}</p>
             <div class="dealer-contact">
-                <a href="tel:${dealer.phone}" class="contact-btn">📞 ${dealer.phone}</a>
-                <a href="mailto:${dealer.email}?subject=Inquiry: ${vehicleName}" class="contact-btn">✉️ Email</a>
+                <a href="https://wa.me/${waPhone}?text=${waText}" target="_blank" class="contact-btn" style="background:#25D366;color:white;font-weight:700">💬 WhatsApp</a>
+                <a href="tel:${dealer.phone}" class="contact-btn">📞 Call</a>
+                <a href="mailto:${dealer.email}?subject=Inquiry: ${vehicleName || 'Vehicle'}" class="contact-btn">✉️ Email</a>
             </div>
             <div class="dealer-actions">
-                <button onclick="getDirections(${dealer.lat}, ${dealer.lng})" class="directions-btn">
-                    🧭 Get Directions
-                </button>
-                <button onclick="scheduleTestDrive('${dealer.name}', '${vehicleName}')" class="test-drive-btn">
-                    📅 Schedule Test Drive
-                </button>
+                <button onclick="getDirections(${dealer.lat}, ${dealer.lng})" class="directions-btn">🧭 Get Directions</button>
+                <button onclick="scheduleTestDrive('${dealer.name}', '${vehicleName || ''}')" class="test-drive-btn">📅 Test Drive</button>
             </div>
         </div>
     `;
@@ -3531,7 +3608,8 @@ function createModal(id, contentId, title) {
 }
 
 function closeModal(id) {
-    document.getElementById(id).classList.add('hidden');
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
 }
 
 function calculateFinance() {
@@ -3925,26 +4003,29 @@ function renderMapView() {
     const busIcon   = L.divIcon({ className: '', html: '<div class="map-marker">&#x1F68C;</div>', iconSize: [32, 32], iconAnchor: [16, 32] });
 
     shown.forEach(car => {
-        const dealer = car.dealerRef ? getDealerById(car.dealerRef) : assignDealer(car.id);
-        if (!dealer?.lat || !dealer?.lng) return;
+        const regDealer = car.dealerRef ? getDealerById(car.dealerRef) : assignDealer(car.id);
+        // dealerRegistry has no lat/lng — look up coordinates from the global dealers array by city
+        const geoDealer = dealers.find(d => d.address.includes(regDealer?.city || '')) || dealers[car.id % dealers.length];
         const icon = car.category === 'Bike' ? bikeIcon : car.category === 'Bus' ? busIcon : markerIcon;
-        L.marker([dealer.lat, dealer.lng], { icon })
+        L.marker([geoDealer.lat, geoDealer.lng], { icon })
             .addTo(leafletMap)
             .bindPopup(`
                 <div style="min-width:180px">
                     <img src="${car.img}" onerror="this.style.display='none'" style="width:100%;height:90px;object-fit:cover;border-radius:6px;margin-bottom:8px">
                     <strong>${car.brand} ${car.model}</strong><br>
                     <span style="color:#1a56db;font-weight:700">${formatPrice(car.price)}</span><br>
-                    <small>${dealer.name} &bull; ${dealer.city}</small><br>
+                    <small>${regDealer?.name || geoDealer.name} &bull; ${regDealer?.city || geoDealer.address}</small><br>
                     <button onclick="showDetailModal(${car.id})" style="margin-top:8px;padding:6px 12px;background:#1a56db;color:white;border:none;border-radius:6px;cursor:pointer;width:100%">View Details</button>
                 </div>
             `);
     });
 
     // Fit map to markers
-    const coords = shown
-        .map(car => { const d = car.dealerRef ? getDealerById(car.dealerRef) : assignDealer(car.id); return d?.lat && d?.lng ? [d.lat, d.lng] : null; })
-        .filter(Boolean);
+    const coords = shown.map(car => {
+        const reg = car.dealerRef ? getDealerById(car.dealerRef) : assignDealer(car.id);
+        const geo = dealers.find(d => d.address.includes(reg?.city || '')) || dealers[car.id % dealers.length];
+        return [geo.lat, geo.lng];
+    });
     if (coords.length) leafletMap.fitBounds(coords, { padding: [40, 40], maxZoom: 10 });
 }
 
@@ -3953,3 +4034,786 @@ function renderMapView() {
 // ============================================
 
 init();
+
+// ============================================
+// DARK MODE AUTO-DETECT
+// ============================================
+(function () {
+    const saved = localStorage.getItem('theme');
+    if (!saved) {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = prefersDark ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        const btn = document.querySelector('.theme-btn');
+        if (btn) btn.textContent = prefersDark ? '☀️' : '🌙';
+    }
+})();
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    const btn = document.querySelector('.theme-btn');
+    if (btn) btn.textContent = next === 'dark' ? '☀️' : '🌙';
+}
+
+// ============================================
+// WHATSAPP DIRECT CONTACT
+// ============================================
+function whatsappContact(brand, model, price) {
+    const msg = encodeURIComponent(`Hi OmniDrive! I'm interested in the ${brand} ${model} priced at ${formatPrice(price)}. Please send more details.`);
+    window.open(`https://wa.me/254700000000?text=${msg}`, '_blank');
+}
+
+function contactDealer(vehicleName) {
+    const msg = encodeURIComponent(`Hi OmniDrive! I'm interested in the ${vehicleName}. Please send more details.`);
+    window.open(`https://wa.me/254700000000?text=${msg}`, '_blank');
+}
+
+// ============================================
+// ANIMATED STATS COUNTER
+// ============================================
+function animateCounter(el, target, duration = 1500) {
+    let start = 0;
+    const step = target / (duration / 16);
+    const timer = setInterval(() => {
+        start += step;
+        if (start >= target) { el.textContent = target.toLocaleString(); clearInterval(timer); return; }
+        el.textContent = Math.floor(start).toLocaleString();
+    }, 16);
+}
+
+function showStatsBar() {
+    const existing = document.getElementById('statsBar');
+    if (existing) return;
+    const bar = document.createElement('div');
+    bar.id = 'statsBar';
+    bar.className = 'stats-bar';
+    bar.innerHTML = `
+        <div class="stat-item"><span class="stat-num" data-target="${inventory.length}">0</span><span class="stat-lbl">Vehicles</span></div>
+        <div class="stat-item"><span class="stat-num" data-target="${dealerRegistry.length}">0</span><span class="stat-lbl">Dealers</span></div>
+        <div class="stat-item"><span class="stat-num" data-target="20">0</span><span class="stat-lbl">Countries</span></div>
+        <div class="stat-item"><span class="stat-num" data-target="50">0</span><span class="stat-lbl">Brands</span></div>
+    `;
+    const featured = document.querySelector('.featured-section');
+    if (featured) featured.before(bar);
+    bar.querySelectorAll('.stat-num').forEach(el => {
+        animateCounter(el, parseInt(el.dataset.target));
+    });
+}
+
+// ============================================
+// NEWSLETTER SIGNUP
+// ============================================
+function showNewsletterModal() {
+    const id = 'newsletterModal';
+    if (document.getElementById(id)) return;
+    const div = document.createElement('div');
+    div.id = id;
+    div.className = 'modal';
+    div.innerHTML = `
+        <div class="modal-content" style="max-width:420px;text-align:center">
+            <div class="modal-header">
+                <h3>📧 Stay in the Loop</h3>
+                <button class="close-btn" onclick="document.getElementById('${id}').remove()">✕</button>
+            </div>
+            <p style="margin-bottom:20px;opacity:.8">Get weekly deals, new arrivals & price drops straight to your inbox.</p>
+            <div class="filter-group">
+                <input type="text" id="nlName" placeholder="Your name">
+            </div>
+            <div class="filter-group">
+                <input type="email" id="nlEmail" placeholder="your@email.com">
+            </div>
+            <button onclick="subscribeNewsletter()" class="calc-btn">🚀 Subscribe — It's Free</button>
+            <p style="font-size:.75rem;opacity:.5;margin-top:12px">No spam. Unsubscribe anytime.</p>
+        </div>`;
+    document.body.appendChild(div);
+}
+
+function subscribeNewsletter() {
+    const name = document.getElementById('nlName').value.trim();
+    const email = document.getElementById('nlEmail').value.trim();
+    if (!name || !email) { showNotification('Please fill all fields', 'error'); return; }
+    const subs = JSON.parse(localStorage.getItem('omnidrive_newsletter') || '[]');
+    if (subs.find(s => s.email === email)) { showNotification('Already subscribed!', 'warning'); return; }
+    subs.push({ name, email, date: new Date().toISOString() });
+    localStorage.setItem('omnidrive_newsletter', JSON.stringify(subs));
+    document.getElementById('newsletterModal')?.remove();
+    showNotification(`🎉 Welcome ${name}! You're subscribed.`, 'success');
+}
+
+// ============================================
+// WISHLIST PDF / TEXT EXPORT
+// ============================================
+function exportWishlist() {
+    if (!wishlist.length) { showNotification('Your wishlist is empty', 'warning'); return; }
+    const items = inventory.filter(c => wishlist.includes(c.id));
+    const lines = [
+        'OmniDrive Wishlist Export',
+        `Generated: ${new Date().toLocaleString()}`,
+        '─'.repeat(40),
+        ...items.map((c, i) =>
+            `${i + 1}. ${c.brand} ${c.model} (${c.year})\n   Price: ${formatPrice(c.price)}\n   Engine: ${c.engine} | ${c.horsepower}hp\n   Availability: ${c.availability}`
+        ),
+        '─'.repeat(40),
+        `Total vehicles: ${items.length}`,
+        `Combined value: ${formatPrice(items.reduce((s, c) => s + c.price, 0))}`
+    ];
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'omnidrive-wishlist.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+    showNotification('Wishlist exported!', 'success');
+}
+
+// ============================================
+// TEST DRIVE BOOKING
+// ============================================
+function showTestDriveBooking(carId) {
+    const car = inventory.find(c => c.id === carId);
+    if (!car) return;
+    const dealer = car.dealerRef ? getDealerById(car.dealerRef) : assignDealer(car.id);
+    const id = 'testDriveModal';
+    document.getElementById(id)?.remove();
+    const div = document.createElement('div');
+    div.id = id;
+    div.className = 'modal';
+    const today = new Date().toISOString().split('T')[0];
+    div.innerHTML = `
+        <div class="modal-content" style="max-width:480px">
+            <div class="modal-header">
+                <h3>🚗 Book a Test Drive</h3>
+                <button class="close-btn" onclick="document.getElementById('${id}').remove()">✕ Exit</button>
+            </div>
+            <p style="margin-bottom:16px">Book a test drive for the <strong>${sanitize(car.brand)} ${sanitize(car.model)}</strong> at <strong>${sanitize(dealer?.name || 'OmniDrive')}</strong></p>
+            <div class="filter-group"><label>Your Name *</label><input type="text" id="tdName" placeholder="Full name"></div>
+            <div class="filter-group"><label>Phone *</label><input type="tel" id="tdPhone" placeholder="+2547XXXXXXXX"></div>
+            <div class="filter-group"><label>Preferred Date *</label><input type="date" id="tdDate" min="${today}"></div>
+            <div class="filter-group"><label>Preferred Time</label>
+                <select id="tdTime">
+                    <option>9:00 AM</option><option>10:00 AM</option><option>11:00 AM</option>
+                    <option>12:00 PM</option><option>2:00 PM</option><option>3:00 PM</option><option>4:00 PM</option>
+                </select>
+            </div>
+            <div class="filter-group"><label>Notes</label><textarea id="tdNotes" rows="2" placeholder="Any special requests..."></textarea></div>
+            <button onclick="confirmTestDrive(${car.id})" class="calc-btn">✅ Confirm Booking</button>
+        </div>`;
+    document.body.appendChild(div);
+}
+
+function confirmTestDrive(carId) {
+    const car = inventory.find(c => c.id === carId);
+    const name = document.getElementById('tdName').value.trim();
+    const phone = document.getElementById('tdPhone').value.trim();
+    const date = document.getElementById('tdDate').value;
+    const time = document.getElementById('tdTime').value;
+    if (!name || !phone || !date) { showNotification('Please fill all required fields', 'error'); return; }
+    const bookings = JSON.parse(localStorage.getItem('omnidrive_testdrives') || '[]');
+    bookings.push({ carId, car: `${car.brand} ${car.model}`, name, phone, date, time, id: 'TD' + Date.now() });
+    localStorage.setItem('omnidrive_testdrives', JSON.stringify(bookings));
+    document.getElementById('testDriveModal')?.remove();
+    showNotification(`✅ Test drive booked for ${car.brand} ${car.model} on ${date} at ${time}!`, 'success');
+    // WhatsApp confirmation
+    const msg = encodeURIComponent(`Hi OmniDrive! I've booked a test drive for ${car.brand} ${car.model} on ${date} at ${time}. Name: ${name}, Phone: ${phone}`);
+    setTimeout(() => window.open(`https://wa.me/254700000000?text=${msg}`, '_blank'), 500);
+}
+
+// ============================================
+// AI RECOMMENDATIONS (based on wishlist/viewed)
+// ============================================
+function getRecommendations() {
+    const viewed = [...recentlyViewed, ...wishlist];
+    if (!viewed.length) return inventory.filter(c => c.rating >= 4.7).slice(0, 6);
+    const viewedCars = inventory.filter(c => viewed.includes(c.id));
+    const avgPrice = viewedCars.reduce((s, c) => s + c.price, 0) / viewedCars.length;
+    const topFuel = viewedCars.map(c => c.fuel).sort((a, b) =>
+        viewedCars.filter(x => x.fuel === b).length - viewedCars.filter(x => x.fuel === a).length)[0];
+    const topCat = viewedCars.map(c => c.category).sort((a, b) =>
+        viewedCars.filter(x => x.category === b).length - viewedCars.filter(x => x.category === a).length)[0];
+    return inventory
+        .filter(c => !viewed.includes(c.id))
+        .map(c => ({
+            ...c,
+            score: (c.category === topCat ? 3 : 0) + (c.fuel === topFuel ? 2 : 0) +
+                   (Math.abs(c.price - avgPrice) < avgPrice * 0.3 ? 2 : 0) + (c.rating >= 4.5 ? 1 : 0)
+        }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 6);
+}
+
+function showRecommendations() {
+    const recs = getRecommendations();
+    const id = 'recsModal';
+    document.getElementById(id)?.remove();
+    const div = document.createElement('div');
+    div.id = id;
+    div.className = 'modal';
+    div.innerHTML = `
+        <div class="modal-content detail-modal-content">
+            <div class="modal-header">
+                <h3>🤖 Recommended For You</h3>
+                <button class="close-btn" onclick="document.getElementById('${id}').remove()">✕ Exit</button>
+            </div>
+            <p style="opacity:.7;margin-bottom:20px">Based on your browsing & wishlist activity</p>
+            <div class="featured-grid">
+                ${recs.map(c => `
+                    <div class="featured-card" onclick="document.getElementById('${id}').remove();showDetailModal(${c.id})">
+                        <img src="${sanitize(c.img)}" alt="${sanitize(c.brand)}" onerror="this.src='https://placehold.co/250x150/131921/febd69?text=${encodeURIComponent(c.brand)}'">
+                        <h4>${sanitize(c.brand)} ${sanitize(c.model)}</h4>
+                        <p class="deal-price">${formatPrice(c.price)}</p>
+                        <p style="font-size:.8rem;opacity:.7">⭐ ${c.rating} • ${sanitize(c.fuel)}</p>
+                    </div>`).join('')}
+            </div>
+        </div>`;
+    document.body.appendChild(div);
+}
+
+// ============================================
+// FINANCING CALCULATOR (full)
+// ============================================
+function calculateFinance() {
+    const price = parseFloat(document.getElementById('financePrice').value);
+    const down = parseFloat(document.getElementById('financeDown').value) || 0;
+    const term = parseInt(document.getElementById('financeTerm').value);
+    const rate = parseFloat(document.getElementById('financeRate').value) / 100 / 12;
+    if (!price || price <= 0) { showNotification('Enter a valid price', 'error'); return; }
+    const principal = price - down;
+    const monthly = rate > 0
+        ? (principal * rate * Math.pow(1 + rate, term)) / (Math.pow(1 + rate, term) - 1)
+        : principal / term;
+    const total = monthly * term;
+    const interest = total - principal;
+    document.getElementById('financeResult').innerHTML = `
+        <div class="monthly">${formatPrice(monthly)}<small>/mo</small></div>
+        <div class="total">Total: ${formatPrice(total)} | Interest: ${formatPrice(interest)}</div>
+        <div style="margin-top:12px;font-size:.85rem;opacity:.7">
+            Loan: ${formatPrice(principal)} over ${term} months at ${(rate * 12 * 100).toFixed(1)}% p.a.
+        </div>`;
+}
+
+// ============================================
+// TRADE-IN CALCULATOR
+// ============================================
+function showTradeInCalc() {
+    const modal = document.getElementById('detailModal');
+    const content = document.getElementById('detailContent');
+    content.innerHTML = `
+        <h2>🔄 Trade-In Calculator</h2>
+        <p>Estimate your current vehicle's trade-in value.</p>
+        <div class="finance-form">
+            <div class="filter-group"><label>Brand</label><input type="text" id="tiB" placeholder="e.g. Toyota"></div>
+            <div class="filter-group"><label>Model</label><input type="text" id="tiM" placeholder="e.g. Corolla"></div>
+            <div class="filter-group"><label>Year</label><input type="number" id="tiY" placeholder="2018" min="1990" max="2026"></div>
+            <div class="filter-group"><label>Mileage (km)</label><input type="number" id="tiKm" placeholder="80000"></div>
+            <div class="filter-group"><label>Condition</label>
+                <select id="tiC"><option value="5">Excellent</option><option value="4">Good</option><option value="3" selected>Fair</option><option value="2">Poor</option></select>
+            </div>
+            <button onclick="calcTradeIn()" class="calc-btn">Calculate Value</button>
+            <div id="tiResult"></div>
+        </div>`;
+    modal.classList.remove('hidden');
+}
+
+function calcTradeIn() {
+    const year = parseInt(document.getElementById('tiY').value);
+    const km = parseInt(document.getElementById('tiKm').value) || 0;
+    const cond = parseInt(document.getElementById('tiC').value);
+    const brand = document.getElementById('tiB').value || 'Vehicle';
+    const model = document.getElementById('tiM').value || '';
+    if (!year) { showNotification('Please enter the year', 'error'); return; }
+    const age = new Date().getFullYear() - year;
+    const base = 25000;
+    const ageFactor = Math.max(0.2, 1 - age * 0.08);
+    const kmFactor = Math.max(0.5, 1 - (km / 300000) * 0.4);
+    const condFactor = cond / 5;
+    const value = Math.round(base * ageFactor * kmFactor * condFactor);
+    document.getElementById('tiResult').innerHTML = `
+        <div class="trade-in-result">
+            <p>Estimated Trade-In Value for <strong>${sanitize(brand)} ${sanitize(model)}</strong></p>
+            <div class="trade-value">${formatPrice(value)}</div>
+            <p style="font-size:.85rem;opacity:.7;margin-top:8px">Range: ${formatPrice(value * 0.9)} – ${formatPrice(value * 1.1)}</p>
+            <button onclick="showNotification('Our team will contact you within 24 hours!','success')" class="calc-btn" style="margin-top:12px">📞 Get Firm Offer</button>
+        </div>`;
+}
+
+// ============================================
+// INSURANCE CALCULATOR
+// ============================================
+function showInsuranceCalc() {
+    const modal = document.getElementById('detailModal');
+    const content = document.getElementById('detailContent');
+    content.innerHTML = `
+        <h2>🛡️ Insurance Quote</h2>
+        <div class="finance-form">
+            <div class="filter-group"><label>Vehicle Value (USD)</label><input type="number" id="insVal" placeholder="50000"></div>
+            <div class="filter-group"><label>Driver Age</label><input type="number" id="insAge" placeholder="30" min="18" max="80"></div>
+            <div class="filter-group"><label>Cover Type</label>
+                <select id="insCover">
+                    <option value="0.03">Third Party Only</option>
+                    <option value="0.05" selected>Comprehensive</option>
+                    <option value="0.07">Comprehensive + Extras</option>
+                </select>
+            </div>
+            <button onclick="calcInsurance()" class="calc-btn">Get Quote</button>
+            <div id="insResult"></div>
+        </div>`;
+    modal.classList.remove('hidden');
+}
+
+function calcInsurance() {
+    const val = parseFloat(document.getElementById('insVal').value);
+    const age = parseInt(document.getElementById('insAge').value) || 30;
+    const rate = parseFloat(document.getElementById('insCover').value);
+    if (!val) { showNotification('Enter vehicle value', 'error'); return; }
+    const ageFactor = age < 25 ? 1.3 : age > 60 ? 1.15 : 1.0;
+    const annual = val * rate * ageFactor;
+    const monthly = annual / 12;
+    document.getElementById('insResult').innerHTML = `
+        <div class="insurance-result">
+            <p>Estimated Annual Premium</p>
+            <div class="premium-monthly">${formatPrice(annual)}/yr</div>
+            <p style="opacity:.7">${formatPrice(monthly)}/month</p>
+            <button onclick="showNotification('Insurance partner will contact you shortly!','success')" class="calc-btn" style="margin-top:12px">📋 Get Full Quote</button>
+        </div>`;
+}
+
+// ============================================
+// IMPORT DUTY CALCULATOR
+// ============================================
+function showImportCalc() {
+    const modal = document.getElementById('detailModal');
+    const content = document.getElementById('detailContent');
+    content.innerHTML = `
+        <h2>📦 Import Duty Calculator</h2>
+        <div class="finance-form">
+            <div class="filter-group"><label>Vehicle Value (USD)</label><input type="number" id="impVal" placeholder="30000"></div>
+            <div class="filter-group"><label>Destination Country</label>
+                <select id="impCountry">
+                    <option value="0.25">Kenya (25%)</option>
+                    <option value="0.20">Uganda (20%)</option>
+                    <option value="0.25">Tanzania (25%)</option>
+                    <option value="0.20">Rwanda (20%)</option>
+                    <option value="0.35">Nigeria (35%)</option>
+                    <option value="0.30">Ghana (30%)</option>
+                    <option value="0.15">South Africa (15%)</option>
+                </select>
+            </div>
+            <div class="filter-group"><label>Vehicle Age</label>
+                <select id="impAge">
+                    <option value="0">New (0 years)</option>
+                    <option value="3">1–3 years</option>
+                    <option value="5">4–5 years</option>
+                    <option value="8">6–8 years</option>
+                </select>
+            </div>
+            <button onclick="calcImport()" class="calc-btn">Calculate</button>
+            <div id="impResult"></div>
+        </div>`;
+    modal.classList.remove('hidden');
+}
+
+function calcImport() {
+    const val = parseFloat(document.getElementById('impVal').value);
+    const rate = parseFloat(document.getElementById('impCountry').value);
+    const age = parseInt(document.getElementById('impAge').value);
+    if (!val) { showNotification('Enter vehicle value', 'error'); return; }
+    const ageSurcharge = age >= 8 ? 0.10 : age >= 5 ? 0.05 : 0;
+    const duty = val * (rate + ageSurcharge);
+    const vat = val * 0.16;
+    const excise = val * 0.20;
+    const total = val + duty + vat + excise;
+    document.getElementById('impResult').innerHTML = `
+        <div class="import-result">
+            <div class="import-item"><span>Vehicle Value</span><span>${formatPrice(val)}</span></div>
+            <div class="import-item"><span>Import Duty (${((rate + ageSurcharge) * 100).toFixed(0)}%)</span><span>${formatPrice(duty)}</span></div>
+            <div class="import-item"><span>VAT (16%)</span><span>${formatPrice(vat)}</span></div>
+            <div class="import-item"><span>Excise Duty (20%)</span><span>${formatPrice(excise)}</span></div>
+            <div class="import-total"><span>Total Landed Cost</span><span>${formatPrice(total)}</span></div>
+        </div>`;
+}
+
+// ============================================
+// SHIPPING CALCULATOR
+// ============================================
+function showShippingCalc() {
+    const modal = document.getElementById('detailModal');
+    const content = document.getElementById('detailContent');
+    content.innerHTML = `
+        <h2>🚢 Shipping Calculator</h2>
+        <div class="finance-form">
+            <div class="filter-group"><label>Origin</label>
+                <select id="shipOrigin">
+                    <option value="1200">Japan</option><option value="1500">Germany</option>
+                    <option value="1800">USA</option><option value="900">UK</option>
+                    <option value="1100">South Korea</option><option value="800">China</option>
+                </select>
+            </div>
+            <div class="filter-group"><label>Destination</label>
+                <select id="shipDest">
+                    <option value="1.0">Kenya (Mombasa)</option><option value="1.1">Uganda (Kampala)</option>
+                    <option value="1.05">Tanzania (Dar es Salaam)</option><option value="1.2">Rwanda (Kigali)</option>
+                    <option value="1.3">DRC (Kinshasa)</option>
+                </select>
+            </div>
+            <div class="filter-group"><label>Vehicle Type</label>
+                <select id="shipType">
+                    <option value="1.0">Car / SUV</option><option value="0.5">Motorcycle</option>
+                    <option value="2.0">Van / Minibus</option><option value="3.5">Bus / Truck</option>
+                </select>
+            </div>
+            <button onclick="calcShipping()" class="calc-btn">Calculate</button>
+            <div id="shipResult"></div>
+        </div>`;
+    modal.classList.remove('hidden');
+}
+
+function calcShipping() {
+    const base = parseInt(document.getElementById('shipOrigin').value);
+    const destMult = parseFloat(document.getElementById('shipDest').value);
+    const typeMult = parseFloat(document.getElementById('shipType').value);
+    const freight = Math.round(base * destMult * typeMult);
+    const insurance = Math.round(freight * 0.02);
+    const handling = 350;
+    const total = freight + insurance + handling;
+    document.getElementById('shipResult').innerHTML = `
+        <div class="import-result">
+            <div class="import-item"><span>Sea Freight</span><span>${formatPrice(freight)}</span></div>
+            <div class="import-item"><span>Marine Insurance (2%)</span><span>${formatPrice(insurance)}</span></div>
+            <div class="import-item"><span>Port Handling</span><span>${formatPrice(handling)}</span></div>
+            <div class="import-total"><span>Total Shipping</span><span>${formatPrice(total)}</span></div>
+        </div>`;
+}
+
+// ============================================
+// CLOSE MODAL HELPER (defined above)
+// ============================================
+
+// ============================================
+// INIT EXTRAS (called after main init)
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+    // Show stats bar
+    setTimeout(showStatsBar, 800);
+
+    // Auto dark mode sync on system change
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+        if (!localStorage.getItem('theme')) {
+            const theme = e.matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+    });
+
+    // Close mobile nav when clicking outside
+    document.addEventListener('click', (e) => {
+        const navTools = document.querySelector('.nav-tools');
+        const hamburger = document.querySelector('.hamburger');
+        if (navTools && navTools.classList.contains('mobile-open') &&
+            !navTools.contains(e.target) && !hamburger.contains(e.target)) {
+            navTools.classList.remove('mobile-open');
+        }
+    });
+
+    // Close mobile nav when any nav-tool button is tapped
+    document.querySelector('.nav-tools')?.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+            document.querySelector('.nav-tools')?.classList.remove('mobile-open');
+        }
+    });
+
+    // Newsletter popup after 30s (only once per session)
+    if (!sessionStorage.getItem('nlShown')) {
+        setTimeout(() => {
+            showNewsletterModal();
+            sessionStorage.setItem('nlShown', '1');
+        }, 30000);
+    }
+});
+
+// ============================================
+// RACE MODE — NFS Drag + CarX Drift
+// ============================================
+
+const raceOpponents = [
+    { name: 'Street Rookie', car: 'Honda Civic Si', hp: 200, skill: 0.45, avatar: '🧑' },
+    { name: 'Drift King', car: 'Nissan 180SX', hp: 320, skill: 0.65, avatar: '😎' },
+    { name: 'Turbo Ghost', car: 'Subaru WRX STI', hp: 450, skill: 0.75, avatar: '👻' },
+    { name: 'Neon Racer', car: 'Mitsubishi Evo IX', hp: 500, skill: 0.82, avatar: '🌟' },
+    { name: 'The Phantom', car: 'Bugatti Chiron', hp: 1500, skill: 0.95, avatar: '💀' }
+];
+
+let raceState = { mode: null, playerCar: null, opponent: null, running: false, driftScore: 0, driftInterval: null };
+
+function showRaceMode() {
+    const modal = document.getElementById('raceModeModal');
+    document.getElementById('raceModeContent').innerHTML = renderRaceLobby();
+    modal.classList.remove('hidden');
+}
+
+function renderRaceLobby() {
+    const raceCars = inventory.filter(v => v.category === 'Car' && v.horsepower >= 200).slice(0, 12);
+    return `
+        <div class="race-lobby">
+            <div class="race-title-banner">
+                <h2>🏎️ RACE MODE</h2>
+                <p class="race-subtitle">Need for Speed · CarX Street</p>
+            </div>
+
+            <div class="race-mode-pick">
+                <div class="race-mode-card ${raceState.mode === 'drag' ? 'race-mode-active' : ''}" onclick="selectRaceMode('drag')">
+                    <div class="race-mode-icon">🚦</div>
+                    <h3>Drag Race</h3>
+                    <p>0–¼ mile sprint. Pure horsepower wins.</p>
+                </div>
+                <div class="race-mode-card ${raceState.mode === 'drift' ? 'race-mode-active' : ''}" onclick="selectRaceMode('drift')">
+                    <div class="race-mode-icon">💨</div>
+                    <h3>Drift Battle</h3>
+                    <p>CarX style. Tap fast to rack up drift points.</p>
+                </div>
+            </div>
+
+            <h4 class="race-section-label">🚗 Pick Your Car</h4>
+            <div class="race-car-grid">
+                ${raceCars.map(c => `
+                    <div class="race-car-card ${raceState.playerCar?.id === c.id ? 'race-car-selected' : ''}" onclick="selectRaceCar(${c.id})">
+                        <img src="${c.img}" alt="${c.model}" loading="lazy">
+                        <div class="race-car-info">
+                            <span class="race-car-name">${c.brand} ${c.model}</span>
+                            <span class="race-car-hp">⚡ ${c.horsepower} HP</span>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+
+            <h4 class="race-section-label">👊 Choose Opponent</h4>
+            <div class="race-opponents">
+                ${raceOpponents.map((o, i) => `
+                    <div class="race-opponent-card ${raceState.opponent === i ? 'race-opp-selected' : ''}" onclick="selectOpponent(${i})">
+                        <span class="race-opp-avatar">${o.avatar}</span>
+                        <div>
+                            <div class="race-opp-name">${o.name}</div>
+                            <div class="race-opp-car">${o.car} · ${o.hp} HP</div>
+                        </div>
+                        <div class="race-opp-skill">${['Easy','Easy','Medium','Hard','Insane'][i]}</div>
+                    </div>
+                `).join('')}
+            </div>
+
+            <button class="race-start-btn" onclick="startRace()">🚦 START RACE</button>
+        </div>
+    `;
+}
+
+function selectRaceMode(mode) {
+    raceState.mode = mode;
+    document.getElementById('raceModeContent').innerHTML = renderRaceLobby();
+}
+
+function selectRaceCar(id) {
+    raceState.playerCar = inventory.find(v => v.id === id);
+    document.getElementById('raceModeContent').innerHTML = renderRaceLobby();
+}
+
+function selectOpponent(i) {
+    raceState.opponent = i;
+    document.getElementById('raceModeContent').innerHTML = renderRaceLobby();
+}
+
+function startRace() {
+    if (!raceState.mode) return showNotification('Pick a race mode first!', 'error');
+    if (!raceState.playerCar) return showNotification('Pick your car first!', 'error');
+    if (raceState.opponent === null) return showNotification('Pick an opponent!', 'error');
+    raceState.mode === 'drag' ? runDragRace() : runDriftBattle();
+}
+
+function runDragRace() {
+    const car = raceState.playerCar;
+    const opp = raceOpponents[raceState.opponent];
+    const content = document.getElementById('raceModeContent');
+
+    content.innerHTML = `
+        <div class="race-arena drag-arena">
+            <div class="race-arena-header">
+                <span>🚦 DRAG RACE</span>
+                <span id="raceTimer">0.00s</span>
+            </div>
+            <div class="drag-track">
+                <div class="drag-lane">
+                    <span class="drag-label">YOU · ${car.brand} ${car.model}</span>
+                    <div class="drag-bar-wrap"><div class="drag-bar player-bar" id="playerBar"></div></div>
+                    <span class="drag-speed" id="playerSpeed">0 mph</span>
+                </div>
+                <div class="drag-lane">
+                    <span class="drag-label">${opp.avatar} ${opp.name} · ${opp.car}</span>
+                    <div class="drag-bar-wrap"><div class="drag-bar opp-bar" id="oppBar"></div></div>
+                    <span class="drag-speed" id="oppSpeed">0 mph</span>
+                </div>
+            </div>
+            <div class="drag-lights" id="dragLights">
+                <span class="light red" id="l1"></span>
+                <span class="light red" id="l2"></span>
+                <span class="light red" id="l3"></span>
+                <span class="light green hidden" id="lgo">GO!</span>
+            </div>
+            <div id="raceResult"></div>
+        </div>
+    `;
+
+    // Countdown then race
+    let count = 0;
+    const lights = ['l1','l2','l3'];
+    const countInterval = setInterval(() => {
+        if (count < 3) {
+            document.getElementById(lights[count])?.classList.add('light-on');
+            count++;
+        } else {
+            clearInterval(countInterval);
+            document.getElementById('lgo')?.classList.remove('hidden');
+            animateDrag(car, opp);
+        }
+    }, 700);
+}
+
+function animateDrag(car, opp) {
+    const playerHP = car.horsepower;
+    const oppHP = opp.hp;
+    const playerFactor = (playerHP / 1500) * 0.85 + Math.random() * 0.15;
+    const oppFactor = opp.skill * 0.85 + Math.random() * 0.15;
+
+    let playerPct = 0, oppPct = 0, elapsed = 0;
+    const start = Date.now();
+
+    const frame = setInterval(() => {
+        elapsed = ((Date.now() - start) / 1000).toFixed(2);
+        document.getElementById('raceTimer').innerText = elapsed + 's';
+
+        playerPct = Math.min(100, playerPct + playerFactor * 2.2);
+        oppPct = Math.min(100, oppPct + oppFactor * 2.2);
+
+        const pSpeed = Math.round((playerPct / 100) * 180);
+        const oSpeed = Math.round((oppPct / 100) * 180);
+
+        document.getElementById('playerBar').style.width = playerPct + '%';
+        document.getElementById('oppBar').style.width = oppPct + '%';
+        document.getElementById('playerSpeed').innerText = pSpeed + ' mph';
+        document.getElementById('oppSpeed').innerText = oSpeed + ' mph';
+
+        if (playerPct >= 100 || oppPct >= 100) {
+            clearInterval(frame);
+            const won = playerPct >= oppPct;
+            showRaceResult(won, elapsed, 'drag');
+        }
+    }, 50);
+}
+
+function runDriftBattle() {
+    const car = raceState.playerCar;
+    const opp = raceOpponents[raceState.opponent];
+    raceState.driftScore = 0;
+    raceState.running = true;
+
+    document.getElementById('raceModeContent').innerHTML = `
+        <div class="race-arena drift-arena">
+            <div class="race-arena-header">
+                <span>💨 DRIFT BATTLE · ${car.brand} ${car.model}</span>
+                <span id="driftTimer">10</span>
+            </div>
+            <div class="drift-track">
+                <div class="drift-road">
+                    <div class="drift-car-wrap" id="driftCarWrap">
+                        <img src="${car.img}" class="drift-car-img" id="driftCarImg" alt="${car.model}">
+                        <div class="drift-smoke hidden" id="driftSmoke">💨💨</div>
+                    </div>
+                    <div class="drift-skid" id="driftSkid"></div>
+                </div>
+            </div>
+            <div class="drift-score-panel">
+                <div class="drift-score-box">
+                    <span>YOUR SCORE</span>
+                    <span class="drift-big-score" id="driftScore">0</span>
+                </div>
+                <div class="drift-score-box">
+                    <span>${opp.avatar} ${opp.name}</span>
+                    <span class="drift-big-score" id="oppDriftScore">0</span>
+                </div>
+            </div>
+            <button class="drift-tap-btn" id="driftTapBtn" onclick="driftTap()">🔄 DRIFT!</button>
+            <p class="drift-hint">Tap as fast as you can to score drift points!</p>
+            <div id="raceResult"></div>
+        </div>
+    `;
+
+    // Opponent auto-scores
+    const oppTarget = Math.round(opp.skill * 950 + Math.random() * 200);
+    let oppScore = 0;
+    let timeLeft = 10;
+
+    const oppInterval = setInterval(() => {
+        oppScore = Math.min(oppTarget, oppScore + Math.round(oppTarget / 10));
+        document.getElementById('oppDriftScore').innerText = oppScore;
+    }, 1000);
+
+    const countdown = setInterval(() => {
+        timeLeft--;
+        const el = document.getElementById('driftTimer');
+        if (el) el.innerText = timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            clearInterval(oppInterval);
+            raceState.running = false;
+            document.getElementById('driftTapBtn').disabled = true;
+            const won = raceState.driftScore > oppScore;
+            showRaceResult(won, raceState.driftScore, 'drift', oppScore);
+        }
+    }, 1000);
+}
+
+function driftTap() {
+    if (!raceState.running) return;
+    raceState.driftScore += Math.round(15 + Math.random() * 25);
+    document.getElementById('driftScore').innerText = raceState.driftScore;
+
+    // Visual feedback
+    const wrap = document.getElementById('driftCarWrap');
+    const smoke = document.getElementById('driftSmoke');
+    const skid = document.getElementById('driftSkid');
+    if (wrap) { wrap.classList.add('drift-shake'); setTimeout(() => wrap.classList.remove('drift-shake'), 200); }
+    if (smoke) { smoke.classList.remove('hidden'); setTimeout(() => smoke.classList.add('hidden'), 300); }
+    if (skid) {
+        const mark = document.createElement('div');
+        mark.className = 'skid-mark';
+        mark.style.left = Math.random() * 80 + '%';
+        skid.appendChild(mark);
+        setTimeout(() => mark.remove(), 2000);
+    }
+}
+
+function showRaceResult(won, stat, mode, oppStat) {
+    const discount = won ? (raceState.opponent >= 3 ? 8 : raceState.opponent >= 2 ? 5 : 3) : 0;
+    const resultEl = document.getElementById('raceResult');
+    if (!resultEl) return;
+
+    resultEl.innerHTML = `
+        <div class="race-result ${won ? 'race-win' : 'race-lose'}">
+            <div class="race-result-icon">${won ? '🏆' : '💥'}</div>
+            <h2>${won ? 'YOU WIN!' : 'YOU LOSE!'}</h2>
+            ${mode === 'drag'
+                ? `<p>Quarter mile in <strong>${stat}s</strong></p>`
+                : `<p>Your score: <strong>${stat}</strong> · Opponent: <strong>${oppStat}</strong></p>`
+            }
+            ${won && discount ? `
+                <div class="race-reward">
+                    🎁 You earned a <strong>${discount}% discount</strong> on your next purchase!
+                    <br><small>Code: <strong>RACE${discount}WIN</strong></small>
+                </div>` : won ? `<div class="race-reward">🎁 You earned a <strong>3% discount</strong>! Code: <strong>RACE3WIN</strong></div>` : `<p class="race-lose-msg">Train harder and come back stronger! 💪</p>`}
+            <div class="race-result-btns">
+                <button onclick="showRaceMode()" class="btn-secondary">🔄 Race Again</button>
+                <button onclick="closeModal('raceModeModal')" class="calc-btn">🛒 Shop Now</button>
+            </div>
+        </div>
+    `;
+}
