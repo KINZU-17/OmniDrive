@@ -1,4 +1,4 @@
-const CACHE = 'omnidrive-v4';
+const CACHE = 'omnidrive-v5';
 const ASSETS = [
     '/',
     '/index.html',
@@ -28,6 +28,24 @@ self.addEventListener('activate', e => {
         )
     );
     self.clients.claim();
+});
+
+// Push notifications
+self.addEventListener('push', e => {
+    const data = e.data?.json() || {};
+    e.waitUntil(
+        self.registration.showNotification(data.title || 'OmniDrive', {
+            body: data.body || 'New message',
+            icon: '/favicon.svg',
+            badge: '/favicon.svg',
+            data: { url: data.url || '/messaging.html' }
+        })
+    );
+});
+
+self.addEventListener('notificationclick', e => {
+    e.notification.close();
+    e.waitUntil(clients.openWindow(e.notification.data?.url || '/messaging.html'));
 });
 
 // Fetch — cache-first for assets, network-first for API

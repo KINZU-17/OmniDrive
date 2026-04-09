@@ -2,10 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
 const path    = require('path');
+const fs      = require('fs');
 const Database = require('better-sqlite3');
 const nodemailer = require('nodemailer');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const webpush = require('web-push');
+const multer  = require('multer');
 
 const app = express();
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -368,7 +371,280 @@ app.patch('/api/admin/listings/:id', adminAuth, async (req, res) => {
     return res.json({ success: true });
 });
 
-// ─── 6. HEALTH CHECK ──────────────────────────────────────────────────────
+// ─── 6. MESSAGING ────────────────────────────────────────────────────────
+db.exec(`
+    CREATE TABLE IF NOT EXISTS chat_users (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        name       TEXT NOT NULL,
+        email      TEXT UNIQUE NOT NULL,
+        role       TEXT DEFAULT 'client',  -- 'client' | 'dealer' | 'admin'
+        avatar     TEXT DEFAULT '',
+        created_at TEXT DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS chat_rooms (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        name        TEXT NOT NULL,
+        type        TEXT DEFAULT 'direct', -- 'direct' | 'group'
+        created_by  INTEGER,
+        created_at  TEXT DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS chat_room_members (
+        room_id INTEGER,
+        user_id INTEGER,
+        PRIMARY KEY (room_id, user_id)
+    );
+    CREATE TABLE IF NOT EXISTS chat_messages (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        room_id    INTEGER NOT NULL,
+        sender_id  INTEGER NOT NULL,
+        body       TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now')),
+        FOREIGN KEY (room_id)   REFERENCES chat_rooms(id),
+        FOREIGN KEY (sender_id) REFERENCES chat_users(id)
+    );
+    CREATE TABLE IF NOT EXISTS chat_reads (
+        room_id    INTEGER,
+        user_id    INTEGER,
+        last_read  TEXT DEFAULT (datetime('now')),
+        PRIMARY KEY (room_id, user_id)
+    );
+    CREATE TABLE IF NOT EXISTS chat_presence (
+        user_id    INTEGER PRIMARY KEY,
+        last_seen  TEXT DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS push_subscriptions (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id    INTEGER,
+        endpoint   TEXT UNIQUE,
+        p256dh     TEXT,
+        auth       TEXT
+    );
+    CREATE TABLE IF NOT EXISTS msg_read_receipts (
+        msg_id     INTEGER,
+        user_id    INTEGER,
+        read_at    TEXT DEFAULT (datetime('now')),
+        PRIMARY KEY (msg_id, user_id)
+    );
+`);
+
+// File uploads
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+const upload = multer({
+    storage: multer.diskStorage({
+        destination: (_, __, cb) => cb(null, uploadDir),
+        filename: (_, file, cb) => cb(null, `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g,'_')}`)
+    }),
+    limits: { fileSize: 10 * 1024 * 1024 }
+});
+app.use('/uploads', express.static(uploadDir));
+app.post('/api/chat/upload', upload.single('file'), (req, res) => {
+    if (!req.file) return res.status(400).json({ error: 'No file' });
+    return res.json({ url: `/uploads/${req.file.filename}`, name: req.file.originalname, isImage: req.file.mimetype.startsWith('image/') });
+});
+
+// Web Push
+if (!process.env.VAPID_PUBLIC || !process.env.VAPID_PRIVATE) {
+    const keys = webpush.generateVAPIDKeys();
+    console.log('\n⚠️  Add to .env: VAPID_PUBLIC=' + keys.publicKey + '  VAPID_PRIVATE=' + keys.privateKey + '\n');
+    process.env.VAPID_PUBLIC  = keys.publicKey;
+    process.env.VAPID_PRIVATE = keys.privateKey;
+}
+webpush.setVapidDetails('mailto:info@omnidrive.co.ke', process.env.VAPID_PUBLIC, process.env.VAPID_PRIVATE);
+app.get('/api/chat/push/vapid-key', (_, res) => res.json({ key: process.env.VAPID_PUBLIC }));
+app.post('/api/chat/push/subscribe', (req, res) => {
+    const { user_id, subscription } = req.body;
+    if (!user_id || !subscription?.endpoint) return res.status(400).json({ error: 'missing fields' });
+    db.prepare('INSERT OR REPLACE INTO push_subscriptions (user_id,endpoint,p256dh,auth) VALUES (?,?,?,?)')
+      .run(user_id, subscription.endpoint, subscription.keys.p256dh, subscription.keys.auth);
+    return res.json({ ok: true });
+});
+
+// Seed admin user if not exists
+db.prepare(`INSERT OR IGNORE INTO chat_users (name, email, role) VALUES ('OmniDrive Admin', 'admin@omnidrive.co.ke', 'admin')`).run();
+
+// Register / login (upsert by email)
+app.post('/api/chat/auth', apiLimiter, (req, res) => {
+    const { name, email, role } = req.body;
+    if (!name || !email) return res.status(400).json({ error: 'name and email required' });
+    const allowed = ['client', 'dealer'];
+    const userRole = allowed.includes(role) ? role : 'client';
+    let user = db.prepare('SELECT * FROM chat_users WHERE email=?').get(email);
+    if (!user) {
+        const info = db.prepare('INSERT INTO chat_users (name, email, role) VALUES (?,?,?)').run(name, email, userRole);
+        user = db.prepare('SELECT * FROM chat_users WHERE id=?').get(info.lastInsertRowid);
+    }
+    return res.json(user);
+});
+
+// Admin auth as chat user
+app.post('/api/chat/admin-auth', (req, res) => {
+    const key = req.headers['x-admin-key'];
+    if (!process.env.ADMIN_KEY || key !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+    const user = db.prepare(`SELECT * FROM chat_users WHERE role='admin' LIMIT 1`).get();
+    return res.json(user);
+});
+
+// List all users (for starting a conversation) — dealers & admin visible to all
+app.get('/api/chat/users', (req, res) => {
+    const users = db.prepare(`SELECT id, name, email, role, avatar FROM chat_users ORDER BY role, name`).all();
+    return res.json(users);
+});
+
+// Get or create a direct room between two users
+app.post('/api/chat/rooms/direct', apiLimiter, (req, res) => {
+    const { user_a, user_b } = req.body;
+    if (!user_a || !user_b) return res.status(400).json({ error: 'user_a and user_b required' });
+    // Find existing direct room shared by both
+    const existing = db.prepare(`
+        SELECT r.* FROM chat_rooms r
+        JOIN chat_room_members m1 ON m1.room_id=r.id AND m1.user_id=?
+        JOIN chat_room_members m2 ON m2.room_id=r.id AND m2.user_id=?
+        WHERE r.type='direct' LIMIT 1
+    `).get(user_a, user_b);
+    if (existing) return res.json(existing);
+    const uA = db.prepare('SELECT name FROM chat_users WHERE id=?').get(user_a);
+    const uB = db.prepare('SELECT name FROM chat_users WHERE id=?').get(user_b);
+    const room = db.prepare(`INSERT INTO chat_rooms (name, type, created_by) VALUES (?,?,?)`)
+        .run(`${uA?.name} & ${uB?.name}`, 'direct', user_a);
+    const roomId = room.lastInsertRowid;
+    db.prepare('INSERT OR IGNORE INTO chat_room_members (room_id, user_id) VALUES (?,?)').run(roomId, user_a);
+    db.prepare('INSERT OR IGNORE INTO chat_room_members (room_id, user_id) VALUES (?,?)').run(roomId, user_b);
+    return res.json(db.prepare('SELECT * FROM chat_rooms WHERE id=?').get(roomId));
+});
+
+// Create a group room (dealers + admin)
+app.post('/api/chat/rooms/group', apiLimiter, (req, res) => {
+    const { name, created_by, member_ids } = req.body;
+    if (!name || !created_by || !Array.isArray(member_ids)) return res.status(400).json({ error: 'name, created_by, member_ids required' });
+    const room = db.prepare(`INSERT INTO chat_rooms (name, type, created_by) VALUES (?,?,?)`).run(name, 'group', created_by);
+    const roomId = room.lastInsertRowid;
+    const addMember = db.prepare('INSERT OR IGNORE INTO chat_room_members (room_id, user_id) VALUES (?,?)');
+    [...new Set([created_by, ...member_ids])].forEach(uid => addMember.run(roomId, uid));
+    return res.json(db.prepare('SELECT * FROM chat_rooms WHERE id=?').get(roomId));
+});
+
+// List rooms for a user
+app.get('/api/chat/rooms/:userId', (req, res) => {
+    const rooms = db.prepare(`
+        SELECT r.*, 
+            (SELECT body FROM chat_messages WHERE room_id=r.id ORDER BY created_at DESC LIMIT 1) as last_msg,
+            (SELECT created_at FROM chat_messages WHERE room_id=r.id ORDER BY created_at DESC LIMIT 1) as last_msg_at,
+            (SELECT COUNT(*) FROM chat_messages m
+             LEFT JOIN chat_reads cr ON cr.room_id=m.room_id AND cr.user_id=?
+             WHERE m.room_id=r.id AND (cr.last_read IS NULL OR m.created_at > cr.last_read)
+             AND m.sender_id != ?) as unread
+        FROM chat_rooms r
+        JOIN chat_room_members rm ON rm.room_id=r.id AND rm.user_id=?
+        ORDER BY COALESCE(last_msg_at, r.created_at) DESC
+    `).all(req.params.userId, req.params.userId, req.params.userId);
+    return res.json(rooms);
+});
+
+// Presence heartbeat
+app.post('/api/chat/presence', (req, res) => {
+    const { user_id } = req.body;
+    if (!user_id) return res.status(400).json({ error: 'user_id required' });
+    db.prepare(`INSERT OR REPLACE INTO chat_presence (user_id, last_seen) VALUES (?,datetime('now'))`).run(user_id);
+    return res.json({ ok: true });
+});
+app.get('/api/chat/online', (_, res) => {
+    const online = db.prepare(`SELECT user_id FROM chat_presence WHERE last_seen >= datetime('now','-30 seconds')`).all().map(r => r.user_id);
+    return res.json(online);
+});
+
+// Get messages in a room
+app.get('/api/chat/messages/:roomId', (req, res) => {
+    const { userId } = req.query;
+    const msgs = db.prepare(`
+        SELECT m.*, u.name as sender_name, u.role as sender_role, u.avatar as sender_avatar
+        FROM chat_messages m JOIN chat_users u ON u.id=m.sender_id
+        WHERE m.room_id=? ORDER BY m.created_at ASC LIMIT 200
+    `).all(req.params.roomId);
+    if (userId) {
+        db.prepare(`INSERT OR REPLACE INTO chat_reads (room_id,user_id,last_read) VALUES (?,?,datetime('now'))`).run(req.params.roomId, userId);
+        const markRead = db.prepare('INSERT OR IGNORE INTO msg_read_receipts (msg_id,user_id) VALUES (?,?)');
+        msgs.forEach(m => { if (m.sender_id !== parseInt(userId)) markRead.run(m.id, userId); });
+    }
+    const withReceipts = msgs.map(m => ({
+        ...m,
+        read_by: db.prepare(`SELECT u.name FROM msg_read_receipts r JOIN chat_users u ON u.id=r.user_id WHERE r.msg_id=?`).all(m.id).map(r => r.name)
+    }));
+    return res.json(withReceipts);
+});
+
+// Send a message
+app.post('/api/chat/messages', apiLimiter, (req, res) => {
+    const { room_id, sender_id, body, file_url, file_name, is_image } = req.body;
+    if (!room_id || !sender_id || (!body?.trim() && !file_url)) return res.status(400).json({ error: 'missing fields' });
+    const member = db.prepare('SELECT 1 FROM chat_room_members WHERE room_id=? AND user_id=?').get(room_id, sender_id);
+    if (!member) return res.status(403).json({ error: 'Not a member of this room' });
+    const msgBody = file_url
+        ? (is_image ? `[img:${file_url}:${file_name}]` : `[file:${file_url}:${file_name}]`)
+        : body.trim();
+    const info = db.prepare('INSERT INTO chat_messages (room_id,sender_id,body) VALUES (?,?,?)').run(room_id, sender_id, msgBody);
+    const msg = db.prepare(`SELECT m.*,u.name as sender_name,u.role as sender_role FROM chat_messages m JOIN chat_users u ON u.id=m.sender_id WHERE m.id=?`).get(info.lastInsertRowid);
+    // Push notify other members
+    const sender = db.prepare('SELECT name FROM chat_users WHERE id=?').get(sender_id);
+    db.prepare('SELECT user_id FROM chat_room_members WHERE room_id=? AND user_id!=?').all(room_id, sender_id).forEach(({ user_id }) => {
+        db.prepare('SELECT * FROM push_subscriptions WHERE user_id=?').all(user_id).forEach(sub => {
+            webpush.sendNotification(
+                { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+                JSON.stringify({ title: `💬 ${sender?.name || 'OmniDrive'}`, body: file_url ? '📎 Sent a file' : msgBody.slice(0,80), url: '/messaging.html' })
+            ).catch(() => db.prepare('DELETE FROM push_subscriptions WHERE endpoint=?').run(sub.endpoint));
+        });
+    });
+    return res.json({ ...msg, read_by: [] });
+});
+
+// Admin: list all rooms
+app.get('/api/admin/chat/rooms', adminAuth, (req, res) => {
+    const rooms = db.prepare(`SELECT r.*, COUNT(m.id) as msg_count FROM chat_rooms r LEFT JOIN chat_messages m ON m.room_id=r.id GROUP BY r.id ORDER BY r.created_at DESC`).all();
+    return res.json(rooms);
+});
+
+// ─── 7. PUSH NOTIFICATIONS ────────────────────────────────────────────────
+db.exec(`
+    CREATE TABLE IF NOT EXISTS push_tokens (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        token      TEXT UNIQUE,
+        user_email TEXT,
+        created_at TEXT DEFAULT (datetime('now'))
+    );
+`);
+
+// Register device push token
+app.post('/api/push/register', apiLimiter, (req, res) => {
+    const { token, email } = req.body;
+    if (!token) return res.status(400).json({ error: 'token required' });
+    db.prepare('INSERT OR REPLACE INTO push_tokens (token, user_email) VALUES (?, ?)').run(token, email || '');
+    return res.json({ success: true });
+});
+
+// Send push notification (admin only)
+app.post('/api/push/send', adminAuth, async (req, res) => {
+    const { title, body, data, tokens } = req.body;
+    if (!title || !body) return res.status(400).json({ error: 'title and body required' });
+
+    const targetTokens = tokens || db.prepare('SELECT token FROM push_tokens').all().map(r => r.token);
+    if (!targetTokens.length) return res.json({ success: true, sent: 0 });
+
+    const messages = targetTokens.map(to => ({ to, title, body, data: data || {}, sound: 'default' }));
+
+    try {
+        const pushRes = await fetch('https://exp.host/--/api/v2/push/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(messages)
+        });
+        const result = await pushRes.json();
+        return res.json({ success: true, sent: targetTokens.length, result });
+    } catch (err) {
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ─── 8. HEALTH CHECK ──────────────────────────────────────────────────────
 app.get('/health', (_, res) => res.json({ status: 'ok', env: process.env.NODE_ENV || 'development' }));
 
 app.listen(PORT, () => {
