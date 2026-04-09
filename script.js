@@ -3868,6 +3868,18 @@ function toggleSidebar() {
     if (sidebar) sidebar.classList.toggle('collapsed');
 }
 
+function syncMobileSearch() {
+    const val = document.getElementById('mobileSearchInput')?.value || '';
+    const desktop = document.getElementById('searchBar');
+    if (desktop) desktop.value = val;
+    applyFilters();
+}
+
+function highlightBottomNav(el) {
+    document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+}
+
 // ============================================
 // MAP VIEW
 // ============================================

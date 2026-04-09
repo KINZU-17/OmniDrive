@@ -2223,13 +2223,18 @@ button {
         margin: 0 -20px 16px;
         border-left: none;
         border-right: none;
+        padding: 10px 14px;
     }
 
     .filter-bar-primary {
         overflow-x: auto;
         flex-wrap: nowrap;
         padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
     }
+
+    .filter-bar-primary::-webkit-scrollbar { display: none; }
 
     .filter-pill {
         flex-shrink: 0;
@@ -2245,59 +2250,273 @@ button {
 }
 
 @media (max-width: 600px) {
+    /* ── Navbar ── */
     .navbar {
-        justify-content: center;
+        padding: 10px 14px;
+        gap: 10px;
+        flex-wrap: nowrap;
+        justify-content: space-between;
     }
-    
+
     .logo {
-        width: 100%;
-        text-align: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
     }
-    
+
+    .tagline {
+        display: none;
+    }
+
     .search-box {
-        order: 2;
-        max-width: 100%;
+        display: none;
     }
-    
+
     .nav-tools {
-        order: 1;
-        justify-content: center;
+        gap: 4px;
+        flex-shrink: 0;
     }
-    
-    .compare-tray {
+
+    .nav-tools select {
+        display: none;
+    }
+
+    .theme-btn, .finance-btn {
+        font-size: 1.1rem;
+        padding: 6px;
+    }
+
+    .wishlist-badge span:last-child {
+        display: none;
+    }
+
+    /* Mobile search bar below navbar */
+    .mobile-search-bar {
+        display: flex !important;
+    }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+        margin: 0 0 12px;
+        padding: 8px 12px;
+        top: 56px;
+    }
+
+    .filter-bar-meta {
         flex-direction: column;
-        padding: 15px;
-        width: 100%;
-        border-radius: 0;
+        align-items: flex-start;
+        gap: 6px;
     }
-    
-    .grid {
-        grid-template-columns: 1fr;
-    }
-    
+
     .filter-advanced-row {
         grid-template-columns: 1fr;
     }
-    
-    .modal-content {
-        padding: 15px;
+
+    /* ── Grid ── */
+    .main-wrapper {
+        padding: 0 10px 80px;
     }
-    
-    .admin-tabs {
+
+    .grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    /* ── Cards ── */
+    .car-card {
+        font-size: 0.85rem;
+    }
+
+    .car-card .img-wrap {
+        height: 140px;
+    }
+
+    .car-card .img-wrap img {
+        height: 140px;
+    }
+
+    .car-card .img-placeholder {
+        height: 140px;
+    }
+
+    .car-card h3 {
+        font-size: 0.9rem;
+        margin: 4px 0 2px;
+    }
+
+    .car-card .price {
+        font-size: 1.1rem;
+        margin: 4px 0;
+    }
+
+    .car-card .shipping-fee,
+    .car-card .dealer-info-card,
+    .car-card .car-card-buttons {
+        display: none;
+    }
+
+    .card-actions {
+        gap: 4px;
+        margin-top: 6px;
+    }
+
+    .card-actions .btn-view {
+        font-size: 0.78rem;
+        padding: 7px 6px;
+    }
+
+    .card-actions .btn-wish,
+    .card-actions .btn-share {
+        font-size: 0.85rem;
+        padding: 7px 8px;
+        min-width: 32px;
+    }
+
+    .car-card .specs-mini {
+        font-size: 0.72rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .car-card .rating-display {
+        font-size: 0.78rem;
+    }
+
+    /* ── Modals ── */
+    .modal {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .modal-content {
+        padding: 16px;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        max-height: 92vh;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .detail-modal-content,
+    .compare-modal-content,
+    .admin-modal-content {
+        max-width: 100%;
+    }
+
+    .detail-buttons {
         flex-direction: column;
     }
-    
-    .specs-inputs {
-        grid-template-columns: 1fr;
+
+    .detail-info {
+        grid-template-columns: 1fr 1fr;
     }
-    
+
+    /* ── Compare tray ── */
+    .compare-tray {
+        flex-direction: row;
+        padding: 10px 14px;
+        width: 100%;
+        border-radius: 0;
+        gap: 10px;
+        font-size: 0.85rem;
+    }
+
+    .compare-btn, .clear-compare-btn {
+        padding: 8px 14px;
+        font-size: 0.82rem;
+    }
+
+    /* ── Map ── */
+    .map-view {
+        height: 60vh;
+        min-height: 320px;
+        border-radius: 0;
+    }
+
+    /* ── Footer ── */
+    .site-footer {
+        padding-bottom: 80px;
+    }
+
     .footer-content {
         flex-direction: column;
         text-align: center;
+        gap: 10px;
     }
-    
-    .detail-buttons {
-        flex-direction: column;
+
+    .footer-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    /* ── Admin ── */
+    .admin-tabs {
+        flex-wrap: wrap;
+    }
+
+    .specs-inputs {
+        grid-template-columns: 1fr;
+    }
+
+    /* ── Customize ── */
+    .customize-vehicle {
+        grid-template-columns: 1fr;
+    }
+
+    .customize-options {
+        grid-template-columns: 1fr;
+    }
+
+    /* ── Broker/Seller ── */
+    .broker-benefits, .seller-benefits {
+        grid-template-columns: 1fr;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    /* ── Back to top ── */
+    #backToTop {
+        bottom: 90px;
+        right: 14px;
+        width: 42px;
+        height: 42px;
+        font-size: 1.1rem;
+    }
+
+    /* ── Chat ── */
+    .chat-box {
+        width: calc(100vw - 20px);
+        right: 10px;
+        bottom: 70px;
+    }
+
+    /* ── Splash ── */
+    .splash-vehicles {
+        top: 8%;
+        gap: 12px;
+    }
+
+    .splash-vehicle-item > :first-child {
+        font-size: 1.4rem;
+    }
+
+    .splash-vehicle-item span {
+        font-size: 0.55rem;
+    }
+}
+
+/* Extra small phones */
+@media (max-width: 380px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .car-card .img-wrap,
+    .car-card .img-wrap img,
+    .car-card .img-placeholder {
+        height: 180px;
     }
 }
 
@@ -3363,4 +3582,211 @@ button {
     height: 24px;
     border-width: 3px;
     margin: 0;
+}
+
+/* ==============================
+   MOBILE SEARCH BAR (below navbar)
+   ============================== */
+.mobile-search-bar {
+    display: none;
+    background: var(--gradient-dark);
+    padding: 0 14px 10px;
+    gap: 0;
+}
+
+.mobile-search-bar input {
+    flex: 1;
+    padding: 10px 16px;
+    border-radius: 22px 0 0 22px;
+    border: none;
+    font-size: 0.9rem;
+    background: rgba(255,255,255,0.12);
+    color: white;
+}
+
+.mobile-search-bar input::placeholder {
+    color: rgba(255,255,255,0.45);
+}
+
+.mobile-search-bar input:focus {
+    outline: none;
+    background: rgba(255,255,255,0.18);
+}
+
+.mobile-search-bar button {
+    padding: 10px 16px;
+    border-radius: 0 22px 22px 0;
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-size: 1rem;
+}
+
+/* ==============================
+   BOTTOM NAV (mobile)
+   ============================== */
+.bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    z-index: 1100;
+    padding: 6px 0 env(safe-area-inset-bottom, 6px);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+}
+
+.bottom-nav-items {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 12px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 0.65rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    min-width: 52px;
+}
+
+.bottom-nav-item .nav-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+.bottom-nav-item.active,
+.bottom-nav-item:active {
+    color: var(--primary);
+}
+
+@media (max-width: 600px) {
+    .bottom-nav {
+        display: block;
+    }
+}
+
+/* ==============================
+   TOUCH IMPROVEMENTS
+   ============================== */
+@media (max-width: 600px) {
+    /* Minimum 44px tap targets */
+    button, select, input[type="range"],
+    .filter-pill, .bottom-nav-item,
+    .card-actions button, .btn-primary,
+    .btn-secondary, .btn-contact {
+        min-height: 44px;
+    }
+
+    .filter-pill {
+        min-height: 36px;
+        padding: 6px 12px;
+    }
+
+    /* Remove hover effects on touch */
+    .car-card:hover {
+        transform: none;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .car-card:active {
+        transform: scale(0.98);
+    }
+
+    /* Prevent text selection on tap */
+    .car-card, .filter-pill, .bottom-nav-item {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    /* Smooth momentum scrolling */
+    .filter-bar-primary,
+    .modal-content,
+    .chat-messages {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Larger close/back buttons in modals */
+    .back-btn, .close-btn {
+        padding: 12px 18px;
+        font-size: 0.9rem;
+    }
+
+    /* Cookie banner stacks on mobile */
+    .cookie-banner {
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px;
+    }
+
+    .cookie-buttons {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .btn-cookie-accept,
+    .btn-cookie-decline {
+        flex: 1;
+        text-align: center;
+        padding: 12px;
+    }
+
+    /* Featured section */
+    .featured-section {
+        padding: 20px 10px;
+    }
+
+    .featured-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .featured-card img {
+        height: 110px;
+    }
+
+    /* Referral steps stack */
+    .referral-steps {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    /* Comparison table scroll */
+    #compareTable {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Payment options wrap */
+    .payment-options {
+        flex-wrap: wrap;
+    }
+
+    .payment-option {
+        min-width: calc(50% - 5px);
+    }
+
+    /* Notification full width */
+    .notification-container {
+        left: 10px;
+        right: 10px;
+        max-width: 100%;
+    }
+
+    /* Avatar emoji picker smaller on mobile */
+    .avatar-emoji-picker span {
+        font-size: 1.3rem;
+        padding: 4px;
+    }
 }

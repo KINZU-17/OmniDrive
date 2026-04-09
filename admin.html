@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniDrive Admin Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #0f1117; color: #e0e0e0; min-height: 100vh; }
+
+        .login-screen {
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; flex-direction: column; gap: 16px;
+        }
+        .login-screen h2 { color: #e47911; font-size: 1.8rem; }
+        .login-screen input {
+            padding: 12px 16px; border-radius: 8px; border: 1px solid #333;
+            background: #1a1d27; color: #fff; font-size: 1rem; width: 300px;
+        }
+        .login-screen button {
+            padding: 12px 32px; background: #e47911; color: #fff;
+            border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; width: 300px;
+        }
+
+        header {
+            background: #1a1d27; padding: 16px 32px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid #2a2d3a;
+        }
+        header h1 { color: #e47911; font-size: 1.4rem; }
+        header span { font-size: 0.85rem; color: #888; }
+        .logout-btn {
+            background: #333; color: #fff; border: none; padding: 8px 16px;
+            border-radius: 6px; cursor: pointer; font-size: 0.85rem;
+        }
+
+        .dashboard { padding: 24px 32px; }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px; margin-bottom: 32px;
+        }
+        .stat-card {
+            background: #1a1d27; border-radius: 10px; padding: 20px;
+            border: 1px solid #2a2d3a; text-align: center;
+        }
+        .stat-card .value { font-size: 2rem; font-weight: bold; color: #e47911; }
+        .stat-card .label { font-size: 0.8rem; color: #888; margin-top: 4px; text-transform: uppercase; }
+        .stat-card.green .value { color: #4caf50; }
+        .stat-card.red .value   { color: #f44336; }
+        .stat-card.blue .value  { color: #2196f3; }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+        .tab-btn {
+            padding: 10px 20px; border-radius: 8px; border: 1px solid #2a2d3a;
+            background: #1a1d27; color: #888; cursor: pointer; font-size: 0.9rem;
+        }
+        .tab-btn.active { background: #e47911; color: #fff; border-color: #e47911; }
+
+        /* Table */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        th {
+            background: #1a1d27; padding: 12px 14px; text-align: left;
+            color: #888; font-weight: 600; border-bottom: 1px solid #2a2d3a;
+            text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;
+        }
+        td { padding: 12px 14px; border-bottom: 1px solid #1e2130; vertical-align: middle; }
+        tr:hover td { background: #1e2130; }
+
+        .badge {
+            display: inline-block; padding: 3px 10px; border-radius: 20px;
+            font-size: 0.75rem; font-weight: bold; text-transform: uppercase;
+        }
+        .badge-paid    { background: #1b5e20; color: #69f0ae; }
+        .badge-pending { background: #e65100; color: #ffcc80; }
+        .badge-failed  { background: #b71c1c; color: #ff8a80; }
+
+        .refresh-btn {
+            background: #1a1d27; color: #e47911; border: 1px solid #e47911;
+            padding: 8px 18px; border-radius: 8px; cursor: pointer; font-size: 0.85rem;
+            margin-left: auto; display: block; margin-bottom: 16px;
+        }
+        .refresh-btn:hover { background: #e47911; color: #fff; }
+
+        .empty { text-align: center; padding: 40px; color: #555; }
+
+        .hidden { display: none !important; }
+
+        /* Deploy section */
+        .deploy-card {
+            background: #1a1d27; border-radius: 10px; padding: 24px;
+            border: 1px solid #2a2d3a; margin-bottom: 16px;
+        }
+        .deploy-card h3 { color: #e47911; margin-bottom: 12px; }
+        .deploy-card p  { color: #aaa; font-size: 0.9rem; line-height: 1.6; margin-bottom: 10px; }
+        .deploy-card code {
+            display: block; background: #0f1117; padding: 12px 16px;
+            border-radius: 6px; font-family: monospace; font-size: 0.85rem;
+            color: #69f0ae; margin: 8px 0; white-space: pre-wrap;
+        }
+        .copy-btn {
+            background: #333; color: #fff; border: none; padding: 6px 14px;
+            border-radius: 6px; cursor: pointer; font-size: 0.8rem; margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+    <h2>🚗 OmniDrive Admin</h2>
+    <p style="color:#888;font-size:0.9rem">Enter your admin key to continue</p>
+    <input type="password" id="adminKeyInput" placeholder="Admin Key" onkeydown="if(event.key==='Enter')login()">
+    <button onclick="login()">Login</button>
+    <p id="loginError" style="color:#f44336;font-size:0.85rem;display:none">Invalid admin key</p>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboardScreen" class="hidden">
+    <header>
+        <h1>🚗 OmniDrive Admin Dashboard</h1>
+        <span id="lastRefresh"></span>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </header>
+
+    <div class="dashboard">
+        <!-- Stats -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card"><div class="value" id="statTotal">—</div><div class="label">Total Orders</div></div>
+            <div class="stat-card green"><div class="value" id="statPaid">—</div><div class="label">Paid</div></div>
+            <div class="stat-card"><div class="value" id="statPending">—</div><div class="label">Pending</div></div>
+            <div class="stat-card red"><div class="value" id="statFailed">—</div><div class="label">Failed</div></div>
+            <div class="stat-card blue"><div class="value" id="statRevenue">—</div><div class="label">Revenue (KES)</div></div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('orders')">📋 All Orders</button>
+            <button class="tab-btn" onclick="showTab('paid')">✅ Paid</button>
+            <button class="tab-btn" onclick="showTab('pending')">⏳ Pending</button>
+            <button class="tab-btn" onclick="showTab('failed')">❌ Failed</button>
+            <button class="tab-btn" onclick="showTab('deploy')">🚀 Deploy Guide</button>
+        </div>
+
+        <button class="refresh-btn" onclick="loadData()">🔄 Refresh</button>
+
+        <!-- Orders Table -->
+        <div id="tab-orders" class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Vehicle</th>
+                        <th>Phone</th>
+                        <th>Amount (KES)</th>
+                        <th>Status</th>
+                        <th>Receipt</th>
+                        <th>Email</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersBody"></tbody>
+            </table>
+        </div>
+
+        <div id="tab-paid"    class="table-wrap hidden"></div>
+        <div id="tab-pending" class="table-wrap hidden"></div>
+        <div id="tab-failed"  class="table-wrap hidden"></div>
+
+        <!-- Deploy Guide -->
+        <div id="tab-deploy" class="hidden">
+            <div class="deploy-card">
+                <h3>🚀 Deploy to Railway (Recommended — Free)</h3>
+                <p>Railway gives you a live URL so you don't need ngrok anymore.</p>
+                <p><strong>Step 1:</strong> Push your code to GitHub</p>
+                <code>git init
+git add .
+git commit -m "OmniDrive backend"
+git remote add origin https://github.com/YOUR_USERNAME/omnidrive.git
+git push -u origin main</code>
+                <p><strong>Step 2:</strong> Go to <a href="https://railway.app" target="_blank" style="color:#e47911">railway.app</a> → New Project → Deploy from GitHub → select your repo</p>
+                <p><strong>Step 3:</strong> Add your environment variables in Railway dashboard (same as your .env file)</p>
+                <p><strong>Step 4:</strong> Railway gives you a URL like <code>https://omnidrive.up.railway.app</code> — use that as your MPESA_CALLBACK_URL</p>
+            </div>
+
+            <div class="deploy-card">
+                <h3>🐳 Docker (Self-hosted)</h3>
+                <code>docker build -t omnidrive .
+docker run -p 3000:3000 --env-file .env omnidrive</code>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText('docker build -t omnidrive .\ndocker run -p 3000:3000 --env-file .env omnidrive')">Copy</button>
+            </div>
+
+            <div class="deploy-card">
+                <h3>☁️ Render (Free tier)</h3>
+                <p>Go to <a href="https://render.com" target="_blank" style="color:#e47911">render.com</a> → New Web Service → Connect GitHub → set Start Command to <code>node server.js</code> → add env vars → Deploy</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = 'http://localhost:3000';
+    let adminKey = '';
+    let allOrders = [];
+
+    function login() {
+        const key = document.getElementById('adminKeyInput').value.trim();
+        if (!key) return;
+        adminKey = key;
+        loadData();
+    }
+
+    function logout() {
+        adminKey = '';
+        document.getElementById('dashboardScreen').classList.add('hidden');
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('adminKeyInput').value = '';
+    }
+
+    async function loadData() {
+        try {
+            const [statsRes, ordersRes] = await Promise.all([
+                fetch(`${API}/api/admin/stats`,  { headers: { 'x-admin-key': adminKey } }),
+                fetch(`${API}/api/admin/orders`, { headers: { 'x-admin-key': adminKey } })
+            ]);
+
+            if (statsRes.status === 401) {
+                document.getElementById('loginError').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('loginError').style.display = 'none';
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('dashboardScreen').classList.remove('hidden');
+
+            const stats  = await statsRes.json();
+            allOrders    = await ordersRes.json();
+
+            document.getElementById('statTotal').textContent   = stats.total;
+            document.getElementById('statPaid').textContent    = stats.paid;
+            document.getElementById('statPending').textContent = stats.pending;
+            document.getElementById('statFailed').textContent  = stats.failed;
+            document.getElementById('statRevenue').textContent = Number(stats.revenue).toLocaleString();
+            document.getElementById('lastRefresh').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+
+            renderTable('ordersBody', allOrders);
+            renderFilteredTab('tab-paid',    allOrders.filter(o => o.status === 'paid'));
+            renderFilteredTab('tab-pending', allOrders.filter(o => o.status === 'pending'));
+            renderFilteredTab('tab-failed',  allOrders.filter(o => o.status === 'failed'));
+
+        } catch (err) {
+            alert('Cannot connect to backend. Make sure server is running on port 3000.');
+        }
+    }
+
+    function renderTable(tbodyId, orders) {
+        const tbody = document.getElementById(tbodyId);
+        if (!orders.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">No orders found</td></tr>'; return; }
+        tbody.innerHTML = orders.map(o => `
+            <tr>
+                <td>#${o.id}</td>
+                <td>${o.vehicle_name || '—'}</td>
+                <td>+${o.phone}</td>
+                <td>${Number(o.amount).toLocaleString()}</td>
+                <td><span class="badge badge-${o.status}">${o.status}</span></td>
+                <td>${o.receipt || '—'}</td>
+                <td>${o.customer_email || '—'}</td>
+                <td>${o.created_at?.slice(0, 16) || '—'}</td>
+            </tr>
+        `).join('');
+    }
+
+    function renderFilteredTab(tabId, orders) {
+        const div = document.getElementById(tabId);
+        if (!orders.length) { div.innerHTML = '<p class="empty">No orders in this category</p>'; return; }
+        div.innerHTML = `
+            <table>
+                <thead><tr><th>#</th><th>Vehicle</th><th>Phone</th><th>Amount (KES)</th><th>Status</th><th>Receipt</th><th>Email</th><th>Date</th></tr></thead>
+                <tbody>${orders.map(o => `
+                    <tr>
+                        <td>#${o.id}</td>
+                        <td>${o.vehicle_name || '—'}</td>
+                        <td>+${o.phone}</td>
+                        <td>${Number(o.amount).toLocaleString()}</td>
+                        <td><span class="badge badge-${o.status}">${o.status}</span></td>
+                        <td>${o.receipt || '—'}</td>
+                        <td>${o.customer_email || '—'}</td>
+                        <td>${o.created_at?.slice(0, 16) || '—'}</td>
+                    </tr>
+                `).join('')}</tbody>
+            </table>
+        `;
+    }
+
+    function showTab(name) {
+        ['orders','paid','pending','failed','deploy'].forEach(t => {
+            document.getElementById(`tab-${t}`).classList.add('hidden');
+        });
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`tab-${name}`).classList.remove('hidden');
+        event.target.classList.add('active');
+    }
+
+    // Auto-refresh every 30 seconds
+    setInterval(() => { if (adminKey) loadData(); }, 30000);
+</script>
+</body>
+</html>

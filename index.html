@@ -2,7 +2,10 @@
 <html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0d1117">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>OmniDrive - Connecting You to the Drive of Your Choice</title>
     <meta name="description" content="OmniDrive.co.ke - Your trusted vehicle marketplace. Buy cars, bikes, buses, trucks & vans. Connecting you to the drive of your choice.">
     <meta name="keywords" content="cars, vehicles, motorcycles, buses, trucks, vans, buy car, car dealership, Kenya">
@@ -156,6 +159,12 @@
             <button class="splash-enter-btn" onclick="dismissSplash()">Enter Showroom →</button>
         </div>
         <div class="splash-footer">omnidrive.co.ke</div>
+    </div>
+
+    <!-- Mobile Search Bar -->
+    <div class="mobile-search-bar" id="mobileSearchBar">
+        <input type="text" id="mobileSearchInput" placeholder="Search brands or models..." oninput="syncMobileSearch()" autocomplete="off">
+        <button onclick="applyFilters()">&#x1F50D;</button>
     </div>
 
     <!-- Notification Container -->
@@ -641,6 +650,32 @@
 
     <!-- Back to Top -->
     <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
+
+    <!-- Bottom Nav (mobile) -->
+    <nav class="bottom-nav">
+        <div class="bottom-nav-items">
+            <button class="bottom-nav-item active" onclick="setView('grid');highlightBottomNav(this)">
+                <span class="nav-icon">&#x1F3E0;</span>
+                <span>Browse</span>
+            </button>
+            <button class="bottom-nav-item" onclick="setView('map');highlightBottomNav(this)">
+                <span class="nav-icon">&#x1F5FA;</span>
+                <span>Map</span>
+            </button>
+            <button class="bottom-nav-item" onclick="showWishlistModal();highlightBottomNav(this)">
+                <span class="nav-icon">&#x2764;&#xFE0F;</span>
+                <span>Saved</span>
+            </button>
+            <button class="bottom-nav-item" onclick="showAuthModal();highlightBottomNav(this)">
+                <span class="nav-icon">&#x1F464;</span>
+                <span>Account</span>
+            </button>
+            <button class="bottom-nav-item" onclick="showOrderTracking();highlightBottomNav(this)">
+                <span class="nav-icon">&#x1F4E6;</span>
+                <span>Orders</span>
+            </button>
+        </div>
+    </nav>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     <script src="script.js"></script>
