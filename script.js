@@ -1615,7 +1615,7 @@ function showDetailModal(id) {
             </div>
         </div>
         
-        <div class="detail-buttons">
+            <button class="btn-primary" id="wishBtn_${car.id}" onclick="toggleWishlist(${car.id}); this.textContent=wishlist.includes(${car.id})?2665+0027 In Wishlist0027:2661+0027 Add to Wishlist0027">
             <button class="btn-primary" onclick="toggleWishlist(${car.id}); closeDetailModal();">
                 ${wishlist.includes(car.id) ? '♥ In Wishlist' : '♡ Add to Wishlist'}
             </button>
