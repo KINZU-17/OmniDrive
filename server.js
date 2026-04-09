@@ -4,11 +4,17 @@ const cors    = require('cors');
 const path    = require('path');
 const Database = require('better-sqlite3');
 const nodemailer = require('nodemailer');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));   // serve index.html & assets
+app.use(express.static(path.join(__dirname)));
+
+const mpesaLimiter = rateLimit({ windowMs: 60 * 1000, max: 5, message: { success: false, error: 'Too many requests, please try again later.' } });
+const apiLimiter  = rateLimit({ windowMs: 60 * 1000, max: 60 });
 
 // ─── DATABASE SETUP ────────────────────────────────────────────────────────
 const db = new Database('omnidrive.db');
@@ -95,7 +101,7 @@ async function getAccessToken() {
 }
 
 // ─── 1. STK PUSH ──────────────────────────────────────────────────────────
-app.post('/api/mpesa/purchase', async (req, res) => {
+app.post('/api/mpesa/purchase', mpesaLimiter, async (req, res) => {
     const { phone, amount, vehicleName, vehicleId, email } = req.body;
 
     if (!phone || !amount) {
@@ -200,7 +206,7 @@ app.get('/api/mpesa/status/:checkoutRequestId', (req, res) => {
 // ─── 4. ADMIN API ─────────────────────────────────────────────────────────
 function adminAuth(req, res, next) {
     const key = req.headers['x-admin-key'];
-    if (key !== (process.env.ADMIN_KEY || 'omnidrive-admin-2024')) {
+    if (!process.env.ADMIN_KEY || key !== process.env.ADMIN_KEY) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
     next();
@@ -229,7 +235,95 @@ app.get('/api/admin/orders/:id', adminAuth, (req, res) => {
     return res.json(order);
 });
 
-// ─── 5. HEALTH CHECK ──────────────────────────────────────────────────────
+// ─── 5. DEALER REGISTRATION ───────────────────────────────────────────────
+db.exec(`
+    CREATE TABLE IF NOT EXISTS dealer_applications (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        name        TEXT,
+        owner       TEXT,
+        phone       TEXT,
+        email       TEXT,
+        city        TEXT,
+        address     TEXT,
+        types       TEXT,
+        plan        TEXT,
+        about       TEXT,
+        payment     TEXT,
+        status      TEXT DEFAULT 'pending',
+        created_at  TEXT DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS pending_listings (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        listing_id  TEXT UNIQUE,
+        brand       TEXT,
+        model       TEXT,
+        price       REAL,
+        year        INTEGER,
+        category    TEXT,
+        condition   TEXT,
+        mileage     INTEGER,
+        fuel        TEXT,
+        city        TEXT,
+        description TEXT,
+        img         TEXT,
+        seller_name  TEXT,
+        seller_phone TEXT,
+        seller_email TEXT,
+        status      TEXT DEFAULT 'pending',
+        created_at  TEXT DEFAULT (datetime('now'))
+    );
+`);
+
+app.post('/api/dealer/register', apiLimiter, (req, res) => {
+    const { name, owner, phone, email, city, address, types, plan, about, payment } = req.body;
+    if (!name || !owner || !phone || !email || !city || !plan) {
+        return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+    db.prepare(`
+        INSERT INTO dealer_applications (name, owner, phone, email, city, address, types, plan, about, payment)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(name, owner, phone, email, city, address || '', types || '', plan, about || '', payment || 'mpesa');
+    return res.json({ success: true, message: 'Application received' });
+});
+
+app.get('/api/admin/dealers', adminAuth, (req, res) => {
+    const dealers = db.prepare('SELECT * FROM dealer_applications ORDER BY created_at DESC').all();
+    return res.json(dealers);
+});
+
+app.patch('/api/admin/dealers/:id', adminAuth, (req, res) => {
+    const { status } = req.body;
+    if (!['pending','approved','rejected'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+    db.prepare('UPDATE dealer_applications SET status=? WHERE id=?').run(status, req.params.id);
+    return res.json({ success: true });
+});
+
+app.post('/api/listings/submit', apiLimiter, (req, res) => {
+    const { listing_id, brand, model, price, year, category, condition, mileage, fuel, city, description, img, seller } = req.body;
+    if (!brand || !model || !price || !seller?.name || !seller?.phone) {
+        return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+    db.prepare(`
+        INSERT OR IGNORE INTO pending_listings
+        (listing_id, brand, model, price, year, category, condition, mileage, fuel, city, description, img, seller_name, seller_phone, seller_email)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(listing_id || ('PND' + Date.now()), brand, model, price, year, category, condition, mileage || 0, fuel, city || '', description || '', img || '', seller.name, seller.phone, seller.email || '');
+    return res.json({ success: true });
+});
+
+app.get('/api/admin/listings', adminAuth, (req, res) => {
+    const listings = db.prepare('SELECT * FROM pending_listings ORDER BY created_at DESC').all();
+    return res.json(listings);
+});
+
+app.patch('/api/admin/listings/:id', adminAuth, (req, res) => {
+    const { status } = req.body;
+    if (!['pending','approved','rejected'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+    db.prepare('UPDATE pending_listings SET status=? WHERE id=?').run(status, req.params.id);
+    return res.json({ success: true });
+});
+
+// ─── 6. HEALTH CHECK ──────────────────────────────────────────────────────
 app.get('/health', (_, res) => res.json({ status: 'ok', env: process.env.NODE_ENV || 'development' }));
 
 app.listen(PORT, () => {

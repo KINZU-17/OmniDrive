@@ -2673,6 +2673,14 @@ function submitVehicleListing() {
 
     pendingListings.push(listing);
     localStorage.setItem('dealership_pending', JSON.stringify(pendingListings));
+
+    // Also POST to backend
+    fetch(`${BACKEND_URL}/api/listings/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...listing, listing_id: listing.id })
+    }).catch(() => {}); // silent fallback — already saved to localStorage
+
     showNotification('\uD83D\uDCEC Listing submitted! Our team will review and publish within 24 hours.', 'success');
     closeModal('listVehicleModal');
 }
@@ -4227,23 +4235,35 @@ function confirmTestDrive(carId) {
 // AI RECOMMENDATIONS (based on wishlist/viewed)
 // ============================================
 function getRecommendations() {
-    const viewed = [...recentlyViewed, ...wishlist];
+    const viewed = [...new Set([...recentlyViewed, ...wishlist])];
     if (!viewed.length) return inventory.filter(c => c.rating >= 4.7).slice(0, 6);
+
     const viewedCars = inventory.filter(c => viewed.includes(c.id));
     const avgPrice = viewedCars.reduce((s, c) => s + c.price, 0) / viewedCars.length;
-    const topFuel = viewedCars.map(c => c.fuel).sort((a, b) =>
-        viewedCars.filter(x => x.fuel === b).length - viewedCars.filter(x => x.fuel === a).length)[0];
-    const topCat = viewedCars.map(c => c.category).sort((a, b) =>
-        viewedCars.filter(x => x.category === b).length - viewedCars.filter(x => x.category === a).length)[0];
+
+    // Count frequency of each attribute
+    const freq = (arr, key) => arr.reduce((m, c) => { m[c[key]] = (m[c[key]] || 0) + 1; return m; }, {});
+    const fuelFreq     = freq(viewedCars, 'fuel');
+    const catFreq      = freq(viewedCars, 'category');
+    const brandFreq    = freq(viewedCars, 'brand');
+    const bodyFreq     = freq(viewedCars, 'bodyStyle');
+    const nationFreq   = freq(viewedCars, 'nation');
+
     return inventory
-        .filter(c => !viewed.includes(c.id))
+        .filter(c => !viewed.includes(c.id) && c.availability !== 'Pre-Order')
         .map(c => ({
             ...c,
-            score: (c.category === topCat ? 3 : 0) + (c.fuel === topFuel ? 2 : 0) +
-                   (Math.abs(c.price - avgPrice) < avgPrice * 0.3 ? 2 : 0) + (c.rating >= 4.5 ? 1 : 0)
+            score:
+                (catFreq[c.category]   || 0) * 4 +
+                (fuelFreq[c.fuel]      || 0) * 3 +
+                (bodyFreq[c.bodyStyle] || 0) * 2 +
+                (brandFreq[c.brand]    || 0) * 2 +
+                (nationFreq[c.nation]  || 0) * 1 +
+                (Math.abs(c.price - avgPrice) < avgPrice * 0.4 ? 3 : 0) +
+                (c.rating >= 4.8 ? 2 : c.rating >= 4.5 ? 1 : 0)
         }))
         .sort((a, b) => b.score - a.score)
-        .slice(0, 6);
+        .slice(0, 8);
 }
 
 function showRecommendations() {

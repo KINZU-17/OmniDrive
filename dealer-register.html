@@ -492,13 +492,30 @@
             payment: selectedPaymentMethod,
             date: new Date().toISOString()
         };
-        // Save to localStorage (in production: POST to backend)
-        const apps = JSON.parse(localStorage.getItem('dealer_applications') || '[]');
-        apps.push(data);
-        localStorage.setItem('dealer_applications', JSON.stringify(apps));
 
-        document.getElementById('formSection').style.display = 'none';
-        document.getElementById('successScreen').style.display = 'block';
+        const BACKEND_URL = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+            ? 'http://localhost:3000'
+            : 'https://omnidrive-backend-production.up.railway.app';
+
+        fetch(`${BACKEND_URL}/api/dealer/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (!res.success) throw new Error(res.error || 'Submission failed');
+            document.getElementById('formSection').style.display = 'none';
+            document.getElementById('successScreen').style.display = 'block';
+        })
+        .catch(err => {
+            // Fallback to localStorage if backend is unreachable
+            const apps = JSON.parse(localStorage.getItem('dealer_applications') || '[]');
+            apps.push(data);
+            localStorage.setItem('dealer_applications', JSON.stringify(apps));
+            document.getElementById('formSection').style.display = 'none';
+            document.getElementById('successScreen').style.display = 'block';
+        });
     }
 
     function showNotif(msg, type = 'info') {
