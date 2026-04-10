@@ -3676,6 +3676,8 @@ button {
    TOUCH IMPROVEMENTS
    ============================== */
 @media (max-width: 600px) {
+    .compare-tray { bottom: 60px; }
+
     /* Minimum 44px tap targets */
     button, select, input[type="range"],
     .filter-pill, .bottom-nav-item,

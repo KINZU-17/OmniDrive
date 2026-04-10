@@ -1325,6 +1325,7 @@ function applyFilters() {
 
 function clearFilters() {
     document.getElementById('searchBar').value = '';
+    const _ms = document.getElementById('mobileSearchInput'); if (_ms) _ms.value = '';
     const mobileSearch = document.getElementById('mobileSearchInput');
     if (mobileSearch) mobileSearch.value = '';
     document.getElementById('categoryFilter').value = 'all';
@@ -1616,10 +1617,10 @@ function showDetailModal(id) {
         </div>
         
             <button class="btn-primary" id="wishBtn_${car.id}" onclick="toggleWishlist(${car.id}); this.textContent=wishlist.includes(${car.id})?2665+0027 In Wishlist0027:2661+0027 Add to Wishlist0027">
-            <button class="btn-primary" onclick="toggleWishlist(${car.id}); closeDetailModal();">
+            <button class="btn-primary" onclick="toggleWishlist(${car.id}); this.textContent=wishlist.includes(${car.id})?'♥ In Wishlist':'♡ Add to Wishlist'">
                 ${wishlist.includes(car.id) ? '♥ In Wishlist' : '♡ Add to Wishlist'}
             </button>
-            <button class="btn-compare" onclick="toggleCompare(${car.id}); closeDetailModal();">
+            <button class="btn-compare" onclick="toggleCompare(${car.id}); this.textContent=compareList.includes(${car.id})?'✓ In Compare':'+ Add to Compare'">
                 ${compareList.includes(car.id) ? '✓ Added to Compare' : '+ Add to Compare'}
             </button>
             <button class="btn-contact" onclick="directContactDealer(${car.id})">📞 Contact Dealer</button>

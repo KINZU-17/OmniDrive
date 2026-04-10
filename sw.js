@@ -1,4 +1,4 @@
-const CACHE = 'omnidrive-v5';
+const CACHE = 'omnidrive-v6';
 const ASSETS = [
     '/',
     '/index.html',
@@ -12,15 +12,11 @@ const ASSETS = [
     '/dealer-register.html'
 ];
 
-// Install — cache all static assets
 self.addEventListener('install', e => {
-    e.waitUntil(
-        caches.open(CACHE).then(cache => cache.addAll(ASSETS))
-    );
+    e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
     self.skipWaiting();
 });
 
-// Activate — clean up old caches
 self.addEventListener('activate', e => {
     e.waitUntil(
         caches.keys().then(keys =>
@@ -30,43 +26,83 @@ self.addEventListener('activate', e => {
     self.clients.claim();
 });
 
-// Push notifications
+// ── Push Notifications ───────────────────────────────────────────────────
 self.addEventListener('push', e => {
     const data = e.data?.json() || {};
-    e.waitUntil(
-        self.registration.showNotification(data.title || 'OmniDrive', {
-            body: data.body || 'New message',
-            icon: '/favicon.svg',
-            badge: '/favicon.svg',
-            data: { url: data.url || '/messaging.html' }
-        })
-    );
+    const title = data.title || 'OmniDrive';
+    const options = {
+        body: data.body || 'You have a new message',
+        icon: '/favicon.svg',
+        badge: '/favicon.svg',
+        image: data.image || null,
+        tag: data.tag || 'omnidrive-msg',
+        renotify: true,
+        vibrate: [200, 100, 200],
+        actions: [
+            { action: 'view', title: '👁 View', icon: '/favicon.svg' },
+            { action: 'dismiss', title: '✕ Dismiss' }
+        ],
+        data: { url: data.url || '/', chatId: data.chatId || null }
+    };
+    e.waitUntil(self.registration.showNotification(title, options));
 });
 
 self.addEventListener('notificationclick', e => {
     e.notification.close();
-    e.waitUntil(clients.openWindow(e.notification.data?.url || '/messaging.html'));
+    if (e.action === 'dismiss') return;
+    const url = e.notification.data?.url || '/';
+    e.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+            for (const client of list) {
+                if (client.url.includes(self.location.origin) && 'focus' in client) {
+                    client.postMessage({ type: 'NOTIFICATION_CLICK', url, chatId: e.notification.data?.chatId });
+                    return client.focus();
+                }
+            }
+            return clients.openWindow(url);
+        })
+    );
 });
 
-// Fetch — cache-first for assets, network-first for API
+// ── Background Sync (chat messages sent offline) ─────────────────────────
+self.addEventListener('sync', e => {
+    if (e.tag === 'sync-messages') {
+        e.waitUntil(syncPendingMessages());
+    }
+});
+
+async function syncPendingMessages() {
+    // Notify all clients to flush pending messages
+    const list = await clients.matchAll({ type: 'window' });
+    list.forEach(c => c.postMessage({ type: 'SYNC_MESSAGES' }));
+}
+
+// ── Message from page ────────────────────────────────────────────────────
+self.addEventListener('message', e => {
+    if (e.data?.type === 'SKIP_WAITING') self.skipWaiting();
+    if (e.data?.type === 'BROADCAST') {
+        // Relay chat messages to all open tabs
+        clients.matchAll({ type: 'window' }).then(list => {
+            list.forEach(c => { if (c !== e.source) c.postMessage(e.data); });
+        });
+    }
+});
+
+// ── Fetch ────────────────────────────────────────────────────────────────
 self.addEventListener('fetch', e => {
     const url = new URL(e.request.url);
 
-    // Network-first for exchange rate API
+    // Only handle requests from this SW's scope
+    if (!e.request.url.startsWith(self.registration.scope)) return;
+
     if (url.hostname.includes('open.er-api.com')) {
         e.respondWith(
             fetch(e.request)
-                .then(res => {
-                    const clone = res.clone();
-                    caches.open(CACHE).then(c => c.put(e.request, clone));
-                    return res;
-                })
+                .then(res => { const clone = res.clone(); caches.open(CACHE).then(c => c.put(e.request, clone)); return res; })
                 .catch(() => caches.match(e.request))
         );
         return;
     }
-
-    // Cache-first for everything else
     e.respondWith(
         caches.match(e.request).then(cached => {
             if (cached) return cached;
