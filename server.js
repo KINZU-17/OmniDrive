@@ -23,6 +23,30 @@ const apiLimiter  = rateLimit({ windowMs: 60 * 1000, max: 60 });
 const db = new Database('omnidrive.db');
 
 db.exec(`
+    -- Active vehicle listings (publicly visible)
+    CREATE TABLE IF NOT EXISTS listings (
+        id               INTEGER PRIMARY KEY AUTOINCREMENT,
+        brand            TEXT NOT NULL,
+        model            TEXT NOT NULL,
+        price            REAL NOT NULL,
+        nation           TEXT NOT NULL,
+        category         TEXT DEFAULT 'Car',
+        condition        TEXT DEFAULT 'Used',
+        body_style       TEXT,
+        fuel_type        TEXT,
+        drivetrain       TEXT,
+        color            TEXT,
+        city             TEXT DEFAULT 'Nairobi',
+        image            TEXT,
+        badges           TEXT DEFAULT '[]',
+        specs            TEXT DEFAULT '{}',
+        rating           REAL DEFAULT 4.5,
+        reviewCount      INTEGER DEFAULT 0,
+        createdAt        DATETIME DEFAULT CURRENT_TIMESTAMP,
+        isActive         BOOLEAN DEFAULT 1
+    );
+
+    -- Orders / Transactions
     CREATE TABLE IF NOT EXISTS orders (
         id               INTEGER PRIMARY KEY AUTOINCREMENT,
         checkout_id      TEXT UNIQUE,
@@ -236,6 +260,135 @@ app.get('/api/admin/orders/:id', adminAuth, (req, res) => {
     const order = db.prepare('SELECT * FROM orders WHERE id=?').get(req.params.id);
     if (!order) return res.status(404).json({ error: 'Not found' });
     return res.json(order);
+});
+
+// ─── LISTINGS MANAGEMENT ────────────────────────────────────────────────────
+
+// Get all active listings (public)
+app.get('/api/listings', (req, res) => {
+    try {
+        const { brand, category, nation, sort = 'createdAt', order = 'DESC' } = req.query;
+        let query = 'SELECT * FROM listings WHERE isActive = 1';
+        const params = [];
+
+        if (brand) {
+            query += ' AND brand LIKE ?';
+            params.push(`%${brand}%`);
+        }
+        if (category) {
+            query += ' AND category = ?';
+            params.push(category);
+        }
+        if (nation) {
+            query += ' AND nation = ?';
+            params.push(nation);
+        }
+
+        // Sorting
+        const validSorts = ['price', 'rating', 'createdAt', 'brand', 'model'];
+        const validOrder = ['ASC', 'DESC'];
+        const sortColumn = validSorts.includes(sort) ? sort : 'createdAt';
+        const sortDirection = validOrder.includes(order.toUpperCase()) ? order.toUpperCase() : 'DESC';
+        query += ` ORDER BY ${sortColumn} ${sortDirection}`;
+
+        const listings = db.prepare(query).all(...params);
+        return res.json({ success: true, data: listings });
+    } catch (err) {
+        console.error('Error fetching listings:', err);
+        return res.status(500).json({ error: 'Failed to fetch listings' });
+    }
+});
+
+// Get single listing by ID
+app.get('/api/listings/:id', (req, res) => {
+    const listing = db.prepare('SELECT * FROM listings WHERE id = ? AND isActive = 1').get(req.params.id);
+    if (!listing) return res.status(404).json({ error: 'Listing not found' });
+    return res.json({ success: true, data: listing });
+});
+
+// Admin: Add new listing
+app.post('/api/listings', adminAuth, (req, res) => {
+    try {
+        const {
+            brand, model, price, nation, category, condition,
+            body_style, fuel_type, drivetrain, color, city,
+            image, badges, specs, rating
+        } = req.body;
+
+        const stmt = db.prepare(`
+            INSERT INTO listings (
+                brand, model, price, nation, category, condition,
+                body_style, fuel_type, drivetrain, color, city,
+                image, badges, specs, rating
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+
+        const result = stmt.run(
+            brand, model, price, nation, category, condition,
+            body_style, fuel_type, drivetrain, color, city,
+            image ? JSON.stringify(image) : null,
+            badges ? JSON.stringify(badges) : '[]',
+            specs ? JSON.stringify(specs) : '{}',
+            rating || 4.5
+        );
+
+        return res.json({
+            success: true,
+            id: result.lastInsertRowid,
+            message: 'Listing created successfully'
+        });
+    } catch (err) {
+        console.error('Error creating listing:', err);
+        return res.status(500).json({ error: 'Failed to create listing' });
+    }
+});
+
+// Admin: Update listing
+app.put('/api/listings/:id', adminAuth, (req, res) => {
+    try {
+        const { id } = req.params;
+        const {
+            brand, model, price, nation, category, condition,
+            body_style, fuel_type, drivetrain, color, city,
+            image, badges, specs, rating, isActive
+        } = req.body;
+
+        const stmt = db.prepare(`
+            UPDATE listings SET
+                brand = ?, model = ?, price = ?, nation = ?, category = ?,
+                condition = ?, body_style = ?, fuel_type = ?, drivetrain = ?,
+                color = ?, city = ?, image = ?, badges = ?, specs = ?,
+                rating = ?, isActive = ?
+            WHERE id = ?
+        `);
+
+        stmt.run(
+            brand, model, price, nation, category, condition,
+            body_style, fuel_type, drivetrain, color, city,
+            image ? JSON.stringify(image) : null,
+            badges ? JSON.stringify(badges) : '[]',
+            specs ? JSON.stringify(specs) : '{}',
+            rating || 4.5,
+            isActive !== undefined ? (isActive ? 1 : 0) : 1,
+            id
+        );
+
+        return res.json({ success: true, message: 'Listing updated' });
+    } catch (err) {
+        console.error('Error updating listing:', err);
+        return res.status(500).json({ error: 'Failed to update listing' });
+    }
+});
+
+// Admin: Delete listing (soft delete)
+app.delete('/api/listings/:id', adminAuth, (req, res) => {
+    try {
+        const { id } = req.params;
+        db.prepare('UPDATE listings SET isActive = 0 WHERE id = ?').run(id);
+        return res.json({ success: true, message: 'Listing deleted' });
+    } catch (err) {
+        return res.status(500).json({ error: 'Failed to delete listing' });
+    }
 });
 
 // ─── 5. DEALER REGISTRATION ───────────────────────────────────────────────

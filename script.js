@@ -1,6 +1,15 @@
-const BACKEND_URL = ['localhost', '127.0.0.1'].includes(window.location.hostname) || window.location.hostname.endsWith('.ngrok-free.app') || window.location.hostname.endsWith('.ngrok-free.dev')
-    ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:3000' : `https://${window.location.hostname}`)
-    : 'https://omnidrive-backend-production.up.railway.app';
+const BACKEND_URL = (() => {
+    // Local development detection
+    if (['localhost', '127.0.0.1'].includes(window.location.hostname) ||
+        window.location.hostname.endsWith('.ngrok-free.app') ||
+        window.location.hostname.endsWith('.ngrok-free.dev')) {
+        return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : `https://${window.location.hostname}`;
+    }
+    // Production fallback
+    return 'https://omnidrive-backend-production.up.railway.app';
+})();
 
 
 
