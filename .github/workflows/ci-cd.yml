@@ -1,0 +1,126 @@
+name: OmniDrive CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run linter
+      run: npm run lint || true
+    
+    - name: Run tests
+      run: npm test -- --coverage
+    
+    - name: Upload coverage
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./coverage/lcov.info
+        flags: unittests
+        fail_ci_if_error: false
+
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Run npm audit
+      run: npm audit --audit-level=moderate || true
+    
+    - name: OWASP Dependency Check
+      uses: dependency-check/Dependency-Check_Action@main
+      with:
+        path: '.'
+        format: 'JSON'
+        args: >
+          --enableExperimental
+      continue-on-error: true
+
+  build:
+    needs: [test, security]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20.x
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build Docker image
+      run: |
+        docker build -t omnidrive-api:${{ github.sha }} .
+        docker tag omnidrive-api:${{ github.sha }} omnidrive-api:latest
+    
+    - name: Run container tests
+      run: docker run --rm omnidrive-api:latest npm test
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to Railway
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      run: |
+        npm install -g @railway/cli
+        railway up --service omnidrive-backend
+      continue-on-error: true
+
+  notify:
+    needs: [test, build, deploy]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Notify Slack
+      if: failure()
+      uses: slackapi/slack-github-action@v1
+      with:
+        payload: |
+          {
+            "text": "OmniDrive CI/CD Pipeline Failed",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*Build Status*: ${{ job.status }}\n*Commit*: ${{ github.sha }}\n*Branch*: ${{ github.ref }}"
+                }
+              }
+            ]
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

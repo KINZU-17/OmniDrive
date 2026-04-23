@@ -4,7 +4,7 @@ const BACKEND_URL = (() => {
         window.location.hostname.endsWith('.ngrok-free.app') ||
         window.location.hostname.endsWith('.ngrok-free.dev')) {
         return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:3000'
+            ? 'http://localhost:3002'
             : `https://${window.location.hostname}`;
     }
     // Production fallback

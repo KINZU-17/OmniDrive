@@ -127,15 +127,30 @@ async function getAccessToken() {
     return data.access_token;
 }
 
-// ─── 1. STK PUSH ──────────────────────────────────────────────────────────
-app.post('/api/mpesa/purchase', mpesaLimiter, async (req, res) => {
-    const { phone, amount, vehicleName, vehicleId, email } = req.body;
+    // ─── 1. STK PUSH ──────────────────────────────────────────────────────────
+    let MPESA_AVAILABLE = false;
+    
+    // Pre-check MPesa connectivity
+    (async () => {
+        try {
+            if (process.env.NODE_ENV === 'production' && MPESA_CONSUMER_KEY) {
+                const token = await getAccessToken();
+                MPESA_AVAILABLE = !!token;
+                console.log('[MPesa] Connected to Daraja API');
+            }
+        } catch (err) {
+            console.log('[MPesa] Sandbox mode - not connected to Daraja');
+        }
+    })();
+    
+    app.post('/api/mpesa/purchase', mpesaLimiter, async (req, res) => {
+        const { phone, amount, vehicleName, vehicleId, email } = req.body;
 
-    if (!phone || !amount) {
-        return res.status(400).json({ success: false, error: 'phone and amount are required' });
-    }
+        if (!phone || !amount) {
+            return res.status(400).json({ success: false, error: 'phone and amount are required' });
+        }
 
-    const stkAmount = process.env.NODE_ENV === 'production' ? Math.ceil(amount) : 1;
+        const stkAmount = process.env.NODE_ENV === 'production' ? Math.ceil(amount) : 1;
 
     try {
         const token = await getAccessToken();
