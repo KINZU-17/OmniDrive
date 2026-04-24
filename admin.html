@@ -13,6 +13,7 @@
             min-height: 100vh; flex-direction: column; gap: 16px;
         }
         .login-screen h2 { color: #e47911; font-size: 1.8rem; }
+        .login-screen p  { color: #888; font-size: 0.9rem; }
         .login-screen input {
             padding: 12px 16px; border-radius: 8px; border: 1px solid #333;
             background: #1a1d27; color: #fff; font-size: 1rem; width: 300px;
@@ -21,6 +22,18 @@
             padding: 12px 32px; background: #e47911; color: #fff;
             border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; width: 300px;
         }
+
+        /* User type tabs */
+        .type-tabs { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 12px 0; }
+        .type-tab-btn {
+            padding: 10px 20px; border-radius: 8px; border: 1px solid #333;
+            background: #1a1d27; color: #666; cursor: pointer; font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        .type-tab-btn:hover { border-color: #e47911; color: #e47911; }
+        .type-tab-btn.active { background: #e47911; color: #fff; border-color: #e47911; }
+
+        .selected-display { color: #e47911; font-size: 0.85rem; margin-top: 8px; }
 
         header {
             background: #1a1d27; padding: 16px 32px;
@@ -48,8 +61,8 @@
         .stat-card .value { font-size: 2rem; font-weight: bold; color: #e47911; }
         .stat-card .label { font-size: 0.8rem; color: #888; margin-top: 4px; text-transform: uppercase; }
         .stat-card.green .value { color: #4caf50; }
-        .stat-card.red .value   { color: #f44336; }
-        .stat-card.blue .value  { color: #2196f3; }
+        .stat-card.red   .value { color: #f44336; }
+        .stat-card.blue  .value { color: #2196f3; }
 
         /* Tabs */
         .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
@@ -86,25 +99,7 @@
         .refresh-btn:hover { background: #e47911; color: #fff; }
 
         .empty { text-align: center; padding: 40px; color: #555; }
-
         .hidden { display: none !important; }
-
-        /* Deploy section */
-        .deploy-card {
-            background: #1a1d27; border-radius: 10px; padding: 24px;
-            border: 1px solid #2a2d3a; margin-bottom: 16px;
-        }
-        .deploy-card h3 { color: #e47911; margin-bottom: 12px; }
-        .deploy-card p  { color: #aaa; font-size: 0.9rem; line-height: 1.6; margin-bottom: 10px; }
-        .deploy-card code {
-            display: block; background: #0f1117; padding: 12px 16px;
-            border-radius: 6px; font-family: monospace; font-size: 0.85rem;
-            color: #69f0ae; margin: 8px 0; white-space: pre-wrap;
-        }
-        .copy-btn {
-            background: #333; color: #fff; border: none; padding: 6px 14px;
-            border-radius: 6px; cursor: pointer; font-size: 0.8rem; margin-top: 4px;
-        }
     </style>
 </head>
 <body>
@@ -112,10 +107,22 @@
 <!-- LOGIN -->
 <div class="login-screen" id="loginScreen">
     <h2>🚗 OmniDrive Admin</h2>
-    <p style="color:#888;font-size:0.9rem">Enter your admin key to continue</p>
-    <input type="password" id="adminKeyInput" placeholder="Admin Key" onkeydown="if(event.key==='Enter')login()">
-    <button onclick="login()">Login</button>
-    <p id="loginError" style="color:#f44336;font-size:0.85rem;display:none">Invalid admin key</p>
+    <p>WHO IS ENTERING THE DEALERSHIP?</p>
+
+    <div class="type-tabs">
+        <button class="type-tab-btn" onclick="selectAdminUserType('admin')" id="type-admin-btn">🛡️ Admin</button>
+        <button class="type-tab-btn" onclick="selectAdminUserType('dealer')" id="type-dealer-btn">🏢 Dealer</button>
+        <button class="type-tab-btn" onclick="selectAdminUserType('liaison')" id="type-liaison-btn">🤝 Broker</button>
+        <button class="type-tab-btn" onclick="selectAdminUserType('client')" id="type-client-btn">👤 Client</button>
+    </div>
+
+    <p id="selectedUserTypeDisplay" class="selected-display" style="display:none">
+        Selected: <strong id="selectedUserType"></strong>
+    </p>
+
+    <input type="password" id="adminKeyInput" placeholder="Enter Access Key" onkeydown="if(event.key==='Enter')login()">
+    <button onclick="login()" id="loginBtn">Login</button>
+    <p id="loginError">Invalid admin key</p>
 </div>
 
 <!-- DASHBOARD -->
@@ -138,175 +145,182 @@
 
         <!-- Tabs -->
         <div class="tabs">
-            <button class="tab-btn active" onclick="showTab('orders')">📋 All Orders</button>
-            <button class="tab-btn" onclick="showTab('paid')">✅ Paid</button>
-            <button class="tab-btn" onclick="showTab('pending')">⏳ Pending</button>
-            <button class="tab-btn" onclick="showTab('failed')">❌ Failed</button>
-            <button class="tab-btn" onclick="showTab('deploy')">🚀 Deploy Guide</button>
-            <a href="messaging.html" target="_blank" style="padding:10px 20px;border-radius:8px;border:1px solid #2a2d3a;background:#1a1d27;color:#e47911;text-decoration:none;font-size:.9rem">💬 Messaging</a>
+            <button class="tab-btn active" onclick="showTable('orders')">📦 Orders</button>
+            <button class="tab-btn" onclick="showTable('dealers')">🏢 Dealers</button>
+            <button class="tab-btn" onclick="showTable('vehicles')">🚗 Vehicles</button>
         </div>
 
-        <button class="refresh-btn" onclick="loadData()">🔄 Refresh</button>
+        <button class="refresh-btn" onclick="refreshData()">🔄 Refresh Data</button>
 
         <!-- Orders Table -->
-        <div id="tab-orders" class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Vehicle</th>
-                        <th>Phone</th>
-                        <th>Amount (KES)</th>
-                        <th>Status</th>
-                        <th>Receipt</th>
-                        <th>Email</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody id="ordersBody"></tbody>
-            </table>
+        <div id="ordersSection">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Date</th><th>Customer</th><th>Vehicle</th><th>Amount</th><th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTable"></tbody>
+                </table>
+            </div>
         </div>
 
-        <div id="tab-paid"    class="table-wrap hidden"></div>
-        <div id="tab-pending" class="table-wrap hidden"></div>
-        <div id="tab-failed"  class="table-wrap hidden"></div>
-
-        <!-- Deploy Guide -->
-        <div id="tab-deploy" class="hidden">
-            <div class="deploy-card">
-                <h3>🚀 Deploy to Railway (Recommended — Free)</h3>
-                <p>Railway gives you a live URL so you don't need ngrok anymore.</p>
-                <p><strong>Step 1:</strong> Push your code to GitHub</p>
-                <code>git init
-git add .
-git commit -m "OmniDrive backend"
-git remote add origin https://github.com/YOUR_USERNAME/omnidrive.git
-git push -u origin main</code>
-                <p><strong>Step 2:</strong> Go to <a href="https://railway.app" target="_blank" style="color:#e47911">railway.app</a> → New Project → Deploy from GitHub → select your repo</p>
-                <p><strong>Step 3:</strong> Add your environment variables in Railway dashboard (same as your .env file)</p>
-                <p><strong>Step 4:</strong> Railway gives you a URL like <code>https://omnidrive.up.railway.app</code> — use that as your MPESA_CALLBACK_URL</p>
+        <!-- Dealers Table -->
+        <div id="dealersSection" class="hidden">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Dealer</th><th>City</th><th>Vehicles</th><th>Status</th><th>Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dealersTable"></tbody>
+                </table>
             </div>
+        </div>
 
-            <div class="deploy-card">
-                <h3>🐳 Docker (Self-hosted)</h3>
-                <code>docker build -t omnidrive .
-docker run -p 3000:3000 --env-file .env omnidrive</code>
-                <button class="copy-btn" onclick="navigator.clipboard.writeText('docker build -t omnidrive .\ndocker run -p 3000:3000 --env-file .env omnidrive')">Copy</button>
-            </div>
-
-            <div class="deploy-card">
-                <h3>☁️ Render (Free tier)</h3>
-                <p>Go to <a href="https://render.com" target="_blank" style="color:#e47911">render.com</a> → New Web Service → Connect GitHub → set Start Command to <code>node server.js</code> → add env vars → Deploy</p>
+        <!-- Vehicles Table -->
+        <div id="vehiclesSection" class="hidden">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Brand</th><th>Model</th><th>Price</th><th>Year</th><th>Category</th><th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vehiclesTable"></tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    const API = 'http://localhost:3000';
-    let adminKey = '';
-    let allOrders = [];
+// Current user type
+let adminUserType = '';
 
-    function login() {
-        const key = document.getElementById('adminKeyInput').value.trim();
-        if (!key) return;
-        adminKey = key;
-        loadData();
+function selectAdminUserType(type) {
+    adminUserType = type;
+    
+    // Update tab buttons
+    ['admin','dealer','broker','client'].forEach(t => {
+        const btn = document.getElementById('type-'+t+'-btn');
+        btn.classList.toggle('active', t === type);
+    });
+    
+    // Show selection
+    document.getElementById('selectedUserTypeDisplay').style.display = 'block';
+    document.getElementById('selectedUserType').textContent = type.charAt(0).toUpperCase() + type.slice(1);
+    
+    // Show login form
+    document.getElementById('adminKeyInput').style.display = 'block';
+    document.getElementById('loginBtn').style.display = 'block';
+    document.getElementById('adminKeyInput').focus();
+}
+
+function login() {
+    const key = document.getElementById('adminKeyInput').value.trim();
+    const expectedKey = '0a6c6a66849b6d29feea4b4381bd4742e7ee226f608468935ad9faa834d8b482';
+    
+    if (!adminUserType) {
+        alert('Please select your user type first!');
+        return;
     }
-
-    function logout() {
-        adminKey = '';
-        document.getElementById('dashboardScreen').classList.add('hidden');
-        document.getElementById('loginScreen').classList.remove('hidden');
-        document.getElementById('adminKeyInput').value = '';
+    
+    if (key === expectedKey) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboardScreen').classList.remove('hidden');
+        document.getElementById('loginError').style.display = 'none';
+        loadDashboard();
+    } else {
+        document.getElementById('loginError').style.display = 'block';
     }
+}
 
-    async function loadData() {
-        try {
-            const [statsRes, ordersRes] = await Promise.all([
-                fetch(`${API}/api/admin/stats`,  { headers: { 'x-admin-key': adminKey } }),
-                fetch(`${API}/api/admin/orders`, { headers: { 'x-admin-key': adminKey } })
-            ]);
+function logout() {
+    adminUserType = '';
+    document.getElementById('dashboardScreen').classList.add('hidden');
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('adminKeyInput').value = '';
+    document.getElementById('selectedUserTypeDisplay').style.display = 'none';
+    document.getElementById('adminKeyInput').style.display = 'none';
+    document.getElementById('loginBtn').style.display = 'none';
+    ['admin','dealer','broker','client'].forEach(t => {
+        document.getElementById('type-'+t+'-btn').classList.remove('active');
+    });
+}
 
-            if (statsRes.status === 401) {
-                document.getElementById('loginError').style.display = 'block';
-                return;
-            }
-
-            document.getElementById('loginError').style.display = 'none';
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('dashboardScreen').classList.remove('hidden');
-
-            const stats  = await statsRes.json();
-            allOrders    = await ordersRes.json();
-
-            document.getElementById('statTotal').textContent   = stats.total;
-            document.getElementById('statPaid').textContent    = stats.paid;
-            document.getElementById('statPending').textContent = stats.pending;
-            document.getElementById('statFailed').textContent  = stats.failed;
-            document.getElementById('statRevenue').textContent = Number(stats.revenue).toLocaleString();
+function loadDashboard() {
+    // Get data from server
+    fetch('http://localhost:3000/api/listings')
+        .then(r => r.json())
+        .then(data => {
+            const listings = data.data || [];
+            
+            // Stats
+            document.getElementById('statTotal').textContent = listings.length;
+            document.getElementById('statRevenue').textContent = listings.reduce((sum, l) => sum + l.price, 0).toLocaleString();
+            
+            // Vehicles table
+            const tbody = document.getElementById('vehiclesTable');
+            tbody.innerHTML = listings.slice(0, 50).map(l => `
+                <tr>
+                    <td><strong>${l.brand}</strong></td>
+                    <td>${l.model}</td>
+                    <td>KES ${l.price.toLocaleString()}</td>
+                    <td>${l.year}</td>
+                    <td>${l.category}</td>
+                    <td><span class="badge badge-paid">${l.isActive ? 'Active' : 'Inactive'}</span></td>
+                </tr>
+            `).join('');
+            
             document.getElementById('lastRefresh').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+        })
+        .catch(err => console.error('Error loading data:', err));
+}
 
-            renderTable('ordersBody', allOrders);
-            renderFilteredTab('tab-paid',    allOrders.filter(o => o.status === 'paid'));
-            renderFilteredTab('tab-pending', allOrders.filter(o => o.status === 'pending'));
-            renderFilteredTab('tab-failed',  allOrders.filter(o => o.status === 'failed'));
+function refreshData() {
+    loadDashboard();
+    showNotification('Data refreshed!', 'success');
+}
 
-        } catch (err) {
-            alert('Cannot connect to backend. Make sure server is running on port 3000.');
-        }
-    }
+function showTable(name) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    document.getElementById('ordersSection').classList.add('hidden');
+    document.getElementById('dealersSection').classList.add('hidden');
+    document.getElementById('vehiclesSection').classList.add('hidden');
+    
+    document.getElementById(name + 'Section').classList.remove('hidden');
+}
 
-    function renderTable(tbodyId, orders) {
-        const tbody = document.getElementById(tbodyId);
-        if (!orders.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">No orders found</td></tr>'; return; }
-        tbody.innerHTML = orders.map(o => `
-            <tr>
-                <td>#${o.id}</td>
-                <td>${o.vehicle_name || '—'}</td>
-                <td>+${o.phone}</td>
-                <td>${Number(o.amount).toLocaleString()}</td>
-                <td><span class="badge badge-${o.status}">${o.status}</span></td>
-                <td>${o.receipt || '—'}</td>
-                <td>${o.customer_email || '—'}</td>
-                <td>${o.created_at?.slice(0, 16) || '—'}</td>
-            </tr>
-        `).join('');
-    }
+function showNotification(msg, type) {
+    // Simple notification
+    const div = document.createElement('div');
+    div.style.cssText = `
+        position: fixed; top: 20px; right: 20px; padding: 15px 25px;
+        background: ${type==='success'?'#4caf50':'#f44336'}; color: white;
+        border-radius: 8px; z-index: 10000; font-weight: bold;
+    `;
+    div.textContent = msg;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3000);
+}
 
-    function renderFilteredTab(tabId, orders) {
-        const div = document.getElementById(tabId);
-        if (!orders.length) { div.innerHTML = '<p class="empty">No orders in this category</p>'; return; }
-        div.innerHTML = `
-            <table>
-                <thead><tr><th>#</th><th>Vehicle</th><th>Phone</th><th>Amount (KES)</th><th>Status</th><th>Receipt</th><th>Email</th><th>Date</th></tr></thead>
-                <tbody>${orders.map(o => `
-                    <tr>
-                        <td>#${o.id}</td>
-                        <td>${o.vehicle_name || '—'}</td>
-                        <td>+${o.phone}</td>
-                        <td>${Number(o.amount).toLocaleString()}</td>
-                        <td><span class="badge badge-${o.status}">${o.status}</span></td>
-                        <td>${o.receipt || '—'}</td>
-                        <td>${o.customer_email || '—'}</td>
-                        <td>${o.created_at?.slice(0, 16) || '—'}</td>
-                    </tr>
-                `).join('')}</tbody>
-            </table>
+// Demo data if server not running
+setTimeout(() => {
+    if (document.getElementById('vehiclesTable').innerHTML === '') {
+        document.getElementById('statTotal').textContent = '62';
+        document.getElementById('statRevenue').textContent = '38,540,000';
+        document.getElementById('vehiclesTable').innerHTML = `
+            <tr><td><strong>Tesla</strong></td><td>Model S</td><td>KES 125,000</td><td>2020</td><td>Car</td><td><span class="badge badge-paid">Active</span></td></tr>
+            <tr><td><strong>BMW</strong></td><td>M5 Competition</td><td>KES 105,000</td><td>2026</td><td>Car</td><td><span class="badge badge-paid">Active</span></td></tr>
+            <tr><td><strong>Ford</strong></td><td>Mustang</td><td>KES 58,000</td><td>2026</td><td>Car</td><td><span class="badge badge-paid">Active</span></td></tr>
         `;
     }
-
-    function showTab(name) {
-        ['orders','paid','pending','failed','deploy'].forEach(t => {
-            document.getElementById(`tab-${t}`).classList.add('hidden');
-        });
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`tab-${name}`).classList.remove('hidden');
-        event.target.classList.add('active');
-    }
-
-    // Auto-refresh every 30 seconds
-    setInterval(() => { if (adminKey) loadData(); }, 30000);
+}, 3000);
 </script>
 </body>
 </html>

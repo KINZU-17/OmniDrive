@@ -78,11 +78,193 @@ function hideSearchSuggestions() {
 })();
 
 function dismissSplash() {
-    const splash = document.getElementById('splashScreen');
-    if (!splash) return;
     splash.classList.add('dismissed');
-    setTimeout(() => splash.remove(), 950);
+    setTimeout(() => {
+        splash.remove();
+        showLoginModal();  // MANDATORY login before accessing showroom
+    }, 950);
+
+// ============================================
+// LOGIN MODAL FUNCTIONALITY
+// ============================================
+
+let selectedUserType = null;
+const loginModal = document.getElementById('loginModal');
+const signupPromptModal = document.getElementById('signupPromptModal');
+
+function showLoginModal() {
+    // Remove splash screen
+    const splash = document.getElementById('splashScreen');
+    if (splash) {
+        splash.classList.add('dismissed');
+        setTimeout(() => splash.remove(), 950);
+    }
+    
+    // Show login modal
+    if (loginModal) {
+        loginModal.style.display = 'flex';
+        // Force reflow
+        loginModal.offsetHeight;
+        loginModal.classList.add('show');
+    }
 }
+function closeLoginModal() {
+    if (!loginModal) return;
+    loginModal.classList.remove('show');
+    setTimeout(() => {
+        loginModal.style.display = 'none';
+        showUserTypeSelection(); // Reset to type selection
+    }, 300);
+}
+
+
+function showUserTypeSelection() {
+    document.getElementById('loginFormSection').style.display = 'none';
+    document.querySelector('.user-type-selection').style.display = 'grid';
+    selectedUserType = null;
+}
+
+function showLoginForm() {
+    document.querySelector('.user-type-selection').style.display = 'none';
+    document.getElementById('loginFormSection').style.display = 'block';
+    
+    const labels = {
+        admin: 'Admin Login',
+        dealer: 'Dealer Login',
+        liaison: 'Technical Liaison Login',
+        client: 'Client Login'
+    };
+    const colors = {
+        admin: '#e74c3c',
+        dealer: '#27ae60',
+        liaison: '#e67e22',
+        client: '#2684ff'
+    };
+    
+    document.getElementById('loginHeader').innerHTML = `
+        <div class="user-type-icon" style="font-size:40px;margin-bottom:10px">${getIcon(selectedUserType)}</div>
+        <div style="font-size:20px;font-weight:700;color:${colors[selectedUserType]}">${labels[selectedUserType]}</div>
+    `;
+    
+    document.getElementById('loginUsername').value = '';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginUsername').focus();
+}
+
+function selectUserType(type) {
+    selectedUserType = type;
+    
+    const titles = {
+        admin: 'Administrator Access',
+        dealer: 'Dealer Account',
+        liaison: 'Technical Liaison Account',
+        client: 'Client Account'
+    };
+    const descriptions = {
+        admin: 'Manage the entire platform, view all data, and configure system settings.',
+        dealer: 'List vehicles, manage inventory, and track sales leads.',
+        liaison: 'Connect technical buyers and sellers, facilitate deals and earn commissions.',
+        client: 'Browse vehicles, compare options, and find your dream car.'
+    };
+    
+    // Show confirmation prompt
+    const confirmed = confirm(
+        `You selected: ${titles[type].toUpperCase()}\n\n${descriptions[type]}\n\nClick OK to proceed to login.`
+    );
+    
+    if (confirmed) {
+        showLoginForm();
+    }
+}
+
+function getIcon(type) {
+    const icons = {
+        admin: '🛡️',
+        dealer: '🏢',
+        liaison: '🤝',
+        client: '👤'
+    };
+    return icons[type] || '👤';
+}
+
+function performLogin() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+    
+    if (!username || !password) {
+        alert('Please enter both username and password.');
+        return;
+    }
+    
+    // Simulate login (in real app, this would be an API call)
+    alert(`${selectedUserType.toUpperCase()} Login:\nUsername: ${username}\n\n(In production, this would authenticate against the server)`);
+    
+    // Close modal and proceed
+    closeLoginModal();
+    
+    // Show success message
+    showNotification(`Welcome, ${username}! You are logged in as ${selectedUserType}.`, 'success');
+    
+    // Depending on user type, show different content
+    if (selectedUserType === 'admin') {
+        setTimeout(() => showSection('admin'), 500);
+    } else if (selectedUserType === 'dealer') {
+        setTimeout(() => showSection('dealers'), 500);
+    }
+}
+
+// Signup Prompt Functions
+function showSignupPrompt() {
+    document.getElementById('signupName').value = '';
+    document.getElementById('signupEmail').value = '';
+    document.getElementById('signupPhone').value = '';
+    document.getElementById('signupUserType').value = '';
+    document.getElementById('signupMessage').value = '';
+    
+    signupPromptModal.style.display = 'flex';
+    setTimeout(() => signupPromptModal.classList.add('show'), 10);
+}
+
+function showCreateAccountModal() {
+    closeLoginModal();
+    setTimeout(() => {
+        signupPromptModal.style.display = 'flex';
+        setTimeout(() => signupPromptModal.classList.add('show'), 10);
+    }, 300);
+}
+
+function closeSignupPrompt() {
+    signupPromptModal.classList.remove('show');
+    setTimeout(() => {
+        signupPromptModal.style.display = 'none';
+    }, 300);
+}
+
+function submitSignupRequest() {
+    const name = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const phone = document.getElementById('signupPhone').value.trim();
+    const userType = document.getElementById('signupUserType').value;
+    const message = document.getElementById('signupMessage').value.trim();
+    
+    if (!name || !email || !userType) {
+        alert('Please fill in all required fields (Name, Email, User Type).');
+        return;
+    }
+    
+    // In production, this would send to the server API
+    console.log('Signup Request:', { name, email, phone, userType, message });
+    
+    alert('Thank you for your request! We will contact you at ' + email + ' soon.');
+    closeSignupPrompt();
+    showNotification('Account request submitted successfully!', 'success');
+}
+
+// Close modals when clicking outside
+window.addEventListener('click', (e) => {
+    if (e.target === loginModal) closeLoginModal();
+    if (e.target === signupPromptModal) closeSignupPrompt();
+});
 
 // ============================================
 // CONFIGURATION & STATE
@@ -2351,21 +2533,21 @@ function proceedToPaymentCustom() {
 // BROKER/PARTNERSHIP SYSTEM
 // ============================================
 
-let brokerApplications = [];
+let liaisonApplications = [];
 let sellerListings = [];
 
-function showBrokerModal() {
-    const modal = document.getElementById('brokerModal');
-    const content = document.getElementById('brokerContent');
+function showLiaisonModal() {
+    const modal = document.getElementById('liaisonModal');
+    const content = document.getElementById('liaisonContent');
     
     content.innerHTML = `
-        <div class="broker-form">
-            <div class="broker-hero">
-                <h3>🤝 Partner Broker Program</h3>
+        <div class="liaison-form">
+            <div class="liaison-hero">
+                <h3>🤝 Technical Liaison Partner Program</h3>
                 <p>Earn commissions by connecting buyers to vehicles on OmniDrive</p>
             </div>
             
-            <div class="broker-benefits">
+            <div class="liaison-benefits">
                 <div class="benefit-item">
                     <span class="benefit-icon">💰</span>
                     <div>
@@ -2389,45 +2571,45 @@ function showBrokerModal() {
                 </div>
             </div>
             
-            <div class="broker-form-section">
+            <div class="liaison-form-section">
                 <h4>Apply Now</h4>
                 <div class="filter-group">
                     <label>Full Name</label>
-                    <input type="text" id="brokerName" placeholder="Your full name">
+                    <input type="text" id="liaisonName" placeholder="Your full name">
                 </div>
                 <div class="filter-group">
                     <label>Email</label>
-                    <input type="email" id="brokerEmail" placeholder="your@email.com">
+                    <input type="email" id="liaisonEmail" placeholder="your@email.com">
                 </div>
                 <div class="filter-group">
                     <label>Phone</label>
-                    <input type="tel" id="brokerPhone" placeholder="+2547XXXXXXXX">
+                    <input type="tel" id="liaisonPhone" placeholder="+2547XXXXXXXX">
                 </div>
                 <div class="filter-group">
                     <label>Company/Organization (Optional)</label>
-                    <input type="text" id="brokerCompany" placeholder="Your company name">
+                    <input type="text" id="liaisonCompany" placeholder="Your company name">
                 </div>
                 <div class="filter-group">
                     <label>Why do you want to join?</label>
-                    <textarea id="brokerReason" rows="3" placeholder="Tell us about your experience..."></textarea>
+                    <textarea id="liaisonReason" rows="3" placeholder="Tell us about your experience..."></textarea>
                 </div>
-                <button onclick="submitBrokerApplication()" class="calc-btn">📝 Submit Application</button>
+                <button onclick="submitLiaisonApplication()" class="calc-btn">📝 Submit Application</button>
             </div>
             
-            <div class="broker-login">
-                <p>Already a partner? <a href="#" onclick="showBrokerDashboard()">Login to Dashboard</a></p>
+            <div class="liaison-login">
+                <p>Already a partner? <a href="#" onclick="showLiaisonDashboard()">Login to Dashboard</a></p>
             </div>
         </div>
     `;
     modal.classList.remove('hidden');
 }
 
-function submitBrokerApplication() {
-    const name = document.getElementById('brokerName').value;
-    const email = document.getElementById('brokerEmail').value;
-    const phone = document.getElementById('brokerPhone').value;
-    const company = document.getElementById('brokerCompany').value;
-    const reason = document.getElementById('brokerReason').value;
+function submitLiaisonApplication() {
+    const name = document.getElementById('liaisonName').value;
+    const email = document.getElementById('liaisonEmail').value;
+    const phone = document.getElementById('liaisonPhone').value;
+    const company = document.getElementById('liaisonCompany').value;
+    const reason = document.getElementById('liaisonReason').value;
     
     if (!name || !email || !phone) {
         showNotification('Please fill all required fields', 'error');
@@ -2445,29 +2627,29 @@ function submitBrokerApplication() {
         date: new Date().toISOString()
     };
     
-    brokerApplications.push(application);
-    localStorage.setItem('dealership_brokers', JSON.stringify(brokerApplications));
+    liaisonApplications.push(application);
+    localStorage.setItem('dealership_liaisons', JSON.stringify(liaisonApplications));
     
     showNotification('Application submitted! We will contact you within 24 hours.', 'success');
-    closeModal('brokerModal');
+    closeModal('liaisonModal');
 }
 
-function showBrokerDashboard() {
-    const modal = document.getElementById('brokerModal');
-    const content = document.getElementById('brokerContent');
-    const apps = JSON.parse(localStorage.getItem('dealership_brokers') || '[]');
+function showLiaisonDashboard() {
+    const modal = document.getElementById('liaisonModal');
+    const content = document.getElementById('liaisonContent');
+    const apps = JSON.parse(localStorage.getItem('dealership_liaisons') || '[]');
     const app = apps[apps.length - 1];
     if (!app) {
         showNotification('No broker account found. Please apply first.', 'warning');
         return;
     }
     content.innerHTML = `
-        <div class="broker-form">
-            <div class="broker-hero">
+        <div class="liaison-form">
+            <div class="liaison-hero">
                 <h3>📊 Broker Dashboard</h3>
                 <p>Welcome back, ${sanitize(app.name)}</p>
             </div>
-            <div class="broker-benefits">
+            <div class="liaison-benefits">
                 <div class="benefit-item">
                     <span class="benefit-icon">💰</span>
                     <div><strong>$0</strong><small>Total Earnings</small></div>
@@ -2481,7 +2663,7 @@ function showBrokerDashboard() {
                     <div><strong>${sanitize(app.status)}</strong><small>Account Status</small></div>
                 </div>
             </div>
-            <div class="broker-form-section">
+            <div class="liaison-form-section">
                 <h4>Your Referral Link</h4>
                 <div style="background:var(--bg);padding:12px;border-radius:6px;font-family:monospace;word-break:break-all">
                     https://omnidrive.co.ke?ref=${sanitize(app.id)}
@@ -2489,7 +2671,7 @@ function showBrokerDashboard() {
                 <button onclick="navigator.clipboard.writeText('https://omnidrive.co.ke?ref=${sanitize(app.id)}');showNotification('Link copied!','success')" 
                     class="calc-btn" style="margin-top:10px">📋 Copy Link</button>
             </div>
-            <div class="broker-form-section">
+            <div class="liaison-form-section">
                 <h4>Recent Activity</h4>
                 <p style="opacity:0.6;font-size:0.9rem">No activity yet. Share your link to start earning!</p>
             </div>

@@ -132,7 +132,7 @@
             
             <button onclick="showOrderTracking()" class="finance-btn" title="Orders">📦</button>
             
-            <button onclick="showBrokerModal()" class="finance-btn" title="Become a Partner">🤝</button>
+            <button onclick="showLiaisonModal()" class="finance-btn" title="Become a Partner">🤝</button>
             
             <button onclick="showListVehicleModal()" class="finance-btn" title="Sell Your Vehicle">💰</button>
             
@@ -144,6 +144,7 @@
             <span></span><span></span><span></span>
         </button>
     </header>
+
 
     <!-- ========================
          CINEMATIC SPLASH SCREEN
@@ -166,10 +167,86 @@
             </div>
             <div class="splash-tagline">Connecting you to the drive of your choice</div>
             <div class="splash-sub">Kenya's Premier Vehicle Marketplace</div>
-            <button class="splash-enter-btn" onclick="dismissSplash()">Enter Showroom →</button>
+            <button class="splash-enter-btn" onclick="showLoginModal()">Enter Showroom →</button>
         </div>
         <div class="splash-footer">omnidrive.co.ke</div>
     </div>
+
+    <!-- Login/User Type Modal -->
+    <div id="loginModal" class="modal-overlay" style="display:none">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeLoginModal()" aria-label="Close">×</button>
+            <h2 style="text-align:center;margin-bottom:10px;color:#2684ff">Welcome to OmniDrive</h2>
+            <p style="text-align:center;color:#666;margin-bottom:30px">WHO IS ENTERING DEALERSHIP?</p>
+            
+            <div class="user-type-selection">
+                <button class="user-type-btn" onclick="selectUserType('client')">
+                    <div class="user-type-icon">👤</div>
+                    <div class="user-type-label">Client</div>
+                    <div class="user-type-desc">Browse & Buy Vehicles</div>
+                </button>
+                
+                <button class="user-type-btn" onclick="selectUserType('dealer')">
+                    <div class="user-type-icon">🏢</div>
+                    <div class="user-type-label">Dealer</div>
+                    <div class="user-type-desc">List & Sell Vehicles</div>
+                </button>
+                
+                <button class="user-type-btn" onclick="selectUserType('liaison')">
+                    <div class="user-type-icon">🤝</div>
+                    <div class="user-type-label">Technical Liaison</div>
+                    <div class="user-type-desc">Connect Buyers & Technical Sellers</div>
+                </button>
+                
+                <button class="user-type-btn" onclick="selectUserType('admin')">
+                    <div class="user-type-icon">🛡️</div>
+                    <div class="user-type-label">Admin</div>
+                    <div class="user-type-desc">Manage Platform</div>
+                </button>
+            </div>
+            
+            <!-- Login Form (hidden initially) -->
+            <div id="loginFormSection" class="login-form-section" style="display:none;margin-top:30px">
+                <div id="loginHeader" style="text-align:center;margin-bottom:20px"></div>
+                <input type="text" id="loginUsername" placeholder="Username" class="modal-input">
+                <input type="password" id="loginPassword" placeholder="Password" class="modal-input">
+                <div style="display:flex;gap:10px;margin-top:20px">
+                    <button class="btn-primary" style="flex:1" onclick="performLogin()">Login</button>
+                    <button class="btn-secondary" style="flex:1" onclick="showUserTypeSelection()">Cancel</button>
+                </div>
+                <p style="text-align:center;margin-top:15px;font-size:0.85rem;color:#888">
+                    Don't have an account? 
+                    <a href="#" onclick="showSignupPrompt()" style="color:#2684ff">Request Access</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Prompt Modal -->
+    <div id="signupPromptModal" class="modal-overlay" style="display:none">
+        <div class="modal-content" style="max-width:450px">
+            <button class="modal-close" onclick="closeSignupPrompt()" aria-label="Close">×</button>
+            <h2 style="text-align:center;color:#2684ff">Create Your Account</h2>
+            <p style="text-align:center;color:#666;margin-bottom:20px">Join OmniDrive as a Technical Liaison partner</p>
+            
+            <input type="text" id="signupName" placeholder="Full Name" class="modal-input">
+            <input type="email" id="signupEmail" placeholder="Email Address" class="modal-input">
+            <input type="text" id="signupPhone" placeholder="Phone Number" class="modal-input">
+            <select id="signupUserType" class="modal-input">
+                <option value="">Select User Type</option>
+                <option value="client">Client - Vehicle Buyer</option>
+                <option value="dealer">Dealer - Vehicle Seller</option>
+                <option value="liaison">Technical Liaison - Connect Buyers & Sellers</option>
+            </select>
+            <textarea id="signupMessage" placeholder="Additional Information" class="modal-input" rows="3"></textarea>
+            
+            <div style="display:flex;gap:10px;margin-top:20px">
+                <button class="btn-primary" style="flex:1" onclick="submitSignupRequest()">Create Account</button>
+                <button class="btn-secondary" style="flex:1" onclick="closeSignupPrompt()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Mobile Search Bar -->
     <div class="mobile-search-bar" id="mobileSearchBar">
@@ -635,14 +712,14 @@
     </div>
 
     <!-- Broker/Partnership Modal -->
-    <div id="brokerModal" class="modal hidden">
+    <div id="liaisonModal" class="modal hidden">
         <div class="modal-content" style="max-width: 600px;">
             <div class="modal-header">
-                <button class="back-btn" onclick="closeModal('brokerModal')">← Back</button>
-                <button class="close-btn" onclick="closeModal('brokerModal')">✕ Exit</button>
+                <button class="back-btn" onclick="closeModal('liaisonModal')">← Back</button>
+                <button class="close-btn" onclick="closeModal('liaisonModal')">✕ Exit</button>
             </div>
-            <h2>🤝 Become a Partner Broker</h2>
-            <div id="brokerContent"></div>
+            <h2>🤝 Become a Technical Liaison Partner</h2>
+            <div id="liaisonContent"></div>
         </div>
     </div>
 

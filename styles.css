@@ -172,24 +172,189 @@
     cursor: pointer;
     opacity: 0;
     animation: fadeSlideUp 0.8s 1.4s ease forwards;
-    transition: background 0.3s, color 0.3s, box-shadow 0.3s;
+    transition: all 0.3s;
     position: relative;
     overflow: hidden;
 }
 
-.splash-enter-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, #0052cc, #2684ff);
-    opacity: 0;
-    transition: opacity 0.3s;
-    border-radius: inherit;
+.splash-enter-btn:hover {
+    background: rgba(38, 132, 255, 0.1);
+    color: white;
+    box-shadow: 0 0 20px rgba(38, 132, 255, 0.3);
+    transform: translateY(-2px);
 }
 
-.splash-enter-btn:hover::before { opacity: 1; }
-.splash-enter-btn:hover { color: white; box-shadow: 0 0 30px rgba(38, 132, 255, 0.5); }
-.splash-enter-btn span { position: relative; z-index: 1; }
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+}
+
+.modal-content {
+    background: linear-gradient(145deg, #131a2a 0%, #1a2435 100%);
+    border: 1px solid rgba(38, 132, 255, 0.3);
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+    position: relative;
+    transform: scale(0.9);
+    transition: transform 0.3s;
+}
+
+.modal-overlay.show .modal-content {
+    transform: scale(1);
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    background: #e74c3c;
+    transform: rotate(90deg);
+}
+
+/* User Type Selection */
+.user-type-selection {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.user-type-btn {
+    background: linear-gradient(145deg, rgba(38, 132, 255, 0.1), rgba(38, 132, 255, 0.05));
+    border: 1px solid rgba(38, 132, 255, 0.2);
+    border-radius: 15px;
+    padding: 20px 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+    color: #fff;
+}
+
+.user-type-btn:hover {
+    background: linear-gradient(145deg, rgba(38, 132, 255, 0.25), rgba(38, 132, 255, 0.15));
+    border-color: rgba(38, 132, 255, 0.5);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(38, 132, 255, 0.2);
+}
+
+.user-type-icon {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.user-type-label {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: #2684ff;
+}
+
+.user-type-desc {
+    font-size: 11px;
+    color: #888;
+    line-height: 1.4;
+}
+
+/* Login Form Styles */
+.modal-input {
+    width: 100%;
+    padding: 14px 18px;
+    margin-bottom: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 15px;
+    transition: all 0.3s;
+    box-sizing: border-box;
+}
+
+.modal-input:focus {
+    outline: none;
+    border-color: #2684ff;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 15px rgba(38, 132, 255, 0.2);
+}
+
+.modal-input::placeholder {
+    color: #555;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #2684ff, #0052cc);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 25px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(38, 132, 255, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 14px 25px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.login-form-section {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 20px;
+}
 
 .splash-footer {
     position: absolute;
@@ -2313,10 +2478,36 @@ button {
     }
 
     .card-actions .btn-view {
-        font-size: 0.78rem;
-        padding: 7px 6px;
+        font-size: 0.8rem;
+        padding: 10px 16px;
+        min-width: 110px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s;
+        text-align: center;
     }
-
+    
+    .card-actions .btn-primary {
+        font-size: 0.8rem;
+        padding: 10px 16px;
+        min-width: 110px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s;
+        text-align: center;
+        margin-bottom: 8px;
+    }
+    
+    .card-actions .btn-contact {
+        font-size: 0.8rem;
+        padding: 10px 16px;
+        min-width: 110px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s;
+        text-align: center;
+    }
+    }
     .card-actions .btn-wish,
     .card-actions .btn-share {
         font-size: 0.85rem;
@@ -2415,7 +2606,7 @@ button {
     .pimp-cards { flex-wrap: nowrap; overflow-x: auto; }
 
     /* ── Broker/Seller ── */
-    .broker-benefits, .seller-benefits {
+    .liaison-benefits, .seller-benefits {
         grid-template-columns: 1fr;
     }
 
@@ -3359,11 +3550,11 @@ button {
 /* ==============================
    BROKER/PARTNERSHIP
    ============================== */
-.broker-form, .list-vehicle-form {
+.liaison-form, .list-vehicle-form {
     max-width: 100%;
 }
 
-.broker-hero, .seller-info {
+.liaison-hero, .seller-info {
     text-align: center;
     padding: 25px;
     background: var(--gradient-primary);
@@ -3372,12 +3563,12 @@ button {
     margin-bottom: 20px;
 }
 
-.broker-hero h3, .seller-info h3 {
+.liaison-hero h3, .seller-info h3 {
     font-size: 1.5rem;
     margin-bottom: 8px;
 }
 
-.broker-benefits, .seller-benefits {
+.liaison-benefits, .seller-benefits {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 15px;
@@ -3403,14 +3594,14 @@ button {
     font-size: 0.8rem;
 }
 
-.broker-form-section, .vehicle-form, .seller-contact {
+.liaison-form-section, .vehicle-form, .seller-contact {
     background: var(--bg);
     padding: 20px;
     border-radius: var(--radius-md);
     margin-bottom: 20px;
 }
 
-.broker-form-section h4, .vehicle-form h4, .seller-contact h4 {
+.liaison-form-section h4, .vehicle-form h4, .seller-contact h4 {
     margin-bottom: 15px;
     color: var(--primary);
 }
@@ -3455,19 +3646,19 @@ button {
     margin: 5px 0;
 }
 
-.broker-login {
+.liaison-login {
     text-align: center;
     padding: 15px;
     border-top: 1px solid var(--border);
 }
 
-.broker-login a {
+.liaison-login a {
     color: var(--primary);
     font-weight: bold;
 }
 
 @media (max-width: 600px) {
-    .broker-benefits, .seller-benefits {
+    .liaison-benefits, .seller-benefits {
         grid-template-columns: 1fr;
     }
     
