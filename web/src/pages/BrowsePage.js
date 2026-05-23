@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import VehicleCard from '../components/VehicleCard';
 import FilterBar from '../components/FilterBar';
-import { inventory as fallbackInventory } from '../utils/inventory';
+import { inventory as fallbackInventory } from '../data/inventory';
 
 const PAGE_SIZE = 12;
 

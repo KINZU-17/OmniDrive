@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OmniDrive Messaging</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#0f1117;color:#e0e0e0;height:100vh;display:flex;flex-direction:column}
+
+/* ── Auth Screen ── */
+#authScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:14px}
+#authScreen h2{color:#e47911;font-size:1.8rem}
+#authScreen p{color:#888;font-size:.9rem}
+.auth-form{display:flex;flex-direction:column;gap:10px;width:320px}
+.auth-form input,select{padding:11px 14px;border-radius:8px;border:1px solid #333;background:#1a1d27;color:#fff;font-size:.95rem}
+.auth-form button{padding:12px;background:#e47911;color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer}
+.auth-form button:hover{background:#c96a00}
+.tab-switch{display:flex;gap:8px;width:320px}
+.tab-switch button{flex:1;padding:9px;border-radius:8px;border:1px solid #333;background:#1a1d27;color:#888;cursor:pointer;font-size:.85rem}
+.tab-switch button.active{background:#e47911;color:#fff;border-color:#e47911}
+#adminKeyWrap{display:none}
+
+/* ── App Shell ── */
+#appScreen{display:none;flex:1;overflow:hidden}
+#appScreen.visible{display:flex;flex-direction:column}
+header{background:#1a1d27;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2a2d3a;flex-shrink:0}
+header h1{color:#e47911;font-size:1.1rem}
+.header-right{display:flex;align-items:center;gap:12px}
+.user-badge{font-size:.8rem;color:#aaa}
+.user-badge span{color:#e47911;font-weight:bold}
+.logout-btn{background:#333;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.8rem}
+
+.chat-shell{display:flex;flex:1;overflow:hidden}
+
+/* ── Sidebar ── */
+.sidebar{width:280px;background:#13161f;border-right:1px solid #2a2d3a;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:14px 16px;border-bottom:1px solid #2a2d3a;display:flex;align-items:center;justify-content:space-between}
+.sidebar-header h3{font-size:.9rem;color:#aaa;text-transform:uppercase;letter-spacing:.5px}
+.new-btn{background:#e47911;color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:.8rem;cursor:pointer}
+.room-list{flex:1;overflow-y:auto}
+.room-item{padding:12px 16px;cursor:pointer;border-bottom:1px solid #1e2130;display:flex;flex-direction:column;gap:3px;transition:background .15s}
+.room-item:hover{background:#1e2130}
+.room-item.active{background:#1e2130;border-left:3px solid #e47911}
+.room-name{font-size:.9rem;font-weight:600;display:flex;align-items:center;justify-content:space-between}
+.room-preview{font-size:.78rem;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.unread-badge{background:#e47911;color:#fff;border-radius:10px;padding:1px 7px;font-size:.7rem;font-weight:bold;min-width:18px;text-align:center}
+.room-type-tag{font-size:.65rem;padding:2px 6px;border-radius:10px;font-weight:bold;text-transform:uppercase}
+.tag-direct{background:#1b3a5e;color:#64b5f6}
+.tag-group{background:#1b4a2e;color:#69f0ae}
+
+/* ── Chat Area ── */
+.chat-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.chat-header{padding:14px 20px;background:#1a1d27;border-bottom:1px solid #2a2d3a;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.chat-header h2{font-size:1rem;font-weight:600}
+.chat-header .room-meta{font-size:.78rem;color:#888}
+.messages{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:10px}
+.msg{display:flex;flex-direction:column;max-width:70%}
+.msg.mine{align-self:flex-end;align-items:flex-end}
+.msg.theirs{align-self:flex-start;align-items:flex-start}
+.msg-meta{font-size:.72rem;color:#666;margin-bottom:3px}
+.msg-meta .role-tag{font-size:.65rem;padding:1px 5px;border-radius:8px;margin-left:4px;font-weight:bold}
+.role-admin{background:#4a1a6e;color:#ce93d8}
+.role-dealer{background:#1b3a5e;color:#64b5f6}
+.role-client{background:#1b4a2e;color:#69f0ae}
+.msg-bubble{padding:9px 13px;border-radius:12px;font-size:.9rem;line-height:1.45;word-break:break-word}
+.mine .msg-bubble{background:#e47911;color:#fff;border-bottom-right-radius:3px}
+.theirs .msg-bubble{background:#1e2130;color:#e0e0e0;border-bottom-left-radius:3px}
+.msg-time{font-size:.68rem;color:#555;margin-top:3px}
+.empty-chat{flex:1;display:flex;align-items:center;justify-content:center;color:#444;font-size:.9rem;flex-direction:column;gap:8px}
+.empty-chat span{font-size:2rem}
+
+.input-bar{padding:12px 16px;background:#1a1d27;border-top:1px solid #2a2d3a;display:flex;gap:10px;flex-shrink:0}
+.input-bar textarea{flex:1;background:#0f1117;border:1px solid #2a2d3a;border-radius:8px;color:#e0e0e0;padding:10px 12px;font-size:.9rem;resize:none;height:42px;font-family:inherit}
+.input-bar textarea:focus{outline:none;border-color:#e47911}
+.send-btn{background:#e47911;color:#fff;border:none;border-radius:8px;padding:0 18px;cursor:pointer;font-size:1.1rem}
+.send-btn:hover{background:#c96a00}
+
+.no-room{flex:1;display:flex;align-items:center;justify-content:center;color:#444;flex-direction:column;gap:10px}
+.no-room span{font-size:3rem}
+
+/* ── New Conversation Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:100;display:none}
+.modal-overlay.open{display:flex}
+.modal{background:#1a1d27;border-radius:12px;padding:24px;width:400px;max-width:95vw;border:1px solid #2a2d3a}
+.modal h3{color:#e47911;margin-bottom:16px}
+.modal label{font-size:.82rem;color:#888;display:block;margin-bottom:4px;margin-top:12px}
+.modal input,.modal select{width:100%;padding:9px 12px;border-radius:7px;border:1px solid #333;background:#0f1117;color:#fff;font-size:.9rem}
+.modal-actions{display:flex;gap:10px;margin-top:18px}
+.modal-actions button{flex:1;padding:10px;border-radius:8px;border:none;cursor:pointer;font-size:.9rem}
+.btn-primary{background:#e47911;color:#fff}
+.btn-cancel{background:#333;color:#aaa}
+.user-select-list{max-height:180px;overflow-y:auto;border:1px solid #2a2d3a;border-radius:7px;margin-top:6px}
+.user-select-item{padding:9px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:.88rem;border-bottom:1px solid #1e2130}
+.user-select-item:hover{background:#1e2130}
+.user-select-item input[type=checkbox]{accent-color:#e47911}
+.conv-type-tabs{display:flex;gap:8px;margin-bottom:4px}
+.conv-type-tabs button{flex:1;padding:7px;border-radius:7px;border:1px solid #333;background:#0f1117;color:#888;cursor:pointer;font-size:.82rem}
+.conv-type-tabs button.active{background:#e47911;color:#fff;border-color:#e47911}
+
+@media(max-width:600px){
+  .sidebar{width:100%;position:absolute;z-index:10;height:100%;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.open{transform:translateX(0)}
+  .chat-area{width:100%}
+  .msg{max-width:90%}
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="authScreen">
+  <h2>💬 OmniDrive Messaging</h2>
+  <p>Connect with dealers, clients & the OmniDrive team</p>
+  <div class="tab-switch">
+    <button class="active" onclick="switchAuthTab('user')">User / Dealer</button>
+    <button onclick="switchAuthTab('admin')">Admin</button>
+  </div>
+  <div class="auth-form">
+    <div id="userFields">
+      <input id="authName" placeholder="Your Name" style="margin-bottom:8px;width:100%;padding:11px 14px;border-radius:8px;border:1px solid #333;background:#1a1d27;color:#fff;font-size:.95rem">
+      <input id="authEmail" type="email" placeholder="Email Address" style="margin-bottom:8px;width:100%;padding:11px 14px;border-radius:8px;border:1px solid #333;background:#1a1d27;color:#fff;font-size:.95rem">
+      <select id="authRole" style="margin-bottom:0;width:100%;padding:11px 14px;border-radius:8px;border:1px solid #333;background:#1a1d27;color:#fff;font-size:.95rem">
+        <option value="client">Client / Buyer</option>
+        <option value="dealer">Dealer</option>
+      </select>
+    </div>
+    <div id="adminKeyWrap">
+      <input id="adminKeyInput" type="password" placeholder="Admin Key" style="width:100%;padding:11px 14px;border-radius:8px;border:1px solid #333;background:#1a1d27;color:#fff;font-size:.95rem">
+    </div>
+    <button onclick="doAuth()">Enter Chat →</button>
+    <p id="authError" style="color:#f44336;font-size:.82rem;display:none;text-align:center"></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appScreen">
+  <header>
+    <h1>💬 OmniDrive Messaging</h1>
+    <div class="header-right">
+      <div class="user-badge">Signed in as <span id="headerName"></span></div>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </header>
+  <div class="chat-shell">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h3>Conversations</h3>
+        <button class="new-btn" onclick="openNewModal()">+ New</button>
+      </div>
+      <div class="room-list" id="roomList"></div>
+    </div>
+    <!-- Chat -->
+    <div class="chat-area" id="chatArea">
+      <div class="no-room" id="noRoom">
+        <span>💬</span>
+        <p>Select a conversation or start a new one</p>
+      </div>
+      <div id="chatView" style="display:none;flex:1;flex-direction:column;overflow:hidden;display:none">
+        <div class="chat-header">
+          <div>
+            <h2 id="chatRoomName"></h2>
+            <div class="room-meta" id="chatRoomMeta"></div>
+          </div>
+        </div>
+        <div class="messages" id="messages"></div>
+        <div class="input-bar">
+          <textarea id="msgInput" placeholder="Type a message…" onkeydown="handleKey(event)"></textarea>
+          <button class="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NEW CONVERSATION MODAL -->
+<div class="modal-overlay" id="newModal">
+  <div class="modal">
+    <h3>New Conversation</h3>
+    <div class="conv-type-tabs">
+      <button class="active" onclick="setConvType('direct',this)">Direct Message</button>
+      <button onclick="setConvType('group',this)">Group Chat</button>
+    </div>
+    <div id="groupNameWrap" style="display:none">
+      <label>Group Name</label>
+      <input id="groupName" placeholder="e.g. Dealer Alliance KE">
+    </div>
+    <label>Select People</label>
+    <div class="user-select-list" id="userSelectList"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeNewModal()">Cancel</button>
+      <button class="btn-primary" onclick="createConversation()">Start Chat</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:3000';
+let me = null;
+let currentRoom = null;
+let rooms = [];
+let allUsers = [];
+let convType = 'direct';
+let pollTimer = null;
+
+// ── Auth ──────────────────────────────────────────────────────────────────
+function switchAuthTab(tab) {
+  document.querySelectorAll('.tab-switch button').forEach((b,i) => b.classList.toggle('active', (tab==='user'&&i===0)||(tab==='admin'&&i===1)));
+  document.getElementById('userFields').style.display = tab === 'user' ? '' : 'none';
+  document.getElementById('adminKeyWrap').style.display = tab === 'admin' ? '' : 'none';
+}
+
+async function doAuth() {
+  const isAdmin = document.getElementById('adminKeyWrap').style.display !== 'none';
+  try {
+    let res;
+    if (isAdmin) {
+      const key = document.getElementById('adminKeyInput').value.trim();
+      res = await fetch(`${API}/api/chat/admin-auth`, { headers: { 'x-admin-key': key } });
+    } else {
+      const name = document.getElementById('authName').value.trim();
+      const email = document.getElementById('authEmail').value.trim();
+      const role = document.getElementById('authRole').value;
+      if (!name || !email) return showAuthError('Name and email are required');
+      res = await fetch(`${API}/api/chat/auth`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, role })
+      });
+    }
+    if (!res.ok) { const e = await res.json(); return showAuthError(e.error || 'Auth failed'); }
+    me = await res.json();
+    enterApp();
+  } catch { showAuthError('Cannot connect to server. Is it running?'); }
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+function enterApp() {
+  document.getElementById('authScreen').style.display = 'none';
+  const app = document.getElementById('appScreen');
+  app.style.display = 'flex'; app.classList.add('visible');
+  document.getElementById('headerName').textContent = `${me.name} (${me.role})`;
+  loadRooms();
+  loadAllUsers();
+  pollTimer = setInterval(loadRooms, 5000);
+}
+
+function logout() {
+  me = null; currentRoom = null;
+  clearInterval(pollTimer);
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('authError').style.display = 'none';
+}
+
+// ── Rooms ─────────────────────────────────────────────────────────────────
+async function loadRooms() {
+  try {
+    const res = await fetch(`${API}/api/chat/rooms/${me.id}`);
+    rooms = await res.json();
+    renderRooms();
+    if (currentRoom) {
+      const updated = rooms.find(r => r.id === currentRoom.id);
+      if (updated) currentRoom = updated;
+    }
+  } catch {}
+}
+
+function renderRooms() {
+  const list = document.getElementById('roomList');
+  if (!rooms.length) { list.innerHTML = '<div style="padding:20px;color:#555;font-size:.85rem;text-align:center">No conversations yet.<br>Click + New to start one.</div>'; return; }
+  list.innerHTML = rooms.map(r => `
+    <div class="room-item ${currentRoom?.id===r.id?'active':''}" onclick="openRoom(${r.id})">
+      <div class="room-name">
+        <span>${r.name}</span>
+        <span>
+          <span class="room-type-tag tag-${r.type}">${r.type}</span>
+          ${r.unread > 0 ? `<span class="unread-badge">${r.unread}</span>` : ''}
+        </span>
+      </div>
+      <div class="room-preview">${r.last_msg ? escHtml(r.last_msg).slice(0,50) : 'No messages yet'}</div>
+    </div>
+  `).join('');
+}
+
+async function openRoom(roomId) {
+  currentRoom = rooms.find(r => r.id === roomId);
+  renderRooms();
+  document.getElementById('noRoom').style.display = 'none';
+  const cv = document.getElementById('chatView');
+  cv.style.display = 'flex'; cv.style.flexDirection = 'column';
+  document.getElementById('chatRoomName').textContent = currentRoom.name;
+  document.getElementById('chatRoomMeta').textContent = currentRoom.type === 'group' ? 'Group conversation' : 'Direct message';
+  await loadMessages();
+}
+
+// ── Messages ──────────────────────────────────────────────────────────────
+async function loadMessages() {
+  if (!currentRoom) return;
+  try {
+    const res = await fetch(`${API}/api/chat/messages/${currentRoom.id}?userId=${me.id}`);
+    const msgs = await res.json();
+    renderMessages(msgs);
+    // Reset unread
+    if (currentRoom) currentRoom.unread = 0;
+    renderRooms();
+  } catch {}
+}
+
+function renderMessages(msgs) {
+  const container = document.getElementById('messages');
+  if (!msgs.length) {
+    container.innerHTML = '<div class="empty-chat"><span>👋</span><p>Say hello to start the conversation!</p></div>';
+    return;
+  }
+  container.innerHTML = msgs.map(m => {
+    const mine = m.sender_id === me.id;
+    const time = new Date(m.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    return `
+      <div class="msg ${mine?'mine':'theirs'}">
+        ${!mine ? `<div class="msg-meta">${escHtml(m.sender_name)}<span class="msg-meta role-tag role-${m.sender_role}">${m.sender_role}</span></div>` : ''}
+        <div class="msg-bubble">${escHtml(m.body)}</div>
+        <div class="msg-time">${time}</div>
+      </div>
+    `;
+  }).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+async function sendMessage() {
+  const input = document.getElementById('msgInput');
+  const body = input.value.trim();
+  if (!body || !currentRoom) return;
+  input.value = '';
+  try {
+    await fetch(`${API}/api/chat/messages`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ room_id: currentRoom.id, sender_id: me.id, body })
+    });
+    await loadMessages();
+    await loadRooms();
+  } catch {}
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+// ── New Conversation Modal ────────────────────────────────────────────────
+async function loadAllUsers() {
+  try {
+    const res = await fetch(`${API}/api/chat/users`);
+    allUsers = (await res.json()).filter(u => u.id !== me.id);
+  } catch {}
+}
+
+function openNewModal() {
+  convType = 'direct';
+  document.querySelectorAll('.conv-type-tabs button').forEach((b,i) => b.classList.toggle('active', i===0));
+  document.getElementById('groupNameWrap').style.display = 'none';
+  const list = document.getElementById('userSelectList');
+  list.innerHTML = allUsers.map(u => `
+    <label class="user-select-item">
+      <input type="${convType==='direct'?'radio':'checkbox'}" name="selUser" value="${u.id}">
+      <span>${escHtml(u.name)}</span>
+      <span class="room-type-tag tag-${u.role}" style="margin-left:auto">${u.role}</span>
+    </label>
+  `).join('');
+  document.getElementById('newModal').classList.add('open');
+}
+
+function setConvType(type, btn) {
+  convType = type;
+  document.querySelectorAll('.conv-type-tabs button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('groupNameWrap').style.display = type === 'group' ? '' : 'none';
+  // Re-render with correct input type
+  const list = document.getElementById('userSelectList');
+  list.innerHTML = allUsers.map(u => `
+    <label class="user-select-item">
+      <input type="${type==='direct'?'radio':'checkbox'}" name="selUser" value="${u.id}">
+      <span>${escHtml(u.name)}</span>
+      <span class="room-type-tag tag-${u.role}" style="margin-left:auto">${u.role}</span>
+    </label>
+  `).join('');
+}
+
+function closeNewModal() { document.getElementById('newModal').classList.remove('open'); }
+
+async function createConversation() {
+  const selected = [...document.querySelectorAll('input[name=selUser]:checked')].map(i => parseInt(i.value));
+  if (!selected.length) return alert('Select at least one person');
+  try {
+    let room;
+    if (convType === 'direct') {
+      if (selected.length > 1) return alert('Select only one person for a direct message');
+      const res = await fetch(`${API}/api/chat/rooms/direct`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_a: me.id, user_b: selected[0] })
+      });
+      room = await res.json();
+    } else {
+      const name = document.getElementById('groupName').value.trim();
+      if (!name) return alert('Enter a group name');
+      const res = await fetch(`${API}/api/chat/rooms/group`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, created_by: me.id, member_ids: selected })
+      });
+      room = await res.json();
+    }
+    closeNewModal();
+    await loadRooms();
+    openRoom(room.id);
+  } catch (e) { alert('Error creating conversation'); }
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Poll messages every 3s when a room is open
+setInterval(() => { if (currentRoom) loadMessages(); }, 3000);
+</script>
+</body>
+</html>
