@@ -23,6 +23,7 @@ const rateLimit = require('express-rate-limit');
 const webpush = require('web-push');
 const multer = require('multer');
 const swaggerUi = require('swagger-ui-express');
+const http = require('http');
 
 // Config imports
 const logger = require('./config/logger');
@@ -38,6 +39,9 @@ const {
 const swaggerSpecs = require('./config/swagger');
 const { initializeIndexes, optimizeDatabase, getDatabaseStats } = require('./config/database');
 const { initSentry } = require('./config/sentry');
+const WebSocketManager = require('./config/websocket');
+const QueueManager = require('./config/queue');
+const InventorySyncService = require('./services/inventorySync');
 
 // Middleware imports
 const { validateBody, validateQuery, validateParams } = require('./middleware/validation');
@@ -245,6 +249,15 @@ db.exec(`
         created_at TEXT DEFAULT (datetime('now'))
     );
 `);
+
+try {
+    db.prepare('ALTER TABLE listings ADD COLUMN dealer_email TEXT DEFAULT ""').run();
+    db.prepare('ALTER TABLE orders ADD COLUMN dealer_email TEXT DEFAULT ""').run();
+    db.prepare('ALTER TABLE orders ADD COLUMN liaison_email TEXT DEFAULT ""').run();
+    logger.info('Dashboard schema extensions applied');
+} catch (schemaError) {
+    logger.debug('Dashboard schema extension already applied or not needed', { error: schemaError.message });
+}
 
 // Initialize database indexes
 try {
@@ -544,7 +557,7 @@ app.post('/api/listings',
         `).run(
             brand, model, price, nation, category, condition,
             body_style, fuel_type, drivetrain, color, city,
-            image ? JSON.stringify(image) : null,
+            image || null,
             badges ? JSON.stringify(badges) : '[]',
             specs ? JSON.stringify(specs) : '{}',
             rating || 4.5
@@ -584,7 +597,7 @@ app.put('/api/listings/:id',
         `).run(
             brand, model, price, nation, category, condition,
             body_style, fuel_type, drivetrain, color, city,
-            image ? JSON.stringify(image) : null,
+            image || null,
             badges ? JSON.stringify(badges) : '[]',
             specs ? JSON.stringify(specs) : '{}',
             rating || 4.5,
@@ -612,6 +625,15 @@ app.delete('/api/listings/:id',
 );
 
 // ─── ADMIN ENDPOINTS ────────────────────────────────────────────────────────
+
+// Admin key verification endpoint (used by admin.html)
+app.post('/api/admin/verify', (req, res) => {
+    const key = req.headers['x-admin-key'];
+    if (!process.env.ADMIN_KEY || key !== process.env.ADMIN_KEY) {
+        return res.status(401).json({ success: false, error: 'Invalid key' });
+    }
+    return res.json({ success: true });
+});
 
 /**
  * GET /api/admin/stats
@@ -888,7 +910,68 @@ app.get('/health', (_, res) => res.json({
     timestamp: new Date().toISOString(),
 }));
 
-// 404 handler
+// Mount dashboard routes
+try {
+    const dashboardRoutes = require('./routes/dashboardRoutes');
+    const router = dashboardRoutes(db);
+    app.use('/api', router);
+    logger.info('Dashboard routes mounted');
+} catch (routeError) {
+    logger.error('Failed to mount dashboard routes', { error: routeError.message });
+}
+
+// ─── PHASE 2: REAL-TIME NOTIFICATIONS & BACKGROUND JOBS ──────────────────
+
+// Create HTTP server for WebSocket support
+const httpServer = http.createServer(app);
+
+// Initialize Queue Manager
+let queueManager;
+try {
+    queueManager = new QueueManager();
+    logger.info('Queue manager initialized');
+} catch (error) {
+    logger.warn('Queue manager initialization failed', { error: error.message });
+    logger.info('Continuing without background job processing');
+}
+
+// Initialize WebSocket Manager
+let wsManager;
+try {
+    wsManager = new WebSocketManager(httpServer, null);
+    logger.info('WebSocket manager initialized');
+} catch (error) {
+    logger.warn('WebSocket manager initialization failed', { error: error.message });
+}
+
+// Initialize Inventory Sync Service
+let inventorySync;
+try {
+    inventorySync = new InventorySyncService(db, queueManager, wsManager);
+
+    // Register example sources (configure based on env)
+    if (process.env.EXTERNAL_SOURCE_ENDPOINT) {
+        inventorySync.registerSource('external-1', {
+            name: 'External Inventory Source',
+            endpoint: process.env.EXTERNAL_SOURCE_ENDPOINT,
+            apiKey: process.env.EXTERNAL_SOURCE_API_KEY,
+            syncInterval: 3600000, // 1 hour
+        });
+    }
+
+    logger.info('Inventory sync service initialized');
+} catch (error) {
+    logger.warn('Inventory sync service initialization failed', { error: error.message });
+}
+
+// Mount inventory sync routes BEFORE 404 handler
+if (inventorySync && queueManager) {
+    const inventorySyncRoutes = require('./routes/inventorySyncRoutes');
+    app.use('/api/inventory-sync', inventorySyncRoutes(db, inventorySync, queueManager));
+    logger.info('Inventory sync routes mounted');
+}
+
+// 404 handler (must come after all routes)
 app.use((req, res) => {
     return res.status(404).json({
         success: false,
@@ -900,31 +983,59 @@ app.use((req, res) => {
 // Global error handler
 app.use(errorHandler);
 
-// Start server
-const server = app.listen(PORT, () => {
+// Start server with HTTP support (for WebSocket)
+const server = httpServer.listen(PORT, () => {
     logger.info('OmniDrive Backend Started', {
         port: PORT,
         environment: process.env.NODE_ENV || 'development',
         mpesaBase: MPESA_BASE,
         databasePath: dbPath,
         apiDocs: `http://localhost:${PORT}/api-docs`,
+        websocket: wsManager ? 'enabled' : 'disabled',
+        queues: queueManager ? 'enabled' : 'disabled',
+        inventorySync: inventorySync ? 'enabled' : 'disabled',
     });
 
     console.log(`\n✅ OmniDrive backend running on http://localhost:${PORT}`);
     console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
+    console.log(`🔌 WebSocket: ${wsManager ? '✅ Enabled' : '❌ Disabled'}`);
+    console.log(`⏳ Background Jobs: ${queueManager ? '✅ Enabled' : '❌ Disabled'}`);
+    console.log(`📦 Inventory Sync: ${inventorySync ? '✅ Enabled' : '❌ Disabled'}`);
     console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`💳 MPesa: ${MPESA_BASE}`);
     console.log(`💾 Database: ${dbPath}\n`);
 });
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-    logger.info('SIGTERM signal received: closing HTTP server');
+process.on('SIGTERM', async () => {
+    logger.info('SIGTERM signal received: closing server');
+    
+    // Shutdown WebSocket
+    if (wsManager) {
+        wsManager.shutdown();
+    }
+    
+    // Shutdown Queue Manager
+    if (queueManager) {
+        await queueManager.shutdown();
+    }
+    
     server.close(() => {
         logger.info('HTTP server closed');
         db.close();
         process.exit(0);
     });
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+    logger.error('Uncaught Exception', { error: error.message, stack: error.stack });
+    process.exit(1);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+    logger.error('Unhandled Rejection', { reason, promise });
 });
 
 module.exports = app;

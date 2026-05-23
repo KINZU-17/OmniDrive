@@ -1,6 +1,17 @@
 node_modules/
 .env
 .env.local
+.env.example
+.env.production
 *.log
 .kilo/
+
+# Database
 omnidrive.db
+omnidrive.db-shm
+omnidrive.db-wal
+
+# Runtime artifacts
+logs/
+uploads/
+coverage/

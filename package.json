@@ -10,8 +10,7 @@
     "dev-improved": "nodemon server-improved.js",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "deploy": "railway up"
+    "test:coverage": "jest --coverage"
   },
   "keywords": [
     "omnidrive",
@@ -30,6 +29,7 @@
     "@sentry/node": "^10.50.0",
     "axios": "^1.15.0",
     "better-sqlite3": "^12.8.0",
+    "bullmq": "^5.0.0",
     "connect-redis": "^9.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.1",
@@ -41,6 +41,7 @@
     "js-yaml": "^4.1.0",
     "multer": "^2.1.1",
     "nodemailer": "^8.0.5",
+    "socket.io": "^4.7.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
     "web-push": "^3.6.7",

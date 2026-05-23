@@ -1,0 +1,19 @@
+[build]
+  publish = "."
+  command = ""
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://omnidrive-backend-production.up.railway.app/api/:splat"
+  status = 200
+
+# Optional: set headers for caching, security, etc.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Cache-Control = "public, max-age=31536000"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"

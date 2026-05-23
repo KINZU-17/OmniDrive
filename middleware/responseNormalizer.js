@@ -2,30 +2,27 @@
  * Normalize API response format across all endpoints
  */
 function normalizeResponse(req, res, next) {
-    // Store original json method
     const originalJson = res.json.bind(res);
-    
+
     res.json = function(data) {
-        // Ensure response follows standard format
         if (data && typeof data === 'object') {
+            // Extract known envelope fields
+            const { success, data: body, error, pagination, ...rest } = data;
+
             const normalized = {
-                success: data.success !== undefined ? data.success : (!data.error && res.statusCode < 400),
-                data: data.data || (data.error ? undefined : data),
-                error: data.error || null,
+                success: success !== undefined ? success : (!error && res.statusCode < 400),
+                data: body !== undefined ? body : (error ? undefined : rest),
                 timestamp: new Date().toISOString(),
             };
-            
-            // Remove null error field
-            if (normalized.error === null) {
-                delete normalized.error;
-            }
-            
+
+            if (error) normalized.error = error;
+            if (pagination) normalized.pagination = pagination;
+
             return originalJson(normalized);
         }
-        
         return originalJson(data);
     };
-    
+
     next();
 }
 

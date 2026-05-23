@@ -1,50 +1,12 @@
-# 🚗 OmniDrive - Multi-Dealership Vehicle Marketplace
+# 🚗 OmniDrive.co.ke
 
 **Connecting you to the drive of your choice.**
-
-> Frontend is ready for Netlify or Vercel deployment. Backend deploys to Railway.
 
 ---
 
 ## 📋 About OmniDrive
 
-OmniDrive is Kenya's premier **multi-dealership** vehicle marketplace. It's a unified platform where multiple independent dealerships (Toyota Kenya, Nissan Premium, AutoWorld, etc.) can list and sell their vehicles while maintaining their own branding and administrative control.
-
-**Key Concept**: Each dealership has its own admin who manages ONLY their inventory, while customers can browse vehicles from ALL dealerships on a single platform.
-
----
-
-## 👥 User Types & Roles
-
-### **Super Admin** (Platform Owner)
-- Controls the entire OmniDrive platform
-- Manages all dealerships and can view global statistics
-- Handles platform billing and subscriptions
-
-### **Dealership Admin** (Per Dealership)
-- **The owner/manager of a specific dealership**
-- Can ONLY see and manage their own dealership's vehicles and staff
-- Access via: `omnidrive.co.ke/login?dealership=your-dealership-name`
-- Features:
-  - Add/edit/delete their vehicles
-  - Manage their sales team
-  - View dealership-specific analytics
-  - Customize dealership profile
-
-### **Dealership Staff**
-- Work for a specific dealership
-- Can only access vehicles belonging to their dealership
-
-### **Technical Liaison**
-- Facilitator connecting buyers and sellers
-- Can work across multiple dealerships or be assigned to one
-
-### **Client/Buyer**
-- Browse vehicles from ALL dealerships
-- Filter by dealership, brand, price, etc.
-- Contact specific dealerships directly
-
----
+OmniDrive is Kenya's premier online vehicle marketplace - a comprehensive digital dealership connecting buyers to their dream vehicles from around the globe. Built with modern web technologies, it delivers a seamless, borderless car buying experience.
 
 ## 🚀 Core Features
 
@@ -98,12 +60,9 @@ OmniDrive is Kenya's premier **multi-dealership** vehicle marketplace. It's a un
 - **Loading States**: Smooth spinners and animations
 - **Chat Widget**: Real-time customer support
 
-### 🔧 Admin Panel (Per Dealership)
-- **Inventory Management**: Add, edit, delete vehicles (scoped to dealership)
-- **Staff Management**: Add/remove sales staff
-- **Analytics Dashboard**: Dealership-specific statistics
+### 🔧 Admin Panel
+- **Inventory Management**: Add, edit, delete vehicles
 - **Export Data**: Download inventory as JSON
-- **Password Visibility**: Toggle password visibility during login for verification
 
 ---
 
@@ -117,6 +76,24 @@ OmniDrive is Kenya's premier **multi-dealership** vehicle marketplace. It's a un
 | **Trucks** | 20+ | Pickups, Heavy Duty, Commercial |
 | **Vans** | 10+ | Passenger, Cargo, Mini-vans |
 
+### 🚗 Car Brands (Global)
+- **Japanese**: Toyota, Honda, Nissan, Mazda, Subaru, Mitsubishi, Lexus, Infiniti, Acura, Suzuki
+- **German**: BMW, Mercedes, Audi, Porsche, Volkswagen
+- **American**: Ford, Chevrolet, GMC, Dodge, Jeep, Cadillac, Buick, Lincoln, Tesla, Rivian
+- **British**: Aston Martin, Bentley, Rolls-Royce, Jaguar, Land Rover, Mini, McLaren, Lotus, Triumph
+- **Italian**: Ferrari, Lamborghini, Maserati, Alfa Romeo, Ducati, Aprilia, Piaggio
+- **French**: Peugeot, Renault, Bugatti
+- **Swedish**: Volvo, Koenigsegg, Polestar
+- **Korean**: Hyundai, Kia, Genesis
+- **Chinese**: BYD, Wuling, Chery, Geely, Haval, MG, Yutong
+- **Indian**: Tata, Mahindra, Maruti, Hero, Bajaj
+
+### 🏍️ Motorcycle Brands
+Ducati, Yamaha, Kawasaki, BMW, Honda, Suzuki, Harley-Davidson, Triumph, KTM, MV Agusta, Royal Enfield, Piaggio, Zero, Aprilia, CFMoto, Benelli, NIU
+
+### 🚌 Bus Manufacturers
+Mercedes-Benz, Volvo, Scania, MAN, Alexander Dennis, BYD, New Flyer, Gillig, Wrightbus, Yutong
+
 ---
 
 ## 🌐 Nationalities Available
@@ -128,8 +105,6 @@ Japan 🇯🇵 | USA 🇺🇸 | Germany 🇩🇪 | UK 🇬🇧 | Italy 🇮🇹 
 ## 🛠️ Tech Stack
 
 - **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
-- **Backend**: Node.js/Express
-- **Database**: SQLite (production: PostgreSQL)
 - **Storage**: localStorage for persistence
 - **APIs**: Open Exchange Rates, Geolocation
 - **PWA**: manifest.json for installability
@@ -142,16 +117,12 @@ Japan 🇯🇵 | USA 🇺🇸 | Germany 🇩🇪 | UK 🇬🇧 | Italy 🇮🇹 
 ```
 ./
 ├── index.html          # Main application
-├── admin.html          # Admin dashboard (scoped by dealership)
 ├── script.js           # Application logic and API client
 ├── styles.css          # UI styling
-├── server.js           # Node.js/Express backend
-├── dashboard.js        # Dashboard rendering for all user types
-├── login.html          # Login page with role selection
-├── login.js            # Authentication logic
+├── server.js           # Node.js/Express backend + static host
 ├── package.json        # Node dependencies and scripts
-├── netlify.toml        # Netlify deployment config
 ├── railway.toml        # Railway deployment config
+├── vercel.json         # Optional Vercel static deployment config
 ├── manifest.json       # PWA manifest
 ├── sw.js               # Service Worker (offline support)
 ├── sitemap.xml         # SEO sitemap
@@ -159,7 +130,6 @@ Japan 🇯🇵 | USA 🇺🇸 | Germany 🇩🇪 | UK 🇬🇧 | Italy 🇮🇹 
 ├── privacy.html        # Privacy policy
 ├── terms.html          # Terms of service
 ├── dealer-register.html # Dealer onboarding page
-├── DEALERSHIPS.md      # Multi-dealership architecture documentation
 ├── config/             # Server configuration
 ├── routes/             # Express route handlers
 ├── middleware/         # Request and error middleware
@@ -171,35 +141,26 @@ Japan 🇯🇵 | USA 🇺🇸 | Germany 🇩🇪 | UK 🇬🇧 | Italy 🇮🇹 
 
 ## 🎯 Getting Started
 
-### For Platform Owner (Super Admin)
-1. Deploy backend to Railway: `railway up`
-2. Deploy frontend to Netlify: `netlify deploy --prod`
-3. Create initial dealerships via database or admin panel
-
-### For Dealership Admin
-1. Go to `omnidrive.co.ke/login`
-2. Select "Dealer Login"
-3. Enter your dealership credentials
-4. Access your dealership dashboard
-
-### For Clients (Buyers)
-1. Open `index.html` in a web browser
+1. Open `index.html` in a web browser (or run `npm start` for the backend)
 2. Browse vehicles by category or use filters
-3. Filter by dealership if desired
-4. Contact specific dealerships for vehicles
+3. Add vehicles to wishlist or compare up to 3 side-by-side
+4. Customize your ride with Pimp Your Ride (optional)
+5. Proceed to payment (MPesa/Card/Bank Transfer)
+6. Track your order in real-time
 
 ---
 
 ## 🛠️ Recent Improvements (May 2026)
 
-- **Multi-Dealership Support**: Added DEALERSHIPS.md with complete architecture documentation
-- **Styling**: Restored the original `styles.css` and integrated feedback system styling
-- **Admin Dashboard**: Enhanced with cinematic design, animations, and improved accessibility
-- **Mobile Screens**: Improved BrowseScreen.js and VehicleDetailScreen.js
-- **Feedback System**: Added comprehensive feedback system with star ratings
-- **User Role Handling**: Enhanced routing for admin, dealer, liaison, and client users
-- **Accessibility**: Implemented skip navigation link and improved ARIA labels
-- **SEO**: Added XML sitemap and Netlify deployment support
+- **Styling**: Restored the original `styles.css` (4317 lines) and integrated feedback system styling.
+- **Admin Dashboard**: Enhanced `admin.html` with cinematic design, animations, and improved accessibility.
+- **Mobile Screens**: Improved `BrowseScreen.js` and `VehicleDetailScreen.js` (React Native) with loading states, hover effects, and optimized rendering.
+- **Main Page**: Updated `index.html` with accessibility improvements, SEO enhancements (structured data, sitemap), and semantic improvements.
+- **JavaScript Logic**: Optimized `script.js` with debounced search, image lazy loading, and performance improvements.
+- **Feedback System**: Added comprehensive feedback system with star ratings, form validation, file upload, and modal.
+- **User Role Handling**: Enhanced user routing after login for admin, dealer, liaison, and client users.
+- **Accessibility**: Implemented skip navigation link and improved ARIA labels.
+- **SEO**: Added XML sitemap for better search engine indexing.
 
 ---
 
@@ -215,11 +176,7 @@ Japan 🇯🇵 | USA 🇺🇸 | Germany 🇩🇪 | UK 🇬🇧 | Italy 🇮🇹 
 - **Phone**: +254 700 000 000
 - **Dealer Registration**: [dealer-register.html](dealer-register.html)
 
----
-
 *Your drive starts here.*
 
 ---
-
-*Last updated: 2026-05-18*
-*Multi-Dealership Architecture: See DEALERSHIPS.md for details*
+*Last updated: 2026-05-02*

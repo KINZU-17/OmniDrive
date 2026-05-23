@@ -1,0 +1,141 @@
+/* Vehicle Card Styles */
+.vehicle-card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.vehicle-card {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.vehicle-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(254, 189, 105, 0.1);
+  border-color: #febd69;
+}
+
+.vehicle-image-container {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.vehicle-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.vehicle-card:hover .vehicle-image {
+  transform: scale(1.05);
+}
+
+.vehicle-availability {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: #febd69;
+  color: #0d1117;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.vehicle-content {
+  padding: 16px;
+}
+
+.vehicle-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #e6edf3;
+  margin-bottom: 4px;
+}
+
+.vehicle-subtitle {
+  color: #8b949e;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+
+.vehicle-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.vehicle-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.spec-item {
+  background-color: #30363d;
+  color: #e6edf3;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.vehicle-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rating-stars {
+  color: #febd69;
+  font-size: 0.9rem;
+}
+
+.rating-score {
+  color: #8b949e;
+  font-size: 0.8rem;
+}
+
+.vehicle-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vehicle-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #febd69;
+}
+
+.vehicle-warranty {
+  color: #8b949e;
+  font-size: 0.8rem;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 480px) {
+  .vehicle-content {
+    padding: 12px;
+  }
+
+  .vehicle-title {
+    font-size: 1.1rem;
+  }
+
+  .vehicle-price {
+    font-size: 1.3rem;
+  }
+
+  .vehicle-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

@@ -14,22 +14,10 @@ function initSentry(app) {
         dsn: process.env.SENTRY_DSN,
         environment: process.env.NODE_ENV || 'development',
         tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-        integrations: [
-            new Sentry.Integrations.Http({ tracing: true }),
-            new Sentry.Integrations.Express({
-                app: true,
-                request: true,
-                serverName: false,
-                transaction: true,
-                user: true,
-                version: false,
-            }),
-        ],
     });
-    
-    // Attach Sentry middleware
-    app.use(Sentry.Handlers.requestHandler());
-    app.use(Sentry.Handlers.errorHandler());
+
+    // Attach Sentry error handler (v8+ API — requestHandler no longer needed)
+    app.use(Sentry.expressErrorHandler());
     
     logger.info('Sentry initialized for error tracking', { 
         dsn: process.env.SENTRY_DSN?.split('@')[0] + '@...',

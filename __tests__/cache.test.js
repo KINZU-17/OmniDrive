@@ -7,8 +7,8 @@ describe('Redis Caching System', () => {
     // Setup and teardown
     beforeAll(async () => {
         try {
-            // Check if Redis is available
-            if (!redis.status || redis.status === 'close') {
+            // lazyConnect clients start with status 'wait', not 'close'
+            if (redis.status !== 'ready' && redis.status !== 'connecting') {
                 await redis.connect();
             }
             // Ping to verify connection
@@ -40,12 +40,10 @@ describe('Redis Caching System', () => {
         }
     });
 
-    // Skip all tests if Redis is unavailable
-    const skipIfNoRedis = redisAvailable ? describe : describe.skip;
-
     // ─── CACHE OPERATIONS ───────────────────────────────────────────────────
-    skipIfNoRedis('Cache Operations', () => {
+    describe('Cache Operations', () => {
         it('should set and get cache values', async () => {
+            if (!redisAvailable) return;
             const key = 'test:key';
             const value = { id: 1, name: 'Test' };
 
@@ -57,6 +55,7 @@ describe('Redis Caching System', () => {
         });
 
         it('should support TTL (time to live)', async () => {
+            if (!redisAvailable) return;
             const key = 'ttl:test';
             const value = { data: 'test' };
 
@@ -71,6 +70,7 @@ describe('Redis Caching System', () => {
         });
 
         it('should delete cache keys', async () => {
+            if (!redisAvailable) return;
             const key = 'delete:test';
             await cache.set(key, { value: 'test' });
 
@@ -83,6 +83,7 @@ describe('Redis Caching System', () => {
         });
 
         it('should delete multiple keys by pattern', async () => {
+            if (!redisAvailable) return;
             await cache.set('listings:1', { id: 1 });
             await cache.set('listings:2', { id: 2 });
             await cache.set('users:1', { id: 1 });
@@ -100,6 +101,7 @@ describe('Redis Caching System', () => {
         });
 
         it('should increment counters', async () => {
+            if (!redisAvailable) return;
             const key = 'counter:test';
 
             const val1 = await cache.increment(key);
@@ -113,6 +115,7 @@ describe('Redis Caching System', () => {
         });
 
         it('should handle cache flush', async () => {
+            if (!redisAvailable) return;
             await cache.set('key1', { data: 1 });
             await cache.set('key2', { data: 2 });
 
@@ -127,8 +130,9 @@ describe('Redis Caching System', () => {
     });
 
     // ─── CACHE MIDDLEWARE ───────────────────────────────────────────────────
-    skipIfNoRedis('Cache Middleware', () => {
+    describe('Cache Middleware', () => {
         it('should cache GET request responses', async () => {
+            if (!redisAvailable) return;
             const middleware = cacheMiddleware(300);
             const req = {
                 method: 'GET',
@@ -142,8 +146,8 @@ describe('Redis Caching System', () => {
             };
             const next = jest.fn();
 
-            // First call - middleware adds json wrapper
-            middleware(req, res, next);
+            // cacheMiddleware is async — must be awaited
+            await middleware(req, res, next);
             expect(next).toHaveBeenCalled();
 
             // Simulate response
@@ -170,6 +174,7 @@ describe('Redis Caching System', () => {
         });
 
         it('should skip caching for non-GET requests', async () => {
+            if (!redisAvailable) return;
             const middleware = cacheMiddleware(300);
             const req = {
                 method: 'POST',
@@ -183,6 +188,7 @@ describe('Redis Caching System', () => {
         });
 
         it('should respect cache-control headers', async () => {
+            if (!redisAvailable) return;
             const middleware = cacheMiddleware(300);
             const req = {
                 method: 'GET',
@@ -197,8 +203,9 @@ describe('Redis Caching System', () => {
     });
 
     // ─── QUERY CACHE MIDDLEWARE ─────────────────────────────────────────────
-    skipIfNoRedis('Query Cache Middleware', () => {
+    describe('Query Cache Middleware', () => {
         it('should cache responses with query parameters', async () => {
+            if (!redisAvailable) return;
             const middleware = queryCache(300);
             const req = {
                 method: 'GET',
@@ -211,11 +218,13 @@ describe('Redis Caching System', () => {
             };
             const next = jest.fn();
 
-            middleware(req, res, next);
+            // queryCache is async — must be awaited
+            await middleware(req, res, next);
             expect(next).toHaveBeenCalled();
         });
 
         it('should skip caching for POST requests', async () => {
+            if (!redisAvailable) return;
             const middleware = queryCache(300);
             const req = {
                 method: 'POST',
@@ -230,13 +239,14 @@ describe('Redis Caching System', () => {
     });
 
     // ─── PERFORMANCE TESTING ────────────────────────────────────────────────
-    skipIfNoRedis('Cache Performance', () => {
+    describe('Cache Performance', () => {
         it('should be faster than direct lookups', async () => {
+            if (!redisAvailable) return;
             const key = 'perf:test';
             const largeData = {
                 id: 1,
                 name: 'Test Listing',
-                description: 'A' .repeat(1000),
+                description: 'A'.repeat(1000),
                 specs: { engine: '2.0L', color: 'Red' },
                 images: Array(10).fill('image.jpg'),
             };
@@ -256,6 +266,7 @@ describe('Redis Caching System', () => {
         });
 
         it('should handle concurrent operations', async () => {
+            if (!redisAvailable) return;
             const operations = [];
 
             // Create 50 concurrent cache operations
@@ -279,8 +290,9 @@ describe('Redis Caching System', () => {
     });
 
     // ─── ERROR HANDLING ─────────────────────────────────────────────────────
-    skipIfNoRedis('Error Handling', () => {
+    describe('Error Handling', () => {
         it('should handle cache errors gracefully', async () => {
+            if (!redisAvailable) return;
             // Test with invalid data
             const result = await cache.set('test:key', undefined);
             // Should still return true (serializes undefined)
@@ -288,14 +300,16 @@ describe('Redis Caching System', () => {
         });
 
         it('should return null on cache miss', async () => {
+            if (!redisAvailable) return;
             const result = await cache.get('nonexistent:key');
             expect(result).toBeNull();
         });
     });
 
     // ─── CACHE PATTERNS ─────────────────────────────────────────────────────
-    skipIfNoRedis('Common Cache Patterns', () => {
+    describe('Common Cache Patterns', () => {
         it('should cache listing searches', async () => {
+            if (!redisAvailable) return;
             const searchKey = 'search:Honda:5000';
             const results = {
                 success: true,
@@ -313,6 +327,7 @@ describe('Redis Caching System', () => {
         });
 
         it('should cache payment responses', async () => {
+            if (!redisAvailable) return;
             const paymentKey = 'payment:mpesa:123456';
             const paymentResponse = {
                 CheckoutRequestID: '123456',
@@ -328,6 +343,7 @@ describe('Redis Caching System', () => {
         });
 
         it('should invalidate related caches on update', async () => {
+            if (!redisAvailable) return;
             // Set up related caches
             await cache.set('listings:all', { count: 100 });
             await cache.set('listings:featured', { count: 10 });
