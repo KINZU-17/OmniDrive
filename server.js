@@ -64,7 +64,7 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 // Serve React build in production; fall back to project root in dev
-const reactBuildPath = path.join(__dirname, 'web', 'build');
+const reactBuildPath = path.join(__dirname, 'web', 'dist');
 app.use(express.static(reactBuildPath));
 
 // Request logging and response normalization

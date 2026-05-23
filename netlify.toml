@@ -1,5 +1,5 @@
 [build]
-  publish = "web/build"
+  publish = "web/dist"
   command = "cd web && npm install && npm run build"
 
 # Proxy /api/* to the Railway backend

@@ -6,6 +6,7 @@ node_modules/
 *.log
 .kilo/
 web/build/
+web/dist/
 
 # Database
 omnidrive.db

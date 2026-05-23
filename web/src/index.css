@@ -1,39 +1,74 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+/* ── Custom design tokens ─────────────────────────────────────────────────── */
+@theme {
+  /* Brand colours */
+  --color-accent:          #e47911;
+  --color-accent-hover:    #f0891a;
 
-@layer base {
-  * {
-    box-sizing: border-box;
-  }
-  body {
-    @apply bg-dark-bg text-[#e6edf3] font-sans antialiased;
-    -webkit-font-smoothing: antialiased;
-  }
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { @apply bg-dark-bg; }
-  ::-webkit-scrollbar-thumb { @apply bg-dark-border rounded-full; }
-  ::-webkit-scrollbar-thumb:hover { @apply bg-accent; }
+  /* Dark surface palette */
+  --color-dark-bg:         #0d1117;
+  --color-dark-card:       #161b22;
+  --color-dark-surface:    #21262d;
+  --color-dark-border:     #30363d;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, sans-serif;
+
+  /* Custom animations */
+  --animate-fade-in:  fadeIn  0.3s ease-out;
+  --animate-slide-up: slideUp 0.3s ease-out;
 }
 
+@keyframes fadeIn  { from { opacity: 0 }           to { opacity: 1 } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0 }
+                     to   { transform: translateY(0);     opacity: 1 } }
+
+/* ── Base resets ──────────────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    background-color: var(--color-dark-bg);
+    color: #e6edf3;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::-webkit-scrollbar              { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track        { background: var(--color-dark-bg); }
+  ::-webkit-scrollbar-thumb        { background: var(--color-dark-border); border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover  { background: var(--color-accent); }
+}
+
+/* ── Reusable component classes ───────────────────────────────────────────── */
 @layer components {
   .btn-primary {
-    @apply bg-accent hover:bg-accent-hover text-white font-semibold px-5 py-2.5 rounded-lg transition-all duration-200 cursor-pointer border-none;
+    @apply bg-accent hover:bg-accent-hover text-white font-semibold
+           px-5 py-2.5 rounded-lg transition-all duration-200 cursor-pointer border-none;
   }
+
   .btn-outline {
-    @apply border border-dark-border hover:border-accent text-[#e6edf3] font-medium px-5 py-2.5 rounded-lg transition-all duration-200 cursor-pointer bg-transparent;
+    @apply border border-dark-border hover:border-accent text-[#e6edf3] font-medium
+           px-5 py-2.5 rounded-lg transition-all duration-200 cursor-pointer bg-transparent;
   }
+
   .card {
     @apply bg-dark-card border border-dark-border rounded-xl overflow-hidden transition-all duration-200;
   }
+
   .glass {
-    @apply backdrop-blur-md bg-dark-card/80 border border-dark-border/60;
+    backdrop-filter: blur(12px);
+    background-color: color-mix(in oklch, var(--color-dark-card) 80%, transparent);
+    border: 1px solid color-mix(in oklch, var(--color-dark-border) 60%, transparent);
   }
+
   .input-field {
-    @apply bg-dark-surface border border-dark-border text-[#e6edf3] rounded-lg px-4 py-2.5 w-full outline-none transition-all duration-200 focus:border-accent placeholder-[#6e7681];
+    @apply bg-dark-surface border border-dark-border text-[#e6edf3] rounded-lg
+           px-4 py-2.5 w-full outline-none transition-all duration-200
+           focus:border-accent placeholder:text-[#6e7681];
   }
+
   .badge {
     @apply text-xs font-semibold px-2 py-0.5 rounded-full;
   }
