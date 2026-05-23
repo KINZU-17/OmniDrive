@@ -1,0 +1,16 @@
+{
+  "short_name": "OmniDrive",
+  "name": "OmniDrive — Kenya's Vehicle Marketplace",
+  "icons": [
+    { "src": "favicon.ico", "sizes": "64x64 32x32 24x24 16x16", "type": "image/x-icon" },
+    { "src": "logo192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "logo512.png", "type": "image/png", "sizes": "512x512" }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#e47911",
+  "background_color": "#0d1117",
+  "description": "Browse and purchase vehicles via MPesa. Kenya's #1 vehicle marketplace.",
+  "orientation": "portrait-primary",
+  "categories": ["shopping", "automotive"]
+}

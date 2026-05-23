@@ -63,7 +63,9 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
-app.use(express.static(path.join(__dirname)));
+// Serve React build in production; fall back to project root in dev
+const reactBuildPath = path.join(__dirname, 'web', 'build');
+app.use(express.static(reactBuildPath));
 
 // Request logging and response normalization
 app.use(requestLogger);
@@ -971,7 +973,16 @@ if (inventorySync && queueManager) {
     logger.info('Inventory sync routes mounted');
 }
 
-// 404 handler (must come after all routes)
+// SPA catch-all: serve React app for non-API routes so React Router works
+app.get('/{*path}', (req, res, next) => {
+    if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) return next();
+    const indexFile = path.join(reactBuildPath, 'index.html');
+    res.sendFile(indexFile, err => {
+        if (err) next();
+    });
+});
+
+// 404 handler (API routes only — SPA catch-all handles frontend routes above)
 app.use((req, res) => {
     return res.status(404).json({
         success: false,

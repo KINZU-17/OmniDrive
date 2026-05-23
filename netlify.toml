@@ -1,6 +1,6 @@
 [build]
-  publish = "."
-  command = ""
+  publish = "web/build"
+  command = "cd web && npm install && npm run build"
 
 [[redirects]]
   from = "/api/*"

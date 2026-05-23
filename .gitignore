@@ -5,6 +5,7 @@ node_modules/
 .env.production
 *.log
 .kilo/
+web/build/
 
 # Database
 omnidrive.db

@@ -1,30 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import './AccountPage.css';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
+// Account page now redirects to dashboard (user profile is managed there)
 export default function AccountPage() {
-  return (
-    <div className="account-page">
-      {/* Navigation */}
-      <nav className="navbar">
-        <div className="nav-container">
-          <Link to="/" className="logo">OmniDrive</Link>
-          <div className="nav-links">
-            <Link to="/browse" className="nav-link">Browse</Link>
-            <Link to="/wishlist" className="nav-link">Wishlist</Link>
-            <Link to="/account" className="nav-link active">Account</Link>
-          </div>
-        </div>
-      </nav>
-
-      {/* Main Content */}
-      <div className="container">
-        <div className="account-content">
-          <h1>My Account</h1>
-          <p>Account management features coming soon...</p>
-          <Link to="/browse" className="back-link">← Back to Browse</Link>
-        </div>
-      </div>
-    </div>
-  );
+  const { user } = useAuth();
+  return user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />;
 }
