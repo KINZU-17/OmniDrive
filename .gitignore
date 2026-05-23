@@ -17,3 +17,4 @@ omnidrive.db-wal
 logs/
 uploads/
 coverage/
+web/src/logs/
