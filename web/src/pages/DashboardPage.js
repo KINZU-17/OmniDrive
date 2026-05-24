@@ -160,7 +160,7 @@ function ClientDashboard({ data }) {
                 </div>
                 <div className="p-2.5">
                   <p className="text-white text-xs font-semibold truncate">{v.brand} {v.model}</p>
-                  <p className="text-accent text-xs font-bold mt-0.5">{format(v.price/157.5)}</p>
+                  <p className="text-accent text-xs font-bold mt-0.5">{format(v.price)}</p>
                 </div>
               </Link>
             ))}
@@ -212,7 +212,7 @@ function DealerDashboard({ data, onRefresh }) {
                   <tr key={l.id} className="text-[#e6edf3]">
                     <td className="py-2.5 text-[#6e7681]">#{l.id}</td>
                     <td className="py-2.5">{l.brand} {l.model}</td>
-                    <td className="py-2.5">{format(l.price/157.5)}</td>
+                    <td className="py-2.5">{format(l.price)}</td>
                     <td className="py-2.5 text-[#6e7681]">{l.city}</td>
                     <td className="py-2.5">
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${l.isActive?'bg-green-500/20 text-green-400':'bg-dark-surface text-[#6e7681]'}`}>

@@ -30,7 +30,7 @@ export default function VehicleDetailPage() {
     fetch(`/api/listings/${id}`)
       .then(r => r.json())
       .then(data => {
-        const v = data.listing || data;
+        const v = data.data || data.listing || data;
         setVehicle({ ...v, img: v.image || v.img, bodyStyle: v.body_style || v.bodyStyle, fuel: v.fuel_type || v.fuel });
       })
       .catch(() => {

@@ -67,6 +67,9 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 // Serve React build in production; fall back to project root in dev
 const reactBuildPath = path.join(__dirname, 'web', 'dist');
 app.use(express.static(reactBuildPath));
+// Serve vehicle images and other public assets
+app.use('/assets', express.static(path.join(__dirname, 'public', 'assets')));
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Request logging and response normalization
 app.use(requestLogger);

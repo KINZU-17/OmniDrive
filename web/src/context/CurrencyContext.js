@@ -4,7 +4,7 @@ import { FALLBACK_RATES, CURRENCY_SYMBOLS } from '../utils/api';
 const CurrencyContext = createContext(null);
 
 export function CurrencyProvider({ children }) {
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState('KES');
   const [rates, setRates] = useState(FALLBACK_RATES);
 
   useEffect(() => {
@@ -14,9 +14,13 @@ export function CurrencyProvider({ children }) {
       .catch(() => {});
   }, []);
 
-  const format = useCallback((usdAmount) => {
-    const converted = usdAmount * (rates[currency] || 1);
-    const symbol = CURRENCY_SYMBOLS[currency] || currency;
+  // All DB prices are stored in KES. Convert KES → selected currency.
+  const format = useCallback((kesAmount) => {
+    if (!kesAmount && kesAmount !== 0) return '—';
+    const kesRate = rates['KES'] || 157.5;
+    const usd = kesAmount / kesRate;
+    const converted = usd * (rates[currency] || 1);
+    const symbol = CURRENCY_SYMBOLS[currency] || currency + ' ';
     if (converted >= 1_000_000) return `${symbol}${(converted / 1_000_000).toFixed(1)}M`;
     if (converted >= 1_000) return `${symbol}${Math.round(converted).toLocaleString()}`;
     return `${symbol}${converted.toFixed(2)}`;
