@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [step, setStep] = useState('role'); // role → form
   const [mode, setMode] = useState('login'); // login | register
   const [role, setRole] = useState(null);
-  const [form, setForm] = useState({ name: '', email: '', password: '', phone: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', adminKey: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -25,9 +25,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       if (mode === 'login') {
-        await login(form.email, form.password);
+        await login(form.email, form.password, role === 'admin' ? form.adminKey : '');
       } else {
-        await register({ ...form, role });
+        await register({ name: form.name, email: form.email, password: form.password, phone: form.phone, role, adminKey: form.adminKey });
       }
       navigate('/dashboard');
     } catch (err) {
@@ -138,6 +138,16 @@ export default function LoginPage() {
                   className="input-field"
                   required
                 />
+                {role === 'admin' && (
+                  <input
+                    type="password"
+                    placeholder="Admin key"
+                    value={form.adminKey}
+                    onChange={e => setForm(f => ({ ...f, adminKey: e.target.value }))}
+                    className="input-field"
+                    required
+                  />
+                )}
 
                 {error && (
                   <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-2.5 rounded-lg">

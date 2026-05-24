@@ -29,14 +29,14 @@ export default function PaymentPage() {
     }
     setLoading(true);
     try {
-      const res = await fetch('/api/mpesa/stkpush', {
+      const res = await fetch('/api/mpesa/purchase', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, amount: Number(amount), vehicleId }),
+        body: JSON.stringify({ phone, amount: Number(amount), vehicleId, email: user?.email || '', vehicleName: '' }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Payment initiation failed');
-      setStatus({ checkoutRequestId: data.CheckoutRequestID, message: data.CustomerMessage || 'STK push sent to your phone' });
+      const envelope = await res.json();
+      if (!res.ok) throw new Error(envelope.error || envelope.data?.message || 'Payment initiation failed');
+      setStatus({ checkoutRequestId: envelope.data?.checkoutRequestId, message: 'STK push sent to your phone' });
     } catch (err) {
       setError(err.message);
     } finally {

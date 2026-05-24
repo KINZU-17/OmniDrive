@@ -24,6 +24,7 @@ const webpush = require('web-push');
 const multer = require('multer');
 const swaggerUi = require('swagger-ui-express');
 const http = require('http');
+const crypto = require('crypto');
 
 // Config imports
 const logger = require('./config/logger');
@@ -105,6 +106,18 @@ optimizeDatabase(db);
 
 // Create tables
 db.exec(`
+    -- Platform users (auth)
+    CREATE TABLE IF NOT EXISTS users (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        name       TEXT NOT NULL,
+        email      TEXT UNIQUE NOT NULL,
+        password   TEXT NOT NULL,
+        salt       TEXT NOT NULL,
+        role       TEXT DEFAULT 'client',
+        phone      TEXT DEFAULT '',
+        created_at TEXT DEFAULT (datetime('now'))
+    );
+
     -- Active vehicle listings (publicly visible)
     CREATE TABLE IF NOT EXISTS listings (
         id               INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -190,43 +203,45 @@ db.exec(`
         email      TEXT UNIQUE NOT NULL,
         role       TEXT DEFAULT 'client',
         avatar     TEXT DEFAULT '',
+        status     TEXT DEFAULT 'offline',
+        lastSeen   TEXT DEFAULT (datetime('now')),
         created_at TEXT DEFAULT (datetime('now'))
     );
 
     CREATE TABLE IF NOT EXISTS chat_rooms (
         id          INTEGER PRIMARY KEY AUTOINCREMENT,
         name        TEXT NOT NULL,
-        type        TEXT DEFAULT 'direct',
-        created_by  INTEGER,
-        created_at  TEXT DEFAULT (datetime('now'))
+        description TEXT DEFAULT '',
+        isPublic    BOOLEAN DEFAULT 1,
+        createdBy   TEXT DEFAULT '',
+        type        TEXT DEFAULT 'group',
+        createdAt   TEXT DEFAULT (datetime('now'))
     );
 
     CREATE TABLE IF NOT EXISTS chat_room_members (
-        room_id INTEGER,
-        user_id INTEGER,
+        room_id  INTEGER,
+        user_id  TEXT,
+        joinedAt TEXT DEFAULT (datetime('now')),
         PRIMARY KEY (room_id, user_id)
     );
 
     CREATE TABLE IF NOT EXISTS chat_messages (
-        id         INTEGER PRIMARY KEY AUTOINCREMENT,
-        room_id    INTEGER NOT NULL,
-        sender_id  INTEGER NOT NULL,
-        body       TEXT NOT NULL,
-        created_at TEXT DEFAULT (datetime('now')),
-        FOREIGN KEY (room_id)   REFERENCES chat_rooms(id),
-        FOREIGN KEY (sender_id) REFERENCES chat_users(id)
+        id        INTEGER PRIMARY KEY AUTOINCREMENT,
+        room_id   INTEGER NOT NULL,
+        senderId  TEXT NOT NULL,
+        content   TEXT NOT NULL,
+        createdAt TEXT DEFAULT (datetime('now'))
     );
 
     CREATE TABLE IF NOT EXISTS chat_reads (
-        room_id    INTEGER,
-        user_id    INTEGER,
-        last_read  TEXT DEFAULT (datetime('now')),
-        PRIMARY KEY (room_id, user_id)
+        message_id INTEGER,
+        user_id    TEXT,
+        PRIMARY KEY (message_id, user_id)
     );
 
     CREATE TABLE IF NOT EXISTS chat_presence (
-        user_id    INTEGER PRIMARY KEY,
-        last_seen  TEXT DEFAULT (datetime('now'))
+        user_id  TEXT PRIMARY KEY,
+        lastSeen TEXT DEFAULT (datetime('now'))
     );
 
     CREATE TABLE IF NOT EXISTS push_subscriptions (
@@ -252,14 +267,17 @@ db.exec(`
     );
 `);
 
-try {
-    db.prepare('ALTER TABLE listings ADD COLUMN dealer_email TEXT DEFAULT ""').run();
-    db.prepare('ALTER TABLE orders ADD COLUMN dealer_email TEXT DEFAULT ""').run();
-    db.prepare('ALTER TABLE orders ADD COLUMN liaison_email TEXT DEFAULT ""').run();
-    logger.info('Dashboard schema extensions applied');
-} catch (schemaError) {
-    logger.debug('Dashboard schema extension already applied or not needed', { error: schemaError.message });
-}
+const safeAlter = (sql) => { try { db.prepare(sql).run(); } catch {} };
+safeAlter('ALTER TABLE listings ADD COLUMN dealer_email TEXT DEFAULT ""');
+safeAlter('ALTER TABLE orders ADD COLUMN dealer_email TEXT DEFAULT ""');
+safeAlter('ALTER TABLE orders ADD COLUMN liaison_email TEXT DEFAULT ""');
+safeAlter('ALTER TABLE chat_users ADD COLUMN status TEXT DEFAULT "offline"');
+safeAlter('ALTER TABLE chat_users ADD COLUMN lastSeen TEXT DEFAULT (datetime("now"))');
+safeAlter('ALTER TABLE chat_rooms ADD COLUMN description TEXT DEFAULT ""');
+safeAlter('ALTER TABLE chat_rooms ADD COLUMN isPublic BOOLEAN DEFAULT 1');
+safeAlter('ALTER TABLE chat_rooms ADD COLUMN createdBy TEXT DEFAULT ""');
+safeAlter('ALTER TABLE chat_rooms ADD COLUMN createdAt TEXT DEFAULT (datetime("now"))');
+safeAlter('ALTER TABLE chat_room_members ADD COLUMN joinedAt TEXT DEFAULT (datetime("now"))');
 
 // Initialize database indexes
 try {
@@ -359,6 +377,58 @@ function adminAuth(req, res, next) {
     }
     next();
 }
+
+// ─── AUTH ENDPOINTS ─────────────────────────────────────────────────────────
+
+function hashPassword(password, salt) {
+    return crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+}
+
+app.post('/api/auth/register', apiLimiter, asyncHandler(async (req, res) => {
+    const { name, email, password, role = 'client', phone = '', adminKey } = req.body;
+    if (!name || !email || !password) {
+        return res.status(400).json({ success: false, message: 'Name, email and password are required' });
+    }
+    if (password.length < 6) {
+        return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+    }
+    const allowedRoles = ['client', 'dealer', 'liaison', 'admin'];
+    const safeRole = allowedRoles.includes(role) ? role : 'client';
+    if (safeRole === 'admin' && adminKey !== process.env.ADMIN_KEY) {
+        return res.status(403).json({ success: false, message: 'Invalid admin key' });
+    }
+    const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email.toLowerCase());
+    if (existing) {
+        return res.status(409).json({ success: false, message: 'Email already registered' });
+    }
+    const salt = crypto.randomBytes(16).toString('hex');
+    const hashed = hashPassword(password, salt);
+    const result = db.prepare(
+        'INSERT INTO users (name, email, password, salt, role, phone) VALUES (?, ?, ?, ?, ?, ?)'
+    ).run(name.trim(), email.toLowerCase(), hashed, salt, safeRole, phone);
+    const user = { id: result.lastInsertRowid, name: name.trim(), email: email.toLowerCase(), role: safeRole, phone };
+    return res.status(201).json({ success: true, user });
+}));
+
+app.post('/api/auth/login', apiLimiter, asyncHandler(async (req, res) => {
+    const { email, password, adminKey } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ success: false, message: 'Email and password are required' });
+    }
+    const row = db.prepare('SELECT * FROM users WHERE email = ?').get(email.toLowerCase());
+    if (!row) {
+        return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    }
+    const hashed = hashPassword(password, row.salt);
+    if (hashed !== row.password) {
+        return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    }
+    if (row.role === 'admin' && adminKey !== process.env.ADMIN_KEY) {
+        return res.status(403).json({ success: false, message: 'Admin key required' });
+    }
+    const user = { id: row.id, name: row.name, email: row.email, role: row.role, phone: row.phone };
+    return res.json({ success: true, user });
+}));
 
 // ─── MPESA ENDPOINTS ────────────────────────────────────────────────────────
 
@@ -816,65 +886,13 @@ app.patch('/api/admin/listings/:id',
 
 // ─── CHAT SYSTEM ────────────────────────────────────────────────────────────
 
-// Chat authentication
-app.post('/api/chat/auth', apiLimiter, asyncHandler((req, res) => {
-    const { name, email, role } = req.body;
-    if (!name || !email) {
-        return res.status(400).json({ success: false, error: 'name and email required' });
-    }
-
-    const userRole = ['client', 'dealer'].includes(role) ? role : 'client';
-    let user = db.prepare('SELECT * FROM chat_users WHERE email=?').get(email);
-
-    if (!user) {
-        const info = db.prepare('INSERT INTO chat_users (name, email, role) VALUES (?,?,?)').run(name, email, userRole);
-        user = db.prepare('SELECT * FROM chat_users WHERE id=?').get(info.lastInsertRowid);
-    }
-
-    return res.json(user);
-}));
-
-// Additional chat endpoints (kept from original for completeness)
-app.post('/api/chat/admin-auth', (req, res) => {
-    const key = req.headers['x-admin-key'];
-    if (!process.env.ADMIN_KEY || key !== process.env.ADMIN_KEY) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
-    const user = db.prepare(`SELECT * FROM chat_users WHERE role='admin' LIMIT 1`).get();
-    return res.json(user);
-});
-
-app.get('/api/chat/users', (req, res) => {
-    const users = db.prepare(`SELECT id, name, email, role, avatar FROM chat_users ORDER BY role, name`).all();
-    return res.json(users);
-});
-
-app.post('/api/chat/rooms/direct', apiLimiter, asyncHandler((req, res) => {
-    const { user_a, user_b } = req.body;
-    if (!user_a || !user_b) {
-        return res.status(400).json({ success: false, error: 'user_a and user_b required' });
-    }
-
-    const existing = db.prepare(`
-        SELECT r.* FROM chat_rooms r
-        JOIN chat_room_members m1 ON m1.room_id=r.id AND m1.user_id=?
-        JOIN chat_room_members m2 ON m2.room_id=r.id AND m2.user_id=?
-        WHERE r.type='direct' LIMIT 1
-    `).get(user_a, user_b);
-
-    if (existing) return res.json(existing);
-
-    const uA = db.prepare('SELECT name FROM chat_users WHERE id=?').get(user_a);
-    const uB = db.prepare('SELECT name FROM chat_users WHERE id=?').get(user_b);
-    const room = db.prepare(`INSERT INTO chat_rooms (name, type, created_by) VALUES (?,?,?)`)
-        .run(`${uA?.name} & ${uB?.name}`, 'direct', user_a);
-
-    const roomId = room.lastInsertRowid;
-    db.prepare('INSERT OR IGNORE INTO chat_room_members (room_id, user_id) VALUES (?,?)').run(roomId, user_a);
-    db.prepare('INSERT OR IGNORE INTO chat_room_members (room_id, user_id) VALUES (?,?)').run(roomId, user_b);
-
-    return res.json(db.prepare('SELECT * FROM chat_rooms WHERE id=?').get(roomId));
-}));
+try {
+    const chatRoutes = require('./routes/chatRoutes');
+    app.use('/api/chat', chatRoutes(db));
+    logger.info('Chat routes mounted');
+} catch (chatError) {
+    logger.error('Failed to mount chat routes', { error: chatError.message });
+}
 
 // ─── FILE UPLOADS ──────────────────────────────────────────────────────────
 

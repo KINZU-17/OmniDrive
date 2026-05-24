@@ -12,19 +12,25 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (user) localStorage.setItem('omnidrive_user', JSON.stringify(user));
-    else localStorage.removeItem('omnidrive_user');
+    else { localStorage.removeItem('omnidrive_user'); sessionStorage.removeItem('omnidrive_admin_key'); }
   }, [user]);
 
-  const login = async (email, password) => {
+  const login = async (email, password, adminKey = '') => {
+    const body = { email, password };
+    if (adminKey) body.adminKey = adminKey;
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify(body),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Login failed');
-    setUser(data.user);
-    return data.user;
+    const envelope = await res.json();
+    if (!res.ok) throw new Error(envelope.data?.message || envelope.error || 'Login failed');
+    const user = envelope.data?.user;
+    if (user?.role === 'admin' && adminKey) {
+      sessionStorage.setItem('omnidrive_admin_key', adminKey);
+    }
+    setUser(user);
+    return user;
   };
 
   const register = async (payload) => {
@@ -33,10 +39,11 @@ export function AuthProvider({ children }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Registration failed');
-    setUser(data.user);
-    return data.user;
+    const envelope = await res.json();
+    if (!res.ok) throw new Error(envelope.data?.message || envelope.error || 'Registration failed');
+    const user = envelope.data?.user;
+    setUser(user);
+    return user;
   };
 
   const logout = () => setUser(null);

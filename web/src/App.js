@@ -12,7 +12,6 @@ import WishlistPage from './pages/WishlistPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import MessagingPage from './pages/MessagingPage';
-import './App.css';
 
 function App() {
   return (

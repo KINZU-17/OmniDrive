@@ -3,7 +3,6 @@ const express = require('express');
 module.exports = (db) => {
     const router = express.Router();
 
-    // Middleware to extract user from headers
     function getUserFromHeaders(req) {
         return {
             role: (req.headers['x-user-role'] || '').toLowerCase(),
@@ -23,7 +22,7 @@ module.exports = (db) => {
 
     /**
      * POST /api/chat/auth
-     * Authenticate user for chat access
+     * Register/authenticate user for chat access (reads from auth headers)
      */
     router.post('/auth', (req, res) => {
         try {
@@ -32,12 +31,10 @@ module.exports = (db) => {
                 return res.status(401).json({ success: false, error: 'Missing user credentials' });
             }
 
-            // Try to insert or ignore if exists
-            const stmt = db.prepare(`
+            db.prepare(`
                 INSERT OR IGNORE INTO chat_users (email, name, role, avatar)
                 VALUES (?, ?, ?, '')
-            `);
-            const result = stmt.run(user.email, user.email, user.role);
+            `).run(user.email, user.email, user.role);
 
             return res.json({
                 success: true,
@@ -46,26 +43,21 @@ module.exports = (db) => {
                     role: user.role,
                     email: user.email,
                     authenticated: true,
-                    inserted: result.changes > 0
                 }
             });
         } catch (err) {
-            console.error('[chatAuth error]', err.message, err.stack);
-            return res.status(500).json({ 
-                success: false, 
-                error: 'Auth failed: ' + err.message 
-            });
+            return res.status(500).json({ success: false, error: 'Auth failed: ' + err.message });
         }
     });
 
     /**
      * GET /api/chat/rooms
-     * Get list of available chat rooms for user
      */
     router.get('/rooms', authRequired, (req, res) => {
         try {
             const rooms = db.prepare(`
-                SELECT cr.id, cr.name, cr.description, COUNT(DISTINCT crm.user_id) as memberCount
+                SELECT cr.id, cr.name, cr.description, cr.isPublic,
+                       COUNT(DISTINCT crm.user_id) as memberCount
                 FROM chat_rooms cr
                 LEFT JOIN chat_room_members crm ON cr.id = crm.room_id
                 WHERE cr.isPublic = 1 OR EXISTS (
@@ -73,7 +65,7 @@ module.exports = (db) => {
                     WHERE room_id = cr.id AND user_id = ?
                 )
                 GROUP BY cr.id
-                ORDER BY cr.createdAt DESC
+                ORDER BY cr.created_at DESC
             `).all(req.user.email);
 
             return res.json({ success: true, data: { rooms } });
@@ -84,7 +76,6 @@ module.exports = (db) => {
 
     /**
      * POST /api/chat/rooms
-     * Create a new chat room
      */
     router.post('/rooms', authRequired, (req, res) => {
         const { name, description, isPublic = true } = req.body;
@@ -98,10 +89,9 @@ module.exports = (db) => {
                 VALUES (?, ?, ?, ?)
             `).run(name, description || '', isPublic ? 1 : 0, req.user.email);
 
-            // Add creator as member
             db.prepare(`
-                INSERT INTO chat_room_members (room_id, user_id, joinedAt)
-                VALUES (?, ?, datetime('now'))
+                INSERT OR IGNORE INTO chat_room_members (room_id, user_id)
+                VALUES (?, ?)
             `).run(result.lastInsertRowid, req.user.email);
 
             return res.json({
@@ -115,21 +105,18 @@ module.exports = (db) => {
 
     /**
      * POST /api/chat/rooms/:roomId/join
-     * Join a chat room
      */
     router.post('/rooms/:roomId/join', authRequired, (req, res) => {
         const { roomId } = req.params;
         try {
-            // Check if room exists
             const room = db.prepare('SELECT * FROM chat_rooms WHERE id = ?').get(roomId);
             if (!room) {
                 return res.status(404).json({ success: false, error: 'Room not found' });
             }
 
-            // Add user to room
             db.prepare(`
-                INSERT OR IGNORE INTO chat_room_members (room_id, user_id, joinedAt)
-                VALUES (?, ?, datetime('now'))
+                INSERT OR IGNORE INTO chat_room_members (room_id, user_id)
+                VALUES (?, ?)
             `).run(roomId, req.user.email);
 
             return res.json({ success: true, data: { roomId, message: 'Joined room' } });
@@ -139,8 +126,7 @@ module.exports = (db) => {
     });
 
     /**
-     * GET /api/chat/messages
-     * Get messages from a room
+     * GET /api/chat/messages?roomId=X
      */
     router.get('/messages', authRequired, (req, res) => {
         const { roomId, limit = 50, offset = 0 } = req.query;
@@ -149,7 +135,6 @@ module.exports = (db) => {
         }
 
         try {
-            // Verify user is member of room
             const member = db.prepare(
                 'SELECT * FROM chat_room_members WHERE room_id = ? AND user_id = ?'
             ).get(roomId, req.user.email);
@@ -158,19 +143,20 @@ module.exports = (db) => {
                 return res.status(403).json({ success: false, error: 'Not a member of this room' });
             }
 
-            const messages = db.prepare(`
-                SELECT cm.id, cm.content, cm.senderId, cm.createdAt,
-                       cu.email, cu.role,
-                       CASE WHEN cr.id IS NOT NULL THEN 1 ELSE 0 END as isRead
+            const rows = db.prepare(`
+                SELECT cm.id,
+                       cu.email      AS senderId,
+                       cm.body       AS content,
+                       cm.created_at AS createdAt,
+                       cu.role
                 FROM chat_messages cm
-                JOIN chat_users cu ON cm.senderId = cu.email
-                LEFT JOIN chat_reads cr ON cm.id = cr.message_id AND cr.user_id = ?
+                LEFT JOIN chat_users cu ON cm.sender_id = cu.id
                 WHERE cm.room_id = ?
-                ORDER BY cm.createdAt DESC
+                ORDER BY cm.created_at DESC
                 LIMIT ? OFFSET ?
-            `).all(req.user.email, roomId, parseInt(limit), parseInt(offset));
+            `).all(roomId, parseInt(limit), parseInt(offset));
 
-            return res.json({ success: true, data: { messages: messages.reverse() } });
+            return res.json({ success: true, data: { messages: rows.reverse() } });
         } catch (err) {
             return res.status(500).json({ success: false, error: err.message });
         }
@@ -178,7 +164,6 @@ module.exports = (db) => {
 
     /**
      * POST /api/chat/messages
-     * Send a message to a room
      */
     router.post('/messages', authRequired, (req, res) => {
         const { roomId, content } = req.body;
@@ -187,7 +172,6 @@ module.exports = (db) => {
         }
 
         try {
-            // Verify user is member of room
             const member = db.prepare(
                 'SELECT * FROM chat_room_members WHERE room_id = ? AND user_id = ?'
             ).get(roomId, req.user.email);
@@ -196,10 +180,15 @@ module.exports = (db) => {
                 return res.status(403).json({ success: false, error: 'Not a member of this room' });
             }
 
+            const chatUser = db.prepare('SELECT id FROM chat_users WHERE email = ?').get(req.user.email);
+            if (!chatUser) {
+                return res.status(403).json({ success: false, error: 'User not registered in chat' });
+            }
+
             const result = db.prepare(`
-                INSERT INTO chat_messages (room_id, senderId, content, createdAt)
-                VALUES (?, ?, ?, datetime('now'))
-            `).run(roomId, req.user.email, content);
+                INSERT INTO chat_messages (room_id, sender_id, body)
+                VALUES (?, ?, ?)
+            `).run(roomId, chatUser.id, content);
 
             return res.json({
                 success: true,
@@ -212,7 +201,6 @@ module.exports = (db) => {
 
     /**
      * GET /api/chat/users
-     * Get list of online users
      */
     router.get('/users', authRequired, (req, res) => {
         try {
@@ -231,7 +219,6 @@ module.exports = (db) => {
 
     /**
      * POST /api/chat/presence
-     * Update user presence status
      */
     router.post('/presence', authRequired, (req, res) => {
         const { status = 'online' } = req.body;

@@ -1,17 +1,25 @@
-const BASE_URL = (() => {
-  if (typeof window === 'undefined') return '';
-  const { hostname, protocol } = window.location;
-  if (hostname === 'localhost' || hostname === '127.0.0.1') return 'http://localhost:3000';
-  return `${protocol}//${hostname}`;
-})();
+function getStoredUser() {
+  try { return JSON.parse(localStorage.getItem('omnidrive_user') || 'null'); } catch { return null; }
+}
+
+function authHeaders() {
+  const u = getStoredUser();
+  if (!u) return {};
+  const h = { 'x-user-role': u.role, 'x-user-email': u.email };
+  if (u.role === 'admin') {
+    const adminKey = sessionStorage.getItem('omnidrive_admin_key') || '';
+    if (adminKey) h['x-admin-key'] = adminKey;
+  }
+  return h;
+}
 
 async function request(path, options = {}) {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+  const res = await fetch(path, {
+    headers: { 'Content-Type': 'application/json', ...authHeaders(), ...options.headers },
     ...options,
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || `Request failed: ${res.status}`);
+  if (!res.ok) throw new Error(data.error || data.data?.message || data.message || `Request failed: ${res.status}`);
   return data;
 }
 
