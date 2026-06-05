@@ -2,10 +2,10 @@
 
 ## Overview
 Redis caching layer dramatically improves application performance by:
-- 📊 Reducing database queries by 70-80% through query result caching
-- ⚡ Decreasing response times from 150-300ms to 20-50ms
-- 👥 Supporting millions of concurrent users via session storage
-- 💳 Preventing duplicate payment processing (payment response caching)
+- Reducing database queries by 70-80% through query result caching
+- Decreasing response times from 150-300ms to 20-50ms
+- Supporting millions of concurrent users via session storage
+- Preventing duplicate payment processing (payment response caching)
 
 ## Architecture
 ```
@@ -192,10 +192,10 @@ app.get('/api/listings/search', queryCache(600), asyncHandler(async (req, res) =
     // Query params: ?brand=Honda&max_price=5000
     // Auto-cached based on params
     const results = db.prepare(`
-        SELECT * FROM listings 
+        SELECT * FROM listings
         WHERE brand = ? AND price <= ?
     `).all(req.query.brand, req.query.max_price);
-    
+
     res.json(results);
 }));
 ```
@@ -414,19 +414,19 @@ SESSION_SECRET=your-very-long-random-secret-string
 
 ## Next Steps
 
-✅ **Phase 2.1 Complete:**
+**Phase 2.1 Complete:**
 - [x] Redis setup (Docker/local/cloud)
 - [x] Cache utilities implemented
 - [x] Session store configured
 - [x] Caching middleware created
 - [x] Tests written and passing
 
-🔄 **Phase 2.2 Coming:**
+**Phase 2.2 Coming:**
 - [ ] PostgreSQL migration
 - [ ] Connection pooling
 - [ ] Transaction handling
 
-📚 **Documentation:**
+**Documentation:**
 - Redis best practices: https://redis.io/docs/management/
 - Cache strategy: https://redis.com/glossary/cache/
 - Session management: https://github.com/expressjs/session
@@ -460,6 +460,6 @@ redis-cli FLUSHALL
 
 ---
 
-**Status:** ✅ Phase 2.1 Complete & Ready for Production
+**Status:** Phase 2.1 Complete & Ready for Production
 
 **Next:** Move to Phase 2.2 (PostgreSQL Migration) or continue with other endpoints caching

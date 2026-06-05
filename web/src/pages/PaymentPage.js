@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
-import { useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
-const MPESA_LOGO = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjQwIiB2aWV3Qm94PSIwIDAgMTAwIDQwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iNDAiIHJ4PSI2IiBmaWxsPSIjMDA5OTQ0Ii8+PHRleHQgeD0iNTAiIHk9IjI1IiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+TSBQRVNBPC90ZXh0Pjwvc3ZnPg==';
 
 export default function PaymentPage() {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const navigate = useNavigate();
   const vehicleId = searchParams.get('vehicle');
 
   const [phone, setPhone] = useState(user?.phone || '');

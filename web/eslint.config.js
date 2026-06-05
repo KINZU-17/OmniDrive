@@ -1,4 +1,3 @@
-import js from '@eslint/js';
 import globals from 'globals';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
@@ -22,6 +21,8 @@ export default [
       ...reactHooks.configs.recommended.rules,
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
+      // Apostrophes in copy ("Kenya's", "you're") are intentional; this rule is noise.
+      'react/no-unescaped-entities': 'off',
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     },
     settings: { react: { version: 'detect' } },

@@ -3,21 +3,31 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const ROLES = [
-  { id: 'client', label: 'Client', icon: '🛒', desc: 'Browse and purchase vehicles', color: 'text-blue-400 border-blue-500/40' },
-  { id: 'dealer', label: 'Dealer', icon: '🏢', desc: 'List and manage inventory', color: 'text-green-400 border-green-500/40' },
-  { id: 'liaison', label: 'Liaison', icon: '🔧', desc: 'Technical support & coordination', color: 'text-orange-400 border-orange-500/40' },
-  { id: 'admin', label: 'Admin', icon: '⚡', desc: 'Full platform management', color: 'text-red-400 border-red-500/40' },
+  { id: 'client', label: 'Client', desc: 'Browse and purchase vehicles', color: 'text-blue-400 border-blue-500/40' },
+  { id: 'dealer', label: 'Dealer', desc: 'List and manage inventory', color: 'text-green-400 border-green-500/40' },
+  { id: 'liaison', label: 'Liaison', desc: 'Technical support & coordination', color: 'text-orange-400 border-orange-500/40' },
+  { id: 'admin', label: 'Admin', desc: 'Full platform management', color: 'text-red-400 border-red-500/40' },
 ];
 
 export default function LoginPage() {
-  const { login, register } = useAuth();
+  const { login, register, requestOtp, verifyOtp } = useAuth();
   const navigate = useNavigate();
-  const [step, setStep] = useState('role'); // role → form
-  const [mode, setMode] = useState('login'); // login | register
+  const [step, setStep] = useState('role');       // role -> form
+  const [mode, setMode] = useState('login');       // login | register | otp
   const [role, setRole] = useState(null);
-  const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', adminKey: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', phone: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // OTP sub-flow state
+  const [otpPhase, setOtpPhase] = useState('request'); // request -> verify
+  const [otpId, setOtpId] = useState('');              // phone or email
+  const [otpCode, setOtpCode] = useState('');
+  const [otpHint, setOtpHint] = useState('');          // dev code / status message
+
+  const switchMode = (m) => {
+    setMode(m); setError(''); setOtpPhase('request'); setOtpCode(''); setOtpHint('');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,10 +35,37 @@ export default function LoginPage() {
     setLoading(true);
     try {
       if (mode === 'login') {
-        await login(form.email, form.password, role === 'admin' ? form.adminKey : '');
+        await login(form.email, form.password);
       } else {
-        await register({ name: form.name, email: form.email, password: form.password, phone: form.phone, role, adminKey: form.adminKey });
+        await register({ name: form.name, email: form.email, password: form.password, phone: form.phone, role });
       }
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOtpRequest = async (e) => {
+    e.preventDefault();
+    setError(''); setLoading(true);
+    try {
+      const { message, devCode } = await requestOtp(otpId);
+      setOtpPhase('verify');
+      setOtpHint(devCode ? `Dev code: ${devCode}` : (message || 'Code sent. Check your phone.'));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOtpVerify = async (e) => {
+    e.preventDefault();
+    setError(''); setLoading(true);
+    try {
+      await verifyOtp(otpId, otpCode);
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);
@@ -61,10 +98,9 @@ export default function LoginPage() {
                 {ROLES.map(r => (
                   <button
                     key={r.id}
-                    onClick={() => { setRole(r.id); setStep('form'); }}
+                    onClick={() => { setRole(r.id); setStep('form'); switchMode(r.id === 'admin' ? 'otp' : 'login'); }}
                     className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 hover:border-opacity-100 hover:bg-dark-surface ${r.color}`}
                   >
-                    <span className="text-2xl">{r.icon}</span>
                     <span className="text-sm font-semibold text-white">{r.label}</span>
                     <span className="text-xs text-[#6e7681] text-center leading-tight">{r.desc}</span>
                   </button>
@@ -73,7 +109,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Step 2: Login / Register form */}
+          {/* Step 2: Login / Register / OTP */}
           {step === 'form' && (
             <div>
               <button onClick={() => setStep('role')} className="flex items-center gap-1 text-[#8b949e] hover:text-white text-sm mb-4 transition-colors">
@@ -84,95 +120,86 @@ export default function LoginPage() {
               {/* Role badge */}
               {selectedRole && (
                 <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm mb-4 ${selectedRole.color}`}>
-                  <span>{selectedRole.icon}</span>
                   <span>{selectedRole.label}</span>
                 </div>
               )}
 
               {/* Mode toggle */}
               <div className="flex gap-1 bg-dark-surface rounded-lg p-1 mb-6">
-                {['login', 'register'].map(m => (
+                {[['login', 'Password'], ['otp', 'Login code'], ['register', 'Create account']].map(([m, lbl]) => (
                   <button
                     key={m}
-                    onClick={() => { setMode(m); setError(''); }}
-                    className={`flex-1 py-2 text-sm font-medium rounded-md capitalize transition-all ${mode === m ? 'bg-dark-card text-white shadow' : 'text-[#6e7681] hover:text-white'}`}
+                    onClick={() => switchMode(m)}
+                    className={`flex-1 py-2 text-xs font-medium rounded-md transition-all ${mode === m ? 'bg-dark-card text-white shadow' : 'text-[#6e7681] hover:text-white'}`}
                   >
-                    {m === 'login' ? 'Sign in' : 'Create account'}
+                    {lbl}
                   </button>
                 ))}
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {mode === 'register' && (
-                  <input
-                    type="text"
-                    placeholder="Full name"
-                    value={form.name}
-                    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                    className="input-field"
-                    required
-                  />
-                )}
-                <input
-                  type="email"
-                  placeholder="Email address"
-                  value={form.email}
-                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  className="input-field"
-                  required
-                />
-                {mode === 'register' && (
-                  <input
-                    type="tel"
-                    placeholder="Phone (Safaricom)"
-                    value={form.phone}
-                    onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                    className="input-field"
-                  />
-                )}
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={form.password}
-                  onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                  className="input-field"
-                  required
-                />
-                {role === 'admin' && (
-                  <input
-                    type="password"
-                    placeholder="Admin key"
-                    value={form.adminKey}
-                    onChange={e => setForm(f => ({ ...f, adminKey: e.target.value }))}
-                    className="input-field"
-                    required
-                  />
-                )}
-
-                {error && (
-                  <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-2.5 rounded-lg">
-                    {error}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn-primary w-full py-3 text-base flex items-center justify-center gap-2 disabled:opacity-60"
-                >
-                  {loading ? (
-                    <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Please wait...</>
-                  ) : (
-                    mode === 'login' ? 'Sign in' : 'Create account'
+              {/* Password login / Register */}
+              {(mode === 'login' || mode === 'register') && (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {mode === 'register' && (
+                    <input type="text" placeholder="Full name" value={form.name}
+                      onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="input-field" required />
                   )}
-                </button>
-              </form>
+                  <input type="email" placeholder="Email address" value={form.email}
+                    onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className="input-field" required />
+                  {mode === 'register' && (
+                    <input type="tel" placeholder="Phone (Safaricom)" value={form.phone}
+                      onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} className="input-field" />
+                  )}
+                  <input type="password" placeholder="Password" value={form.password}
+                    onChange={e => setForm(f => ({ ...f, password: e.target.value }))} className="input-field" required />
+
+                  {role === 'admin' && mode === 'register' && (
+                    <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs px-4 py-2.5 rounded-lg">
+                      Admin accounts are provisioned by the platform, not self-registered. Use Password or Login code.
+                    </div>
+                  )}
+                  {error && <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-2.5 rounded-lg">{error}</div>}
+                  <button type="submit" disabled={loading} className="btn-primary w-full py-3 text-base flex items-center justify-center gap-2 disabled:opacity-60">
+                    {loading ? (<><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Please wait...</>)
+                      : (mode === 'login' ? 'Sign in' : 'Create account')}
+                  </button>
+                </form>
+              )}
+
+              {/* OTP login */}
+              {mode === 'otp' && otpPhase === 'request' && (
+                <form onSubmit={handleOtpRequest} className="space-y-4">
+                  <p className="text-[#8b949e] text-sm">Enter your phone number (or email) and we'll text you a one-time login code.</p>
+                  <input type="text" placeholder="Phone or email" value={otpId}
+                    onChange={e => setOtpId(e.target.value)} className="input-field" required autoFocus />
+                  {error && <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-2.5 rounded-lg">{error}</div>}
+                  <button type="submit" disabled={loading} className="btn-primary w-full py-3 text-base flex items-center justify-center gap-2 disabled:opacity-60">
+                    {loading ? (<><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Sending...</>) : 'Send login code'}
+                  </button>
+                </form>
+              )}
+
+              {mode === 'otp' && otpPhase === 'verify' && (
+                <form onSubmit={handleOtpVerify} className="space-y-4">
+                  <p className="text-[#8b949e] text-sm">Enter the 6-digit code sent to <span className="text-white">{otpId}</span>.</p>
+                  {otpHint && <div className="bg-blue-500/10 border border-blue-500/30 text-blue-300 text-xs px-4 py-2.5 rounded-lg">{otpHint}</div>}
+                  <input type="text" inputMode="numeric" pattern="[0-9]*" maxLength={6} placeholder="------"
+                    value={otpCode} onChange={e => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                    className="input-field tracking-[0.5em] text-center text-lg" required autoFocus />
+                  {error && <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-2.5 rounded-lg">{error}</div>}
+                  <button type="submit" disabled={loading} className="btn-primary w-full py-3 text-base flex items-center justify-center gap-2 disabled:opacity-60">
+                    {loading ? (<><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Verifying...</>) : 'Verify & sign in'}
+                  </button>
+                  <button type="button" onClick={() => { setOtpPhase('request'); setError(''); setOtpHint(''); }}
+                    className="w-full text-[#6e7681] hover:text-white text-sm transition-colors">Use a different number</button>
+                </form>
+              )}
             </div>
           )}
         </div>
 
         <p className="text-center text-[#6e7681] text-sm mt-6">
-          <Link to="/browse" className="text-accent hover:underline">← Continue browsing without signing in</Link>
+          <Link to="/browse" className="text-accent hover:underline">Continue browsing without signing in</Link>
         </p>
       </div>
     </div>

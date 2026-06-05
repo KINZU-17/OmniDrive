@@ -16,8 +16,8 @@ const LINKS = {
     { label: 'Messages', to: '/messages' },
   ],
   Legal: [
-    { label: 'Privacy Policy', to: '/privacy' },
-    { label: 'Terms of Service', to: '/terms' },
+    { label: 'Privacy Policy', href: '/privacy.html', external: true },
+    { label: 'Terms of Service', href: '/terms.html', external: true },
   ],
 };
 
@@ -48,9 +48,15 @@ export default function Footer() {
               <ul className="space-y-2.5">
                 {items.map(item => (
                   <li key={item.label}>
-                    <Link to={item.to} className="text-[#6e7681] text-sm hover:text-white transition-colors">
-                      {item.label}
-                    </Link>
+                    {item.external ? (
+                      <a href={item.href} className="text-[#6e7681] text-sm hover:text-white transition-colors">
+                        {item.label}
+                      </a>
+                    ) : (
+                      <Link to={item.to} className="text-[#6e7681] text-sm hover:text-white transition-colors">
+                        {item.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -63,8 +69,8 @@ export default function Footer() {
             © {new Date().getFullYear()} OmniDrive. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-xs text-[#6e7681]">
-            <span>📧 info@omnidrive.co.ke</span>
-            <span>📞 +254 700 000 000</span>
+            <span> info@omnidrive.co.ke</span>
+            <span> +254 700 000 000</span>
           </div>
         </div>
       </div>

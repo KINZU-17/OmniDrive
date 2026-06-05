@@ -1,12 +1,14 @@
-# 🚗 OmniDrive - Multi-Dealership Vehicle Marketplace
+# OmniDrive - Multi-Dealership Vehicle Marketplace
 
 **Connecting you to the drive of your choice.**
 
-> Frontend is ready for Netlify or Vercel deployment. Backend deploys to Railway.
+> Frontend deploys to **Vercel** (`vercel.json`). The backend (Express +
+> node:sqlite + WebSockets + Redis) runs on a persistent host (Railway / Render /
+> Fly / a Docker container) — Vercel proxies `/api` to it.
 
 ---
 
-## 📋 About OmniDrive
+## About OmniDrive
 
 OmniDrive is Kenya's premier **multi-dealership** vehicle marketplace. It's a unified platform where multiple independent dealerships (Toyota Kenya, Nissan Premium, AutoWorld, etc.) can list and sell their vehicles while maintaining their own branding and administrative control.
 
@@ -14,7 +16,83 @@ OmniDrive is Kenya's premier **multi-dealership** vehicle marketplace. It's a un
 
 ---
 
-## 👥 User Types & Roles
+## Quick start
+
+> Requires **Node ≥ 22.5** (uses the built-in `node:sqlite` — no native build step).
+
+```bash
+cp .env.example .env        # then set a strong JWT_SECRET (see below)
+npm install                 # backend deps
+cd web && npm install && npm run build && cd ..   # build the React frontend
+npm start                   # http://localhost:3000  (API + SPA on one port)
+npm test                    # security smoke test (boots the server, 9 checks)
+npm run backup              # snapshot the DB to backups/
+```
+
+On first run in development the DB is seeded with demo data. **Demo logins:**
+
+| Role    | Email                     | Password    | Can do                                   |
+|---------|---------------------------|-------------|------------------------------------------|
+| admin   | `admin@omnidrive.co.ke`   | `Admin@123` | full platform control (all dealers)      |
+| dealer  | `dealer@toyota.co.ke`     | `Dealer@123`| manage only Toyota inventory/orders      |
+| dealer  | `dealer@nissan.co.ke`     | `Dealer@123`| manage only Nissan inventory/orders      |
+| liaison | `liaison@omnidrive.co.ke` | `Liaison@123`| coordinate deals / leads                |
+| client  | `customer@example.com`    | `Client@123`| browse + buy                             |
+
+## Security & data model (merged build)
+
+This build merges the strongest ideas from the `fixed 1.0/1.1/1.2` iterations onto
+the original feature set:
+
+- **JWT auth (replaces spoofable headers).** Login/registration issue a signed
+  JWT; protected routes verify it server-side and enforce **roles** and
+  **dealership ownership** (a dealer can only touch their own listings — cross-
+  tenant writes return 403/404). The old `x-user-role` / `x-admin-key` header
+  trust and the shared `ADMIN_KEY` are **gone**. Admin accounts cannot be
+  self-registered. See `middleware/auth.js`.
+- **bcrypt** password hashing (replaces pbkdf2+salt).
+- **`node:sqlite`** engine with **WAL + transactions + additive migrations**
+  (tracked by `PRAGMA user_version`) — no native binary, no full-file rewrites.
+  Schema, migrations and seed live in `config/db.js`.
+- **Money as integers** (whole KES) — no floating-point drift.
+- **Fail-fast secrets**: the app refuses to start in production without a strong
+  `JWT_SECRET`. Generate one with:
+  `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"`.
+- Helmet, CORS allow-list (`CORS_ORIGIN`), and rate limiting remain enabled.
+- **Phone OTP login** (easy admin sign-in): `POST /api/auth/otp/request {identifier}`
+  texts a 6-digit code (provider-agnostic — Twilio or Africa's Talking via
+  `SMS_PROVIDER`), then `POST /api/auth/otp/verify {identifier, code}` returns a
+  JWT. Codes are hashed, expire in 5 min, and are attempt/rate-limited. With no
+  provider configured in dev, the code is logged and returned as `devCode`.
+  Password login remains as a fallback. See `services/sms.js`.
+
+> **Rotate secrets before production**: the M-Pesa, Gmail and any admin
+> credentials used during development must be regenerated. `.env` is gitignored
+> and must never be committed.
+
+## Installable PWA & offline
+
+The build is a **single self-contained `index.html`** (`vite-plugin-singlefile`) —
+all JS and CSS are inlined, so there are no separate `/assets/*` files to 404,
+list, or mis-cache. It must be **served over HTTP** (the backend or Vercel), not
+opened as a `file://` (browsers block module scripts and service workers there,
+and the app needs the `/api` backend).
+
+The web app is also a full Progressive Web App (`vite-plugin-pwa`):
+- **Installable** on Android, iOS and desktop ("Add to Home Screen"), with a
+  generated `manifest.webmanifest` and maskable icons.
+- **Offline**: a service worker precaches the app shell and runtime-caches
+  listings (`NetworkFirst`) and images (`CacheFirst`), so previously-seen pages
+  keep working without a connection. An offline banner appears when the network
+  drops. Config lives in `web/vite.config.js`.
+
+> The Express server always serves `index.html` for any non-API route (and a
+> safe fallback if the build is missing), so deployments never show a directory
+> listing.
+
+---
+
+## User Types & Roles
 
 ### **Super Admin** (Platform Owner)
 - Controls the entire OmniDrive platform
@@ -46,9 +124,9 @@ OmniDrive is Kenya's premier **multi-dealership** vehicle marketplace. It's a un
 
 ---
 
-## 🚀 Core Features
+## Core Features
 
-### 🛒 Shopping Experience
+### Shopping Experience
 - **Live Currency Conversion**: Real-time pricing in USD, EUR, JPY, KES, GBP via Open Exchange Rates API
 - **Intelligent Filtering**: Search by brand, model, category, condition, body style, fuel type, drivetrain, color, price range, and rating
 - **Advanced Comparison**: Compare up to 3 vehicles side-by-side with sticky tray
@@ -59,7 +137,7 @@ OmniDrive is Kenya's premier **multi-dealership** vehicle marketplace. It's a un
 - **Wishlist Export**: Download wishlist as a text file
 - **WhatsApp Direct Contact**: One-tap dealer contact from any vehicle card
 - **Dark Mode Auto-Detect**: Respects system `prefers-color-scheme`
-- **Vehicle Badges**: Hot Deal 🔥, New Arrival 🆕, Top Rated ⭐, Luxury 💎, Electric 🔋
+- **Vehicle Badges**: Hot Deal , New Arrival , Top Rated , Luxury , Electric
 - **Vehicle Customization (Pimp Your Ride)**:
   - Wheels: Stock to Gold Plated ($120-$8,000)
   - Paint: Metallic, Matte, Chrome, Candy Red, Flip Paint ($800-$4,500)
@@ -69,36 +147,36 @@ OmniDrive is Kenya's premier **multi-dealership** vehicle marketplace. It's a un
   - Audio: Premium, Focal, Bose systems ($1,200-$4,500)
   - Windows & Accessories
 
-### 💳 Payments
+### Payments
 - **MPesa**: Instant mobile money payments (Kenya, Tanzania, Mozambique, Ghana, DRC)
 - **Credit/Debit Cards**: Visa, Mastercard, AMEX
 - **Bank Transfer**: Standard Chartered direct transfer
 - **Price Alerts**: Get notified when prices drop
 
-### 🔐 Account & Orders
+### Account & Orders
 - **User Authentication**: Login/register with localStorage persistence
 - **Order Tracking**: Real-time timeline from placed → delivered
 - **VIN Check**: Vehicle history verification
 - **Referral Program**: Earn $500 per successful referral
 
-### 🏪 Dealer Network
+### Dealer Network
 - **Global Dealer Locator**: Find nearest dealer with distance calculation
 - **Test Drive Scheduling**: Book test drives with preferred dealer
 - **Service Center Booking**: Schedule maintenance
 
-### 📦 Logistics
+### Logistics
 - **Shipping Calculator**: Domestic and international freight
 - **Import Duty Calculator**: Automated tax estimates by country
 - **Trade-In Calculator**: Estimate your current vehicle's value
 - **Insurance Quotes**: Get insurance estimates
 
-### 🌙 User Experience
+### User Experience
 - **Dark/Light Theme**: Personalized UI themes
 - **Responsive Design**: Works on desktop, tablet, mobile
 - **Loading States**: Smooth spinners and animations
 - **Chat Widget**: Real-time customer support
 
-### 🔧 Admin Panel (Per Dealership)
+### Admin Panel (Per Dealership)
 - **Inventory Management**: Add, edit, delete vehicles (scoped to dealership)
 - **Staff Management**: Add/remove sales staff
 - **Analytics Dashboard**: Dealership-specific statistics
@@ -107,7 +185,7 @@ OmniDrive is Kenya's premier **multi-dealership** vehicle marketplace. It's a un
 
 ---
 
-## 🛻 Product Categories
+## Product Categories
 
 | Category | Count | Examples |
 |----------|-------|----------|
@@ -119,13 +197,13 @@ OmniDrive is Kenya's premier **multi-dealership** vehicle marketplace. It's a un
 
 ---
 
-## 🌐 Nationalities Available
+## Nationalities Available
 
-Japan 🇯🇵 | USA 🇺🇸 | Germany 🇩🇪 | UK 🇬🇧 | Italy 🇮🇹 | France 🇫🇷 | Sweden 🇸🇪 | South Korea 🇰🇷 | China 🇨🇳 | India 🇮🇳 | Taiwan 🇹🇼 | Austria 🇦🇹 | Spain 🇪🇸 | Czech Republic 🇨🇿 | Indonesia 🇮🇩 | Malaysia 🇲🇾
+Japan | USA | Germany | UK | Italy | France | Sweden | South Korea | China | India | Taiwan | Austria | Spain | Czech Republic | Indonesia | Malaysia
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
 - **Backend**: Node.js/Express
@@ -137,7 +215,7 @@ Japan 🇯🇵 | USA 🇺🇸 | Germany 🇩🇪 | UK 🇬🇧 | Italy 🇮🇹 
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ./
@@ -150,8 +228,8 @@ Japan 🇯🇵 | USA 🇺🇸 | Germany 🇩🇪 | UK 🇬🇧 | Italy 🇮🇹 
 ├── login.html          # Login page with role selection
 ├── login.js            # Authentication logic
 ├── package.json        # Node dependencies and scripts
-├── netlify.toml        # Netlify deployment config
-├── railway.toml        # Railway deployment config
+├── vercel.json         # Vercel deployment config (frontend + /api proxy)
+├── Dockerfile          # Backend container (deploy to Railway/Render/Fly)
 ├── manifest.json       # PWA manifest
 ├── sw.js               # Service Worker (offline support)
 ├── sitemap.xml         # SEO sitemap
@@ -169,12 +247,15 @@ Japan 🇯🇵 | USA 🇺🇸 | Germany 🇩🇪 | UK 🇬🇧 | Italy 🇮🇹 
 
 ---
 
-## 🎯 Getting Started
+## Getting Started
 
 ### For Platform Owner (Super Admin)
-1. Deploy backend to Railway: `railway up`
-2. Deploy frontend to Netlify: `netlify deploy --prod`
-3. Create initial dealerships via database or admin panel
+1. Deploy the backend to a persistent host (Railway/Render/Fly or Docker) and set
+   its production env (`JWT_SECRET`, `CORS_ORIGIN`, M-Pesa, SMS provider, etc.).
+2. Point `vercel.json` `rewrites` `/api/*` `destination` at that backend URL, then
+   deploy the frontend: `vercel --prod`.
+3. On first prod boot the backend creates one admin (from `ADMIN_EMAIL`/
+   `ADMIN_PASSWORD`, or a generated password printed once to the logs).
 
 ### For Dealership Admin
 1. Go to `omnidrive.co.ke/login`
@@ -190,7 +271,7 @@ Japan 🇯🇵 | USA 🇺🇸 | Germany 🇩🇪 | UK 🇬🇧 | Italy 🇮🇹 
 
 ---
 
-## 🛠️ Recent Improvements (May 2026)
+## Recent Improvements (May 2026)
 
 - **Multi-Dealership Support**: Added DEALERSHIPS.md with complete architecture documentation
 - **Styling**: Restored the original `styles.css` and integrated feedback system styling
@@ -199,17 +280,17 @@ Japan 🇯🇵 | USA 🇺🇸 | Germany 🇩🇪 | UK 🇬🇧 | Italy 🇮🇹 
 - **Feedback System**: Added comprehensive feedback system with star ratings
 - **User Role Handling**: Enhanced routing for admin, dealer, liaison, and client users
 - **Accessibility**: Implemented skip navigation link and improved ARIA labels
-- **SEO**: Added XML sitemap and Netlify deployment support
+- **SEO**: Added XML sitemap and Vercel deployment support
 
 ---
 
-## 🌐 Domain
+## Domain
 
 **OmniDrive.co.ke** — Connecting you to the drive of your choice.
 
 ---
 
-## 📞 Support
+## Support
 
 - **Email**: info@omnidrive.co.ke
 - **Phone**: +254 700 000 000

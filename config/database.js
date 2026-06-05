@@ -1,82 +1,36 @@
 const logger = require('../config/logger');
 
 /**
- * Initialize database indexes for optimal query performance
+ * Initialize database indexes for optimal query performance.
+ *
+ * Core indexes are created with the schema in config/db.js. This adds a few extra
+ * ones defensively — each runs in isolation so a single failure can never abort
+ * server boot (node:sqlite throws synchronously on a bad statement).
  */
 function initializeIndexes(db) {
-    try {
-        // Listings table indexes
-        db.exec(`
-            CREATE INDEX IF NOT EXISTS idx_listings_brand ON listings(brand);
-            CREATE INDEX IF NOT EXISTS idx_listings_category ON listings(category);
-            CREATE INDEX IF NOT EXISTS idx_listings_nation ON listings(nation);
-            CREATE INDEX IF NOT EXISTS idx_listings_city ON listings(city);
-            CREATE INDEX IF NOT EXISTS idx_listings_price ON listings(price);
-            CREATE INDEX IF NOT EXISTS idx_listings_rating ON listings(rating);
-            CREATE INDEX IF NOT EXISTS idx_listings_isActive ON listings(isActive);
-            CREATE INDEX IF NOT EXISTS idx_listings_createdAt ON listings(createdAt);
-            CREATE INDEX IF NOT EXISTS idx_listings_composite ON listings(isActive, createdAt);
-        `);
-
-        // Orders table indexes
-        db.exec(`
-            CREATE INDEX IF NOT EXISTS idx_orders_checkout_id ON orders(checkout_id);
-            CREATE INDEX IF NOT EXISTS idx_orders_phone ON orders(phone);
-            CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
-            CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at);
-            CREATE INDEX IF NOT EXISTS idx_orders_customer_email ON orders(customer_email);
-            CREATE INDEX IF NOT EXISTS idx_orders_composite ON orders(status, created_at);
-        `);
-
-        // Dealer applications indexes
-        db.exec(`
-            CREATE INDEX IF NOT EXISTS idx_dealers_email ON dealer_applications(email);
-            CREATE INDEX IF NOT EXISTS idx_dealers_status ON dealer_applications(status);
-            CREATE INDEX IF NOT EXISTS idx_dealers_created_at ON dealer_applications(created_at);
-            CREATE INDEX IF NOT EXISTS idx_dealers_composite ON dealer_applications(status, created_at);
-        `);
-
-        // Pending listings indexes
-        db.exec(`
-            CREATE INDEX IF NOT EXISTS idx_pending_brand ON pending_listings(brand);
-            CREATE INDEX IF NOT EXISTS idx_pending_status ON pending_listings(status);
-            CREATE INDEX IF NOT EXISTS idx_pending_created_at ON pending_listings(created_at);
-            CREATE INDEX IF NOT EXISTS idx_pending_seller_email ON pending_listings(seller_email);
-            CREATE INDEX IF NOT EXISTS idx_pending_composite ON pending_listings(status, created_at);
-        `);
-
-        // Chat indexes
-        db.exec(`
-            CREATE INDEX IF NOT EXISTS idx_chat_messages_room ON chat_messages(room_id);
-            CREATE INDEX IF NOT EXISTS idx_chat_messages_sender ON chat_messages(sender_id);
-            CREATE INDEX IF NOT EXISTS idx_chat_messages_created ON chat_messages(created_at);
-            CREATE INDEX IF NOT EXISTS idx_chat_room_members_room ON chat_room_members(room_id);
-            CREATE INDEX IF NOT EXISTS idx_chat_room_members_user ON chat_room_members(user_id);
-            CREATE INDEX IF NOT EXISTS idx_chat_reads_room ON chat_reads(room_id);
-            CREATE INDEX IF NOT EXISTS idx_chat_reads_user ON chat_reads(user_id);
-        `);
-
-        logger.info('Database indexes initialized successfully');
-    } catch (error) {
-        logger.error('Failed to initialize database indexes', { error: error.message });
-        throw error;
+    const extra = [
+        'CREATE INDEX IF NOT EXISTS idx_listings_city ON listings(city)',
+        'CREATE INDEX IF NOT EXISTS idx_listings_price ON listings(price)',
+        'CREATE INDEX IF NOT EXISTS idx_orders_phone ON orders(phone)',
+        'CREATE INDEX IF NOT EXISTS idx_dealers_email ON dealer_applications(email)',
+        'CREATE INDEX IF NOT EXISTS idx_pending_seller ON pending_listings(seller_email)',
+        'CREATE INDEX IF NOT EXISTS idx_chat_members_user ON chat_room_members(user_id)',
+    ];
+    let ok = 0;
+    for (const sql of extra) {
+        try { db.exec(sql); ok++; } catch (e) { logger.warn('Index skipped', { sql, error: e.message }); }
     }
+    logger.info('Database indexes initialized', { applied: ok, total: extra.length });
 }
 
 /**
- * Enable query optimization settings
+ * Enable query optimization settings. Uses db.exec (node:sqlite has no .pragma()).
  */
 function optimizeDatabase(db) {
     try {
-        // Enable WAL (Write-Ahead Logging) mode for better concurrency
-        db.pragma('journal_mode = WAL');
-        
-        // Increase cache size
-        db.pragma('cache_size = -64000'); // 64MB
-        
-        // Enable foreign keys
-        db.pragma('foreign_keys = ON');
-        
+        db.exec('PRAGMA journal_mode = WAL');
+        db.exec('PRAGMA cache_size = -64000'); // 64MB
+        db.exec('PRAGMA foreign_keys = ON');
         logger.info('Database optimization applied');
     } catch (error) {
         logger.error('Failed to optimize database', { error: error.message });

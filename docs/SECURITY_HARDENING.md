@@ -1,19 +1,19 @@
 # OmniDrive Security Hardening Guide - Phase 1
 
-## 🔐 Security Improvements Implemented
+## Security Improvements Implemented
 
 ### 1. Input Validation (Zod)
 All API inputs are validated against strict schemas:
 
 ```javascript
-// ✅ BEFORE: No validation
+// BEFORE: No validation
 app.post('/api/mpesa/purchase', (req, res) => {
     const { phone, amount } = req.body;
     // Could accept anything!
 });
 
-// ✅ AFTER: Zod validation
-app.post('/api/mpesa/purchase', 
+// AFTER: Zod validation
+app.post('/api/mpesa/purchase',
     validateBody(mpesaPurchaseSchema),
     asyncHandler((req, res) => {
         const { phone, amount } = req.validated; // Guaranteed safe
@@ -33,14 +33,14 @@ app.post('/api/mpesa/purchase',
 - All errors logged securely
 
 ```javascript
-// ✅ Production error response (no stack trace)
+// Production error response (no stack trace)
 {
   "success": false,
   "error": "An error occurred processing your request",
   "timestamp": "2024-04-23T15:30:45.123Z"
 }
 
-// ✅ Development error response (with details)
+// Development error response (with details)
 {
   "success": false,
   "error": "ENOENT: no such file or directory",
@@ -55,20 +55,20 @@ app.post('/api/mpesa/purchase',
 - **Database Indexes**: Added on all frequently queried columns
 
 ```javascript
-// ✅ SAFE: Uses parameterized query
+// SAFE: Uses parameterized query
 db.prepare('SELECT * FROM listings WHERE brand = ? AND price > ?')
     .all(userInput, priceLimit);
 
-// ❌ DANGEROUS: String interpolation (would be vulnerable to injection)
+// DANGEROUS: String interpolation (would be vulnerable to injection)
 // db.prepare(`SELECT * FROM listings WHERE brand = '${userInput}'`)
 ```
 
 ### 4. Request Logging
 All requests logged with:
-- ✅ Method, path, status code
-- ✅ Response time
-- ✅ User IP address
-- ✅ Admin actions tracked separately
+- Method, path, status code
+- Response time
+- User IP address
+- Admin actions tracked separately
 
 ```json
 {
@@ -90,8 +90,8 @@ Protected endpoints have strict rate limits:
 const mpesaLimiter = rateLimit({
     windowMs: 60000,      // 1 minute window
     max: 5,               // 5 requests per minute per IP
-    message: { 
-        error: 'Too many requests, please try again later.' 
+    message: {
+        error: 'Too many requests, please try again later.'
     }
 });
 
@@ -111,11 +111,11 @@ const apiLimiter = rateLimit({
 All admin endpoints require X-Admin-Key header:
 
 ```bash
-# ✅ CORRECT: Include admin key
+# CORRECT: Include admin key
 curl -X GET http://localhost:3000/api/admin/stats \
   -H "x-admin-key: your-secure-admin-key"
 
-# ❌ WRONG: No key or wrong key
+# WRONG: No key or wrong key
 curl -X GET http://localhost:3000/api/admin/stats
 # Response: 401 Unauthorized
 ```
@@ -139,10 +139,10 @@ captureMessage('Payment alert', 'warning', { orderId: '123' });
 ```
 
 **Sentry Benefits:**
-- ✅ Real-time error notifications
-- ✅ Error grouping and trending
-- ✅ Performance monitoring
-- ✅ Release tracking
+- Real-time error notifications
+- Error grouping and trending
+- Performance monitoring
+- Release tracking
 
 ### 8. Response Normalization
 All API responses follow standard format:
@@ -159,10 +159,10 @@ All API responses follow standard format:
 
 This prevents accidental information leakage from inconsistent response formats.
 
-## 🛡️ Security Best Practices
+## Security Best Practices
 
 ### 1. Environment Variables
-✅ DO:
+DO:
 ```env
 # .env (never committed to git)
 ADMIN_KEY=kj8#$@!mP9xL2qR&vWt4nD6s5H3G1F0b
@@ -170,27 +170,27 @@ SMTP_PASS=app-specific-password
 MPESA_CONSUMER_SECRET=secret-key-from-safaricom
 ```
 
-❌ DON'T:
+DON'T:
 ```javascript
-// ❌ NEVER hardcode secrets
+// NEVER hardcode secrets
 const ADMIN_KEY = 'my-admin-key';
 const API_SECRET = 'secret123';
 ```
 
 ### 2. CORS Configuration
-✅ Configured in .env:
+Configured in .env:
 ```env
 CORS_ORIGIN=http://localhost:3000,https://omnidrive.co.ke
 ```
 
-❌ Open CORS invites attacks:
+Open CORS invites attacks:
 ```javascript
-// ❌ DANGEROUS
+// DANGEROUS
 app.use(cors()); // Allows all origins!
 ```
 
 ### 3. Helmet Security Headers
-✅ Enabled in improved server:
+Enabled in improved server:
 ```javascript
 app.use(helmet({
     contentSecurityPolicy: false // Disabled only if needed for specific use case
@@ -204,7 +204,7 @@ This adds headers like:
 - `Strict-Transport-Security: max-age=31536000`
 
 ### 4. Password/Secret Handling
-✅ Secure:
+Secure:
 ```bash
 # Use environment variables
 MPESA_PASSKEY=safaricom-passkey
@@ -214,13 +214,13 @@ const timestamp = new Date().toISOString().replace(/[-T:.Z]/g, '').slice(0, 14);
 const password = Buffer.from(`${shortcode}${passkey}${timestamp}`).toString('base64');
 ```
 
-❌ Insecure:
+Insecure:
 ```javascript
-// ❌ Reusing same password
+// Reusing same password
 const password = Buffer.from(`${shortcode}${passkey}`).toString('base64');
 ```
 
-## 📋 Security Checklist
+## Security Checklist
 
 - [ ] All environment variables in `.env` (not in code)
 - [ ] `.env` added to `.gitignore`
@@ -235,7 +235,7 @@ const password = Buffer.from(`${shortcode}${passkey}`).toString('base64');
 - [ ] Helmet security headers enabled
 - [ ] Input validation active on all routes
 
-## 🔄 Database Migration (Future)
+## Database Migration (Future)
 
 After Phase 1 stabilizes, migrate from SQLite to PostgreSQL:
 
@@ -252,13 +252,13 @@ DATABASE_URL=postgresql://user:password@localhost:5432/omnidrive_prod
 ```
 
 Benefits:
-- ✅ Better concurrency (multiple writers)
-- ✅ ACID compliance
-- ✅ Built-in replication and backups
-- ✅ Row-level security policies
-- ✅ Full-text search capabilities
+- Better concurrency (multiple writers)
+- ACID compliance
+- Built-in replication and backups
+- Row-level security policies
+- Full-text search capabilities
 
-## 🚨 Emergency Procedures
+## Emergency Procedures
 
 ### If Admin Key Compromised
 ```bash
@@ -301,14 +301,14 @@ const emergencyLimiter = rateLimit({
 app.use(emergencyLimiter);
 ```
 
-## 🔗 Security Resources
+## Security Resources
 
 - OWASP Top 10: https://owasp.org/www-project-top-ten/
 - Node.js Security Checklist: https://nodejs.org/en/docs/guides/security/
 - Express Security Best Practices: https://expressjs.com/en/advanced/best-practice-security.html
 - Sentry Documentation: https://docs.sentry.io/
 
-## 📊 Security Monitoring
+## Security Monitoring
 
 Monitor these metrics:
 1. **Failed validations**: Check logs for pattern of invalid inputs

@@ -3,11 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 
 const HERO_CATEGORIES = [
-  { label: 'Cars', icon: '🚗', query: 'Car' },
-  { label: 'Bikes', icon: '🏍️', query: 'Bike' },
-  { label: 'Trucks', icon: '🚛', query: 'Truck' },
-  { label: 'Buses', icon: '🚌', query: 'Bus' },
-  { label: 'Vans', icon: '🚐', query: 'Van' },
+  { label: 'Cars', icon: '', query: 'Car' },
+  { label: 'Bikes', icon: '', query: 'Bike' },
+  { label: 'Trucks', icon: '', query: 'Truck' },
+  { label: 'Buses', icon: '', query: 'Bus' },
+  { label: 'Vans', icon: '', query: 'Van' },
 ];
 
 const NATIONS = ['Japan', 'Germany', 'USA', 'UK', 'South Korea', 'China', 'Kenya'];
@@ -20,19 +20,19 @@ const HOW_IT_WORKS = [
 ];
 
 const PAYMENT_METHODS = [
-  { name: 'MPesa', color: 'bg-green-500/10 border-green-500/30 text-green-400', icon: '📱' },
-  { name: 'Visa', color: 'bg-blue-500/10 border-blue-500/30 text-blue-400', icon: '💳' },
-  { name: 'Mastercard', color: 'bg-orange-500/10 border-orange-500/30 text-orange-400', icon: '💳' },
-  { name: 'Bank Transfer', color: 'bg-purple-500/10 border-purple-500/30 text-purple-400', icon: '🏦' },
+  { name: 'MPesa', color: 'bg-green-500/10 border-green-500/30 text-green-400', icon: '' },
+  { name: 'Visa', color: 'bg-blue-500/10 border-blue-500/30 text-blue-400', icon: '' },
+  { name: 'Mastercard', color: 'bg-orange-500/10 border-orange-500/30 text-orange-400', icon: '' },
+  { name: 'Bank Transfer', color: 'bg-purple-500/10 border-purple-500/30 text-purple-400', icon: '' },
 ];
 
 const FEATURES = [
-  { icon: '🌍', title: 'Global Inventory', desc: 'Vehicles from Japan, Germany, USA, UK, Korea, China and more — all in one place.' },
-  { icon: '💳', title: 'Local Payments', desc: 'Pay with MPesa, card or bank transfer. No forex headaches — prices shown in KES.' },
-  { icon: '🔐', title: 'Verified Dealers', desc: 'Every dealer is vetted. Vehicle history, condition reports and real photos.' },
-  { icon: '📦', title: 'End-to-End Service', desc: 'Import duty calculator, shipping logistics, VIN checks and order tracking.' },
-  { icon: '⚡', title: 'Instant STK Push', desc: 'Complete payment in seconds from your phone. No branches, no queues.' },
-  { icon: '📱', title: 'Works Everywhere', desc: 'Full PWA support — browse and save vehicles even when offline.' },
+  { icon: '', title: 'Global Inventory', desc: 'Vehicles from Japan, Germany, USA, UK, Korea, China and more — all in one place.' },
+  { icon: '', title: 'Local Payments', desc: 'Pay with MPesa, card or bank transfer. No forex headaches — prices shown in KES.' },
+  { icon: '', title: 'Verified Dealers', desc: 'Every dealer is vetted. Vehicle history, condition reports and real photos.' },
+  { icon: '', title: 'End-to-End Service', desc: 'Import duty calculator, shipping logistics, VIN checks and order tracking.' },
+  { icon: '', title: 'Instant STK Push', desc: 'Complete payment in seconds from your phone. No branches, no queues.' },
+  { icon: '', title: 'Works Everywhere', desc: 'Full PWA support — browse and save vehicles even when offline.' },
 ];
 
 function StatBlock({ value, label }) {
@@ -245,7 +245,7 @@ export default function HomePage() {
           <div className="card p-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 rounded-full bg-green-500/10 border border-green-500/30 flex items-center justify-center">
-                <span className="text-2xl">📱</span>
+                <span className="text-2xl"></span>
               </div>
               <div>
                 <h3 className="text-white font-bold">MPesa Payment</h3>
@@ -287,10 +287,10 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
-              { icon: '🛒', role: 'Client', color: 'border-blue-500/30 hover:border-blue-500/60', pill: 'text-blue-400 bg-blue-500/10', desc: 'Browse global inventory, save favourites, pay via MPesa, track orders.' },
-              { icon: '🏢', role: 'Dealer', color: 'border-green-500/30 hover:border-green-500/60', pill: 'text-green-400 bg-green-500/10', desc: 'List inventory, manage orders, track revenue, connect with buyers.' },
-              { icon: '🔧', role: 'Liaison', color: 'border-orange-500/30 hover:border-orange-500/60', pill: 'text-orange-400 bg-orange-500/10', desc: 'Coordinate deals, manage leads, earn commissions on closed sales.' },
-              { icon: '⚡', role: 'Admin', color: 'border-red-500/30 hover:border-red-500/60', pill: 'text-red-400 bg-red-500/10', desc: 'Full platform control — users, listings, orders, analytics, settings.' },
+              { icon: '', role: 'Client', color: 'border-blue-500/30 hover:border-blue-500/60', pill: 'text-blue-400 bg-blue-500/10', desc: 'Browse global inventory, save favourites, pay via MPesa, track orders.' },
+              { icon: '', role: 'Dealer', color: 'border-green-500/30 hover:border-green-500/60', pill: 'text-green-400 bg-green-500/10', desc: 'List inventory, manage orders, track revenue, connect with buyers.' },
+              { icon: '', role: 'Liaison', color: 'border-orange-500/30 hover:border-orange-500/60', pill: 'text-orange-400 bg-orange-500/10', desc: 'Coordinate deals, manage leads, earn commissions on closed sales.' },
+              { icon: '', role: 'Admin', color: 'border-red-500/30 hover:border-red-500/60', pill: 'text-red-400 bg-red-500/10', desc: 'Full platform control — users, listings, orders, analytics, settings.' },
             ].map(r => (
               <div key={r.role} className={`card p-6 border-2 transition-all ${r.color}`}>
                 <div className="text-4xl mb-4">{r.icon}</div>

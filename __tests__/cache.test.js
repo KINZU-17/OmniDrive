@@ -15,7 +15,7 @@ describe('Redis Caching System', () => {
             const pong = await redis.ping();
             redisAvailable = pong === 'PONG';
         } catch (error) {
-            console.log('⚠️  Redis not available - cache tests will be skipped');
+            console.log(' Redis not available - cache tests will be skipped');
             redisAvailable = false;
         }
     });

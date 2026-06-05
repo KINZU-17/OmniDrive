@@ -1,7 +1,7 @@
 /**
  * OmniDrive Backend Server
  * Kenya's Premier Online Vehicle Marketplace
- * 
+ *
  * Integrated infrastructure:
  * - Winston structured logging
  * - Zod input validation
@@ -16,7 +16,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
-const Database = require('better-sqlite3');
+const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -24,7 +24,15 @@ const webpush = require('web-push');
 const multer = require('multer');
 const swaggerUi = require('swagger-ui-express');
 const http = require('http');
-const crypto = require('crypto');
+
+// Database (node:sqlite — schema, migrations & seed live in config/db.js)
+const { db } = require('./config/db');
+
+// Auth (JWT) — replaces the old spoofable header/admin-key scheme
+const { signToken, authenticate, optionalAuth, requireRole } = require('./middleware/auth');
+
+// SMS (provider-agnostic) — used for phone OTP login
+const { sendSms } = require('./services/sms');
 
 // Config imports
 const logger = require('./config/logger');
@@ -64,12 +72,13 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
-// Serve React build in production; fall back to project root in dev
+// Serve the built React app. `index: 'index.html'` serves the SPA at '/';
+// Express static never lists directories, so there is no directory-listing leak.
 const reactBuildPath = path.join(__dirname, 'web', 'dist');
-app.use(express.static(reactBuildPath));
-// Serve vehicle images and other public assets
-app.use('/assets', express.static(path.join(__dirname, 'public', 'assets')));
-app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use(express.static(reactBuildPath, { index: 'index.html' }));
+// Serve vehicle images and other public assets (no directory index).
+app.use('/assets', express.static(path.join(__dirname, 'public', 'assets'), { index: false, redirect: false }));
+app.use('/public', express.static(path.join(__dirname, 'public'), { index: false, redirect: false }));
 
 // Request logging and response normalization
 app.use(requestLogger);
@@ -98,197 +107,27 @@ const apiLimiter = rateLimit({
     legacyHeaders: false,
 });
 
+// Tighter limit for OTP request/verify to deter brute force and SMS abuse.
+const otpLimiter = rateLimit({
+    windowMs: 60000,
+    max: 5,
+    message: { success: false, error: 'Too many code requests, please wait a minute.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
 // ─── DATABASE INITIALIZATION ───────────────────────────────────────────────
-const dbPath = process.env.DB_PATH || 'omnidrive.db';
-const db = new Database(dbPath);
+// Connection, schema, migrations and first-run seed are all handled in
+// ./config/db.js (node:sqlite). Here we just apply runtime tuning + extra indexes.
+const dbPath = process.env.DB_PATH || path.join(__dirname, 'omnidrive.db');
+logger.info('Database ready', { path: dbPath });
 
-logger.info('Initializing database', { path: dbPath });
-
-// Enable database optimizations
 optimizeDatabase(db);
-
-// Create tables
-db.exec(`
-    -- Platform users (auth)
-    CREATE TABLE IF NOT EXISTS users (
-        id         INTEGER PRIMARY KEY AUTOINCREMENT,
-        name       TEXT NOT NULL,
-        email      TEXT UNIQUE NOT NULL,
-        password   TEXT NOT NULL,
-        salt       TEXT NOT NULL,
-        role       TEXT DEFAULT 'client',
-        phone      TEXT DEFAULT '',
-        created_at TEXT DEFAULT (datetime('now'))
-    );
-
-    -- Active vehicle listings (publicly visible)
-    CREATE TABLE IF NOT EXISTS listings (
-        id               INTEGER PRIMARY KEY AUTOINCREMENT,
-        brand            TEXT NOT NULL,
-        model            TEXT NOT NULL,
-        price            REAL NOT NULL,
-        nation           TEXT NOT NULL,
-        category         TEXT DEFAULT 'Car',
-        condition        TEXT DEFAULT 'Used',
-        body_style       TEXT,
-        fuel_type        TEXT,
-        drivetrain       TEXT,
-        color            TEXT,
-        city             TEXT DEFAULT 'Nairobi',
-        image            TEXT,
-        badges           TEXT DEFAULT '[]',
-        specs            TEXT DEFAULT '{}',
-        rating           REAL DEFAULT 4.5,
-        reviewCount      INTEGER DEFAULT 0,
-        createdAt        DATETIME DEFAULT CURRENT_TIMESTAMP,
-        isActive         BOOLEAN DEFAULT 1
-    );
-
-    -- Orders / Transactions
-    CREATE TABLE IF NOT EXISTS orders (
-        id               INTEGER PRIMARY KEY AUTOINCREMENT,
-        checkout_id      TEXT UNIQUE,
-        merchant_id      TEXT,
-        phone            TEXT,
-        amount           REAL,
-        vehicle_id       TEXT,
-        vehicle_name     TEXT,
-        status           TEXT DEFAULT 'pending',
-        receipt          TEXT,
-        customer_email   TEXT,
-        created_at       TEXT DEFAULT (datetime('now')),
-        updated_at       TEXT DEFAULT (datetime('now'))
-    );
-
-    -- Dealer applications
-    CREATE TABLE IF NOT EXISTS dealer_applications (
-        id          INTEGER PRIMARY KEY AUTOINCREMENT,
-        name        TEXT,
-        owner       TEXT,
-        phone       TEXT,
-        email       TEXT,
-        city        TEXT,
-        address     TEXT,
-        types       TEXT,
-        plan        TEXT,
-        about       TEXT,
-        payment     TEXT,
-        status      TEXT DEFAULT 'pending',
-        created_at  TEXT DEFAULT (datetime('now'))
-    );
-
-    -- Pending listings
-    CREATE TABLE IF NOT EXISTS pending_listings (
-        id          INTEGER PRIMARY KEY AUTOINCREMENT,
-        listing_id  TEXT UNIQUE,
-        brand       TEXT,
-        model       TEXT,
-        price       REAL,
-        year        INTEGER,
-        category    TEXT,
-        condition   TEXT,
-        mileage     INTEGER,
-        fuel        TEXT,
-        city        TEXT,
-        description TEXT,
-        img         TEXT,
-        seller_name  TEXT,
-        seller_phone TEXT,
-        seller_email TEXT,
-        status      TEXT DEFAULT 'pending',
-        created_at  TEXT DEFAULT (datetime('now'))
-    );
-
-    -- Chat system
-    CREATE TABLE IF NOT EXISTS chat_users (
-        id         INTEGER PRIMARY KEY AUTOINCREMENT,
-        name       TEXT NOT NULL,
-        email      TEXT UNIQUE NOT NULL,
-        role       TEXT DEFAULT 'client',
-        avatar     TEXT DEFAULT '',
-        status     TEXT DEFAULT 'offline',
-        lastSeen   TEXT DEFAULT (datetime('now')),
-        created_at TEXT DEFAULT (datetime('now'))
-    );
-
-    CREATE TABLE IF NOT EXISTS chat_rooms (
-        id          INTEGER PRIMARY KEY AUTOINCREMENT,
-        name        TEXT NOT NULL,
-        description TEXT DEFAULT '',
-        isPublic    BOOLEAN DEFAULT 1,
-        createdBy   TEXT DEFAULT '',
-        type        TEXT DEFAULT 'group',
-        createdAt   TEXT DEFAULT (datetime('now'))
-    );
-
-    CREATE TABLE IF NOT EXISTS chat_room_members (
-        room_id  INTEGER,
-        user_id  TEXT,
-        joinedAt TEXT DEFAULT (datetime('now')),
-        PRIMARY KEY (room_id, user_id)
-    );
-
-    CREATE TABLE IF NOT EXISTS chat_messages (
-        id        INTEGER PRIMARY KEY AUTOINCREMENT,
-        room_id   INTEGER NOT NULL,
-        senderId  TEXT NOT NULL,
-        content   TEXT NOT NULL,
-        createdAt TEXT DEFAULT (datetime('now'))
-    );
-
-    CREATE TABLE IF NOT EXISTS chat_reads (
-        message_id INTEGER,
-        user_id    TEXT,
-        PRIMARY KEY (message_id, user_id)
-    );
-
-    CREATE TABLE IF NOT EXISTS chat_presence (
-        user_id  TEXT PRIMARY KEY,
-        lastSeen TEXT DEFAULT (datetime('now'))
-    );
-
-    CREATE TABLE IF NOT EXISTS push_subscriptions (
-        id         INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id    INTEGER,
-        endpoint   TEXT UNIQUE,
-        p256dh     TEXT,
-        auth       TEXT
-    );
-
-    CREATE TABLE IF NOT EXISTS msg_read_receipts (
-        msg_id     INTEGER,
-        user_id    INTEGER,
-        read_at    TEXT DEFAULT (datetime('now')),
-        PRIMARY KEY (msg_id, user_id)
-    );
-
-    CREATE TABLE IF NOT EXISTS push_tokens (
-        id         INTEGER PRIMARY KEY AUTOINCREMENT,
-        token      TEXT UNIQUE,
-        user_email TEXT,
-        created_at TEXT DEFAULT (datetime('now'))
-    );
-`);
-
-const safeAlter = (sql) => { try { db.prepare(sql).run(); } catch {} };
-safeAlter('ALTER TABLE listings ADD COLUMN dealer_email TEXT DEFAULT ""');
-safeAlter('ALTER TABLE orders ADD COLUMN dealer_email TEXT DEFAULT ""');
-safeAlter('ALTER TABLE orders ADD COLUMN liaison_email TEXT DEFAULT ""');
-safeAlter('ALTER TABLE chat_users ADD COLUMN status TEXT DEFAULT "offline"');
-safeAlter('ALTER TABLE chat_users ADD COLUMN lastSeen TEXT DEFAULT (datetime("now"))');
-safeAlter('ALTER TABLE chat_rooms ADD COLUMN description TEXT DEFAULT ""');
-safeAlter('ALTER TABLE chat_rooms ADD COLUMN isPublic BOOLEAN DEFAULT 1');
-safeAlter('ALTER TABLE chat_rooms ADD COLUMN createdBy TEXT DEFAULT ""');
-safeAlter('ALTER TABLE chat_rooms ADD COLUMN createdAt TEXT DEFAULT (datetime("now"))');
-safeAlter('ALTER TABLE chat_room_members ADD COLUMN joinedAt TEXT DEFAULT (datetime("now"))');
-
-// Initialize database indexes
 try {
     initializeIndexes(db);
     logger.info('Database initialized successfully');
 } catch (error) {
-    logger.error('Database initialization failed', { error: error.message });
-    process.exit(1);
+    logger.error('Index initialization issue (continuing)', { error: error.message });
 }
 
 // ─── EMAIL CONFIGURATION ───────────────────────────────────────────────────
@@ -308,10 +147,10 @@ async function sendConfirmationEmail(order) {
         await mailer.sendMail({
             from: `"OmniDrive" <${process.env.SMTP_USER}>`,
             to: order.customer_email,
-            subject: `✅ Payment Confirmed – ${order.vehicle_name}`,
+            subject: `Payment Confirmed – ${order.vehicle_name}`,
             html: `
                 <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:30px;border:1px solid #eee;border-radius:10px">
-                    <h2 style="color:#e47911">🚗 OmniDrive – Payment Confirmed!</h2>
+                    <h2 style="color:#e47911">OmniDrive – Payment Confirmed!</h2>
                     <p>Thank you for your purchase. Here are your order details:</p>
                     <table style="width:100%;border-collapse:collapse">
                         <tr><td style="padding:8px;border-bottom:1px solid #eee"><strong>Vehicle</strong></td><td style="padding:8px;border-bottom:1px solid #eee">${order.vehicle_name}</td></tr>
@@ -371,66 +210,161 @@ let MPESA_AVAILABLE = false;
     }
 })();
 
-// Admin authentication middleware
-function adminAuth(req, res, next) {
-    const key = req.headers['x-admin-key'];
-    if (!process.env.ADMIN_KEY || key !== process.env.ADMIN_KEY) {
-        logger.warn('Unauthorized admin access attempt', { ip: req.ip });
-        return res.status(401).json({ success: false, error: 'Unauthorized' });
-    }
-    next();
-}
+// Admin guard: a verified JWT whose role is "admin". Usable as a middleware
+// array on any route, e.g. app.post('/x', adminAuth, handler).
+const adminAuth = [authenticate, requireRole('admin')];
 
 // ─── AUTH ENDPOINTS ─────────────────────────────────────────────────────────
+// Passwords are bcrypt hashes. On success we issue a signed JWT the client sends
+// back as `Authorization: Bearer <token>` — roles can no longer be spoofed.
 
-function hashPassword(password, salt) {
-    return crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
-}
+const BCRYPT_ROUNDS = 12;
 
 app.post('/api/auth/register', apiLimiter, asyncHandler(async (req, res) => {
-    const { name, email, password, role = 'client', phone = '', adminKey } = req.body;
+    const { name, email, password, role = 'client', phone = '' } = req.body;
     if (!name || !email || !password) {
         return res.status(400).json({ success: false, message: 'Name, email and password are required' });
     }
-    if (password.length < 6) {
+    if (String(password).length < 6) {
         return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
     }
-    const allowedRoles = ['client', 'dealer', 'liaison', 'admin'];
+    // Self-registration cannot create platform admins — they are provisioned/seeded.
+    const allowedRoles = ['client', 'dealer', 'liaison'];
     const safeRole = allowedRoles.includes(role) ? role : 'client';
-    if (safeRole === 'admin' && adminKey !== process.env.ADMIN_KEY) {
-        return res.status(403).json({ success: false, message: 'Invalid admin key' });
-    }
+
     const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email.toLowerCase());
     if (existing) {
         return res.status(409).json({ success: false, message: 'Email already registered' });
     }
-    const salt = crypto.randomBytes(16).toString('hex');
-    const hashed = hashPassword(password, salt);
+    const password_hash = bcrypt.hashSync(String(password), BCRYPT_ROUNDS);
     const result = db.prepare(
-        'INSERT INTO users (name, email, password, salt, role, phone) VALUES (?, ?, ?, ?, ?, ?)'
-    ).run(name.trim(), email.toLowerCase(), hashed, salt, safeRole, phone);
-    const user = { id: result.lastInsertRowid, name: name.trim(), email: email.toLowerCase(), role: safeRole, phone };
-    return res.status(201).json({ success: true, user });
+        'INSERT INTO users (name, email, password_hash, role, phone) VALUES (?, ?, ?, ?, ?)'
+    ).run(name.trim(), email.toLowerCase(), password_hash, safeRole, phone || '');
+
+    const user = {
+        id: Number(result.lastInsertRowid),
+        name: name.trim(),
+        email: email.toLowerCase(),
+        role: safeRole,
+        phone: phone || '',
+        dealership_id: null,
+    };
+    const token = signToken(user);
+    return res.status(201).json({ success: true, user, token });
 }));
 
 app.post('/api/auth/login', apiLimiter, asyncHandler(async (req, res) => {
-    const { email, password, adminKey } = req.body;
+    const { email, password } = req.body;
     if (!email || !password) {
         return res.status(400).json({ success: false, message: 'Email and password are required' });
     }
     const row = db.prepare('SELECT * FROM users WHERE email = ?').get(email.toLowerCase());
-    if (!row) {
+    if (!row || !bcrypt.compareSync(String(password), row.password_hash)) {
         return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
-    const hashed = hashPassword(password, row.salt);
-    if (hashed !== row.password) {
-        return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    const user = {
+        id: row.id,
+        name: row.name,
+        email: row.email,
+        role: row.role,
+        phone: row.phone,
+        dealership_id: row.dealership_id ?? null,
+    };
+    const token = signToken(user);
+    return res.json({ success: true, user, token });
+}));
+
+// Return the current user from a valid token (lets the SPA restore session).
+app.get('/api/auth/me', authenticate, (req, res) => {
+    const row = db.prepare('SELECT id, name, email, role, phone, dealership_id FROM users WHERE id = ?')
+        .get(req.user.sub);
+    if (!row) return res.status(404).json({ success: false, message: 'User not found' });
+    return res.json({ success: true, user: row });
+});
+
+// ─── PASSWORDLESS / OTP LOGIN ────────────────────────────────────────────────
+// A user (typically an admin) requests a 6-digit code sent to their phone, then
+// exchanges it for a JWT. Codes are stored hashed with a short expiry. Password
+// login remains available as a fallback.
+
+const OTP_TTL_MS = 5 * 60 * 1000;
+
+// Find a user by email or by phone (compares the trailing 9 digits, so
+// "+254700000001", "0700000001" and "254700000001" all match).
+function findUserByIdentifier(identifier) {
+    const id = String(identifier).trim().toLowerCase();
+    let user = db.prepare('SELECT * FROM users WHERE lower(email) = ?').get(id);
+    if (user) return user;
+    const digits = id.replace(/\D/g, '');
+    if (digits.length >= 9) {
+        const tail = digits.slice(-9);
+        const rows = db.prepare("SELECT * FROM users WHERE phone IS NOT NULL AND phone != ''").all();
+        user = rows.find(r => r.phone.replace(/\D/g, '').endsWith(tail));
     }
-    if (row.role === 'admin' && adminKey !== process.env.ADMIN_KEY) {
-        return res.status(403).json({ success: false, message: 'Admin key required' });
+    return user || null;
+}
+
+/**
+ * POST /api/auth/otp/request  { identifier }   (identifier = phone or email)
+ * Always responds 200 with a neutral message (never reveals which accounts
+ * exist). When a provider isn't configured in dev, the code is returned as
+ * `devCode` to make local testing possible.
+ */
+app.post('/api/auth/otp/request', otpLimiter, asyncHandler(async (req, res) => {
+    const { identifier } = req.body || {};
+    if (!identifier) {
+        return res.status(400).json({ success: false, message: 'Phone number or email is required' });
     }
-    const user = { id: row.id, name: row.name, email: row.email, role: row.role, phone: row.phone };
-    return res.json({ success: true, user });
+    const id = String(identifier).trim().toLowerCase();
+    const user = findUserByIdentifier(id);
+
+    let devCode;
+    if (user) {
+        const code = String(Math.floor(100000 + Math.random() * 900000));
+        const code_hash = bcrypt.hashSync(code, 10);
+        const expires = new Date(Date.now() + OTP_TTL_MS).toISOString();
+        db.prepare('INSERT INTO otp_codes (identifier, user_id, code_hash, expires_at) VALUES (?, ?, ?, ?)')
+            .run(id, user.id, code_hash, expires);
+
+        const target = user.phone || user.email;
+        const result = await sendSms(target, `Your OmniDrive login code is ${code}. It expires in 5 minutes.`);
+        if (result.simulated && process.env.NODE_ENV !== 'production') devCode = code;
+        logger.info('OTP issued', { userId: user.id, simulated: result.simulated });
+    }
+
+    const body = { success: true, message: 'If an account matches, a login code has been sent.' };
+    if (devCode) body.devCode = devCode; // dev convenience only
+    return res.json(body);
+}));
+
+/**
+ * POST /api/auth/otp/verify  { identifier, code }  ->  { user, token }
+ */
+app.post('/api/auth/otp/verify', otpLimiter, asyncHandler(async (req, res) => {
+    const { identifier, code } = req.body || {};
+    if (!identifier || !code) {
+        return res.status(400).json({ success: false, message: 'Identifier and code are required' });
+    }
+    const id = String(identifier).trim().toLowerCase();
+    const row = db.prepare('SELECT * FROM otp_codes WHERE identifier = ? AND consumed = 0 ORDER BY id DESC LIMIT 1').get(id);
+    if (!row) return res.status(400).json({ success: false, message: 'No active code — request a new one' });
+    if (new Date(row.expires_at) < new Date()) {
+        return res.status(400).json({ success: false, message: 'Code expired — request a new one' });
+    }
+    if (row.attempts >= 5) {
+        return res.status(429).json({ success: false, message: 'Too many attempts — request a new code' });
+    }
+    if (!bcrypt.compareSync(String(code), row.code_hash)) {
+        db.prepare('UPDATE otp_codes SET attempts = attempts + 1 WHERE id = ?').run(row.id);
+        return res.status(401).json({ success: false, message: 'Invalid code' });
+    }
+    db.prepare('UPDATE otp_codes SET consumed = 1 WHERE id = ?').run(row.id);
+
+    const u = db.prepare('SELECT * FROM users WHERE id = ?').get(row.user_id);
+    if (!u) return res.status(401).json({ success: false, message: 'Account not found' });
+    const user = { id: u.id, name: u.name, email: u.email, role: u.role, phone: u.phone, dealership_id: u.dealership_id ?? null };
+    const token = signToken(user);
+    return res.json({ success: true, user, token });
 }));
 
 // ─── MPESA ENDPOINTS ────────────────────────────────────────────────────────
@@ -480,11 +414,11 @@ app.post('/api/mpesa/purchase',
                 return res.status(400).json({ success: false, error: stkData.ResponseDescription });
             }
 
-            // Save order to DB
+            // Save order to DB (amount stored as integer KES — no float drift)
             db.prepare(`
                 INSERT INTO orders (checkout_id, merchant_id, phone, amount, vehicle_id, vehicle_name, customer_email, status)
                 VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
-            `).run(stkData.CheckoutRequestID, stkData.MerchantRequestID, phone, amount, vehicleId || '', vehicleName || '', email || '');
+            `).run(stkData.CheckoutRequestID, stkData.MerchantRequestID, phone, Math.round(amount), vehicleId || '', vehicleName || '', email || '');
 
             logger.info('STK Push sent', {
                 phone,
@@ -524,7 +458,7 @@ app.post('/api/mpesa/callback', (req, res) => {
         db.prepare(`
             UPDATE orders SET status='paid', receipt=?, amount=?, updated_at=datetime('now')
             WHERE checkout_id=?
-        `).run(receipt, amount, CheckoutRequestID);
+        `).run(receipt, Math.round(Number(amount) || 0), CheckoutRequestID);
 
         // Send confirmation email
         const order = db.prepare('SELECT * FROM orders WHERE checkout_id=?').get(CheckoutRequestID);
@@ -627,24 +561,22 @@ app.post('/api/listings',
             INSERT INTO listings (
                 brand, model, price, nation, category, condition,
                 body_style, fuel_type, drivetrain, color, city,
-                image, badges, specs, rating
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                image, badges, specs, rating, dealer_email
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).run(
-            brand, model, price, nation, category, condition,
-            body_style, fuel_type, drivetrain, color, city,
+            brand, model, Math.round(price), nation, category, condition,
+            body_style ?? null, fuel_type ?? null, drivetrain ?? null, color ?? null, city ?? 'Nairobi',
             image || null,
             badges ? JSON.stringify(badges) : '[]',
             specs ? JSON.stringify(specs) : '{}',
-            rating || 4.5
+            rating || 4.5,
+            (req.user && req.user.email) || ''
         );
 
-        logger.info('Listing created', { id: result.lastInsertRowid, brand, model });
+        const id = Number(result.lastInsertRowid);
+        logger.info('Listing created', { id, brand, model, by: req.user && req.user.email });
 
-        return res.json({
-            success: true,
-            id: result.lastInsertRowid,
-            message: 'Listing created successfully'
-        });
+        return res.json({ success: true, id, message: 'Listing created successfully' });
     })
 );
 
@@ -670,14 +602,14 @@ app.put('/api/listings/:id',
                 rating = ?, isActive = ?
             WHERE id = ?
         `).run(
-            brand, model, price, nation, category, condition,
-            body_style, fuel_type, drivetrain, color, city,
+            brand, model, Math.round(price), nation, category, condition,
+            body_style ?? null, fuel_type ?? null, drivetrain ?? null, color ?? null, city ?? 'Nairobi',
             image || null,
             badges ? JSON.stringify(badges) : '[]',
             specs ? JSON.stringify(specs) : '{}',
             rating || 4.5,
             isActive !== undefined ? (isActive ? 1 : 0) : 1,
-            req.params.id
+            Number(req.params.id)
         );
 
         logger.info('Listing updated', { id: req.params.id });
@@ -701,13 +633,9 @@ app.delete('/api/listings/:id',
 
 // ─── ADMIN ENDPOINTS ────────────────────────────────────────────────────────
 
-// Admin key verification endpoint (used by admin.html)
-app.post('/api/admin/verify', (req, res) => {
-    const key = req.headers['x-admin-key'];
-    if (!process.env.ADMIN_KEY || key !== process.env.ADMIN_KEY) {
-        return res.status(401).json({ success: false, error: 'Invalid key' });
-    }
-    return res.json({ success: true });
+// Admin token verification endpoint — confirms the caller holds a valid admin JWT.
+app.post('/api/admin/verify', adminAuth, (req, res) => {
+    return res.json({ success: true, user: { email: req.user.email, role: req.user.role } });
 });
 
 /**
@@ -793,10 +721,10 @@ app.patch('/api/admin/dealers/:id',
             await mailer.sendMail({
                 from: `"OmniDrive" <${process.env.SMTP_USER}>`,
                 to: dealer.email,
-                subject: isApproved ? '🎉 Welcome to OmniDrive — Your Dealership is Live!' : 'OmniDrive Application Update',
+                subject: isApproved ? 'Welcome to OmniDrive — Your Dealership is Live!' : 'OmniDrive Application Update',
                 html: isApproved ? `
                     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:30px;border:1px solid #eee;border-radius:10px">
-                        <h2 style="color:#e47911">🚗 Welcome to OmniDrive, ${dealer.name}!</h2>
+                        <h2 style="color:#e47911">Welcome to OmniDrive, ${dealer.name}!</h2>
                         <p>Your dealership application has been <strong>approved</strong>. You are now a verified OmniDrive partner.</p>
                         <p>Visit <a href="https://omnidrive.co.ke">omnidrive.co.ke</a> to start listing your vehicles.</p>
                     </div>` : `
@@ -831,8 +759,8 @@ app.post('/api/listings/submit',
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).run(
             listing_id || ('PND' + Date.now()),
-            brand, model, price, year, category, condition,
-            mileage || 0, fuel, city || '', description || '', img || '',
+            brand, model, Math.round(price), year ?? null, category ?? null, condition ?? null,
+            mileage || 0, fuel ?? null, city || '', description || '', img || '',
             seller.name, seller.phone, seller.email || ''
         );
 
@@ -869,10 +797,10 @@ app.patch('/api/admin/listings/:id',
             await mailer.sendMail({
                 from: `"OmniDrive" <${process.env.SMTP_USER}>`,
                 to: listing.seller_email,
-                subject: status === 'approved' ? `✅ Your ${listing.brand} ${listing.model} is now live on OmniDrive!` : 'OmniDrive Listing Update',
+                subject: status === 'approved' ? `Your ${listing.brand} ${listing.model} is now live on OmniDrive!` : 'OmniDrive Listing Update',
                 html: status === 'approved' ? `
                     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:30px;border:1px solid #eee;border-radius:10px">
-                        <h2 style="color:#e47911">🚗 Your listing is live!</h2>
+                        <h2 style="color:#e47911">Your listing is live!</h2>
                         <p>Your <strong>${listing.brand} ${listing.model}</strong> is now visible to thousands of buyers.</p>
                     </div>` : `
                     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:30px">
@@ -891,7 +819,7 @@ app.patch('/api/admin/listings/:id',
 
 try {
     const chatRoutes = require('./routes/chatRoutes');
-    app.use('/api/chat', chatRoutes(db));
+    app.use('/api/chat', chatRoutes(db, authenticate));
     logger.info('Chat routes mounted');
 } catch (chatError) {
     logger.error('Failed to mount chat routes', { error: chatError.message });
@@ -936,7 +864,7 @@ app.get('/health', (_, res) => res.json({
 // Mount dashboard routes
 try {
     const dashboardRoutes = require('./routes/dashboardRoutes');
-    const router = dashboardRoutes(db);
+    const router = dashboardRoutes(db, authenticate);
     app.use('/api', router);
     logger.info('Dashboard routes mounted');
 } catch (routeError) {
@@ -994,13 +922,23 @@ if (inventorySync && queueManager) {
     logger.info('Inventory sync routes mounted');
 }
 
-// SPA catch-all: serve React app for non-API routes so React Router works
+// SPA catch-all: every non-API navigation returns the app shell (index.html),
+// so deep links and refreshes work — and the site NEVER falls back to a
+// directory listing or a JSON 404 for a normal page request.
+const SPA_INDEX = path.join(reactBuildPath, 'index.html');
+const FALLBACK_HTML = `<!doctype html><html lang="en"><head><meta charset="utf-8">`
+    + `<meta name="viewport" content="width=device-width,initial-scale=1"><title>OmniDrive</title></head>`
+    + `<body style="font-family:system-ui,sans-serif;background:#0d1117;color:#e6edf3;display:flex;`
+    + `min-height:100vh;align-items:center;justify-content:center;text-align:center;margin:0">`
+    + `<div><h1 style="color:#e47911;margin:0 0 .5rem">OmniDrive</h1>`
+    + `<p>The web app build was not found. Run <code>cd web &amp;&amp; npm install &amp;&amp; npm run build</code> then reload.</p>`
+    + `</div></body></html>`;
+
 app.get('/{*path}', (req, res, next) => {
     if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) return next();
-    const indexFile = path.join(reactBuildPath, 'index.html');
-    res.sendFile(indexFile, err => {
-        if (err) next();
-    });
+    if (fs.existsSync(SPA_INDEX)) return res.sendFile(SPA_INDEX);
+    // Build missing: return a clean HTML page (200) instead of a directory/404.
+    return res.status(200).type('html').send(FALLBACK_HTML);
 });
 
 // 404 handler (API routes only — SPA catch-all handles frontend routes above)
@@ -1028,30 +966,30 @@ const server = httpServer.listen(PORT, () => {
         inventorySync: inventorySync ? 'enabled' : 'disabled',
     });
 
-    console.log(`\n✅ OmniDrive backend running on http://localhost:${PORT}`);
-    console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
-    console.log(`🔌 WebSocket: ${wsManager ? '✅ Enabled' : '❌ Disabled'}`);
-    console.log(`⏳ Background Jobs: ${queueManager ? '✅ Enabled' : '❌ Disabled'}`);
-    console.log(`📦 Inventory Sync: ${inventorySync ? '✅ Enabled' : '❌ Disabled'}`);
-    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`💳 MPesa: ${MPESA_BASE}`);
-    console.log(`💾 Database: ${dbPath}\n`);
+    console.log(`\n OmniDrive backend running on http://localhost:${PORT}`);
+    console.log(` API Documentation: http://localhost:${PORT}/api-docs`);
+    console.log(` WebSocket: ${wsManager ? ' Enabled' : ' Disabled'}`);
+    console.log(` Background Jobs: ${queueManager ? ' Enabled' : ' Disabled'}`);
+    console.log(` Inventory Sync: ${inventorySync ? ' Enabled' : ' Disabled'}`);
+    console.log(` Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(` MPesa: ${MPESA_BASE}`);
+    console.log(` Database: ${dbPath}\n`);
 });
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
     logger.info('SIGTERM signal received: closing server');
-    
+
     // Shutdown WebSocket
     if (wsManager) {
         wsManager.shutdown();
     }
-    
+
     // Shutdown Queue Manager
     if (queueManager) {
         await queueManager.shutdown();
     }
-    
+
     server.close(() => {
         logger.info('HTTP server closed');
         db.close();

@@ -1,30 +1,35 @@
 const express = require('express');
 
-module.exports = (db) => {
+module.exports = (db, authenticate) => {
     const router = express.Router();
 
+    // Derive the chat user identity from the verified JWT payload (req.user),
+    // not from spoofable request headers.
     function getUserFromHeaders(req) {
+        const u = req.user || {};
         return {
-            role: (req.headers['x-user-role'] || '').toLowerCase(),
-            email: req.headers['x-user-email'] || '',
-            userId: req.headers['x-user-id'] || req.headers['x-user-email'] || 'anonymous'
+            role: String(u.role || '').toLowerCase(),
+            email: u.email || '',
+            userId: u.email || 'anonymous',
         };
     }
 
-    function authRequired(req, res, next) {
-        const user = getUserFromHeaders(req);
-        if (!user.role || !user.email) {
-            return res.status(401).json({ success: false, error: 'Missing authentication headers' });
-        }
-        req.user = user;
-        next();
-    }
+    // authRequired = verify JWT, then ensure an identity is present.
+    const authRequired = [
+        authenticate,
+        (req, res, next) => {
+            if (!req.user || !req.user.email) {
+                return res.status(401).json({ success: false, error: 'Authentication required' });
+            }
+            next();
+        },
+    ];
 
     /**
      * POST /api/chat/auth
-     * Register/authenticate user for chat access (reads from auth headers)
+     * Register/authenticate user for chat access (reads from verified JWT)
      */
-    router.post('/auth', (req, res) => {
+    router.post('/auth', authenticate, (req, res) => {
         try {
             const user = getUserFromHeaders(req);
             if (!user.role || !user.email) {
@@ -65,7 +70,7 @@ module.exports = (db) => {
                     WHERE room_id = cr.id AND user_id = ?
                 )
                 GROUP BY cr.id
-                ORDER BY cr.created_at DESC
+                ORDER BY cr.createdAt DESC
             `).all(req.user.email);
 
             return res.json({ success: true, data: { rooms } });
@@ -88,15 +93,16 @@ module.exports = (db) => {
                 INSERT INTO chat_rooms (name, description, isPublic, createdBy)
                 VALUES (?, ?, ?, ?)
             `).run(name, description || '', isPublic ? 1 : 0, req.user.email);
+            const roomId = Number(result.lastInsertRowid);
 
             db.prepare(`
                 INSERT OR IGNORE INTO chat_room_members (room_id, user_id)
                 VALUES (?, ?)
-            `).run(result.lastInsertRowid, req.user.email);
+            `).run(roomId, req.user.email);
 
             return res.json({
                 success: true,
-                data: { roomId: result.lastInsertRowid, name, description }
+                data: { roomId, name, description }
             });
         } catch (err) {
             return res.status(500).json({ success: false, error: err.message });
@@ -145,14 +151,14 @@ module.exports = (db) => {
 
             const rows = db.prepare(`
                 SELECT cm.id,
-                       cu.email      AS senderId,
-                       cm.body       AS content,
-                       cm.created_at AS createdAt,
+                       cu.email     AS senderId,
+                       cm.content   AS content,
+                       cm.createdAt AS createdAt,
                        cu.role
                 FROM chat_messages cm
-                LEFT JOIN chat_users cu ON cm.sender_id = cu.id
+                LEFT JOIN chat_users cu ON cm.senderId = cu.id
                 WHERE cm.room_id = ?
-                ORDER BY cm.created_at DESC
+                ORDER BY cm.createdAt DESC
                 LIMIT ? OFFSET ?
             `).all(roomId, parseInt(limit), parseInt(offset));
 
@@ -186,13 +192,13 @@ module.exports = (db) => {
             }
 
             const result = db.prepare(`
-                INSERT INTO chat_messages (room_id, sender_id, body)
+                INSERT INTO chat_messages (room_id, senderId, content)
                 VALUES (?, ?, ?)
             `).run(roomId, chatUser.id, content);
 
             return res.json({
                 success: true,
-                data: { messageId: result.lastInsertRowid, content }
+                data: { messageId: Number(result.lastInsertRowid), content }
             });
         } catch (err) {
             return res.status(500).json({ success: false, error: err.message });

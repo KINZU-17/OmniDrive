@@ -45,9 +45,9 @@ const svg = `
   <text x="80" y="525" font-family="Arial, sans-serif" font-size="18" fill="#ffffff" opacity="0.65">Kenya's Premier Vehicle Marketplace</text>
 
   <!-- Vehicle emojis -->
-  <text x="750" y="380" font-size="110" font-family="Arial">🚗</text>
-  <text x="900" y="340" font-size="80" font-family="Arial">🏍️</text>
-  <text x="870" y="460" font-size="80" font-family="Arial">🚌</text>
+  <text x="750" y="380" font-size="110" font-family="Arial"></text>
+  <text x="900" y="340" font-size="80" font-family="Arial"></text>
+  <text x="870" y="460" font-size="80" font-family="Arial"></text>
 
   <!-- Bottom domain -->
   <text x="80" y="600" font-family="Arial, sans-serif" font-size="20" fill="#febd69" opacity="0.7">omnidrive.co.ke</text>
@@ -60,5 +60,5 @@ const outputPath = path.join(outputDir, 'og-image.jpg');
 sharp(Buffer.from(svg))
     .jpeg({ quality: 92 })
     .toFile(outputPath)
-    .then(() => console.log(`✅ OG image generated: ${outputPath}`))
-    .catch(err => console.error('❌ Failed:', err.message));
+    .then(() => console.log(` OG image generated: ${outputPath}`))
+    .catch(err => console.error(' Failed:', err.message));

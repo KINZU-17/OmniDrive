@@ -114,10 +114,10 @@ app.post('/api/custom/endpoint',
         logger.info('Processing custom endpoint', {
             userId: req.body.userId,
         });
-        
+
         // Your logic here
         const result = await processData(req.body);
-        
+
         logger.info('Custom endpoint processed', { result });
         res.json(result);  // Auto-normalized response
     })
@@ -157,7 +157,7 @@ npm test -- --coverage
 describe('My Feature', () => {
     it('should do something', async () => {
         const res = await request(app).get('/api/endpoint');
-        
+
         expect(res.statusCode).toBe(200);
         expect(res.body.success).toBe(true);
         expect(res.body.data).toBeDefined();
@@ -166,10 +166,10 @@ describe('My Feature', () => {
 ```
 
 ### Test Coverage Targets
-- Critical API endpoints: ✅ 100%
-- Validation logic: ✅ 100%
-- Error handling: ✅ 100%
-- Database queries: ✅ 90%+
+- Critical API endpoints: 100%
+- Validation logic: 100%
+- Error handling: 100%
+- Database queries: 90%+
 
 ---
 
@@ -216,10 +216,10 @@ tail -f logs/combined.log
 ### Using Zod Schemas
 
 ```javascript
-const { 
+const {
     MpesaPaymentSchema,
     VehicleListingSchema,
-    OrderSchema 
+    OrderSchema
 } = require('./schemas/validation');
 
 // Validate data
@@ -265,8 +265,8 @@ const results = stmt.all('Toyota');
 
 // Good: Efficient filter
 const stmt2 = db.prepare(`
-    SELECT * FROM listings 
-    WHERE price BETWEEN ? AND ? 
+    SELECT * FROM listings
+    WHERE price BETWEEN ? AND ?
     AND isActive = 1
     LIMIT 20 OFFSET ?
 `);
@@ -281,7 +281,7 @@ const stmt3 = db.prepare('SELECT * FROM listings WHERE LOWER(model) LIKE ?');
 ```javascript
 // In server.js or config/database.js
 db.exec(`
-    CREATE INDEX IF NOT EXISTS idx_your_column 
+    CREATE INDEX IF NOT EXISTS idx_your_column
     ON your_table(your_column);
 `);
 ```
@@ -386,10 +386,10 @@ Then press F5 to debug.
 
 ```javascript
 // Before Phase 1 (avoid)
-console.log('Processing payment'); // 🚫 Not logged to file
+console.log('Processing payment'); // Not logged to file
 
 // After Phase 1 (recommended)
-logger.info('Processing payment', { orderId }); // ✅ Logged + searchable
+logger.info('Processing payment', { orderId }); // Logged + searchable
 ```
 
 ---
@@ -543,6 +543,6 @@ Before deploying to production:
 
 ---
 
-**Version**: 1.0.0  
-**Last Updated**: April 24, 2024  
+**Version**: 1.0.0
+**Last Updated**: April 24, 2024
 **Status**: Complete

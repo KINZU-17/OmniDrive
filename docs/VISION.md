@@ -1,4 +1,4 @@
-# 🚗 OmniDrive.co.ke Vision
+# OmniDrive.co.ke Vision
 
 ## Our Vision
 
@@ -19,25 +19,25 @@
 
 OmniDrive is a **one-stop digital dealership** that brings the entire vehicle buying experience online:
 
-### 🌍 Global Inventory
+### Global Inventory
 - Access to vehicles from Japan, Germany, USA, UK, South Korea, and more
 - Cars, bikes, buses, trucks, vans, scooters—all categories
 - Real-time pricing in multiple currencies including KES
 
-### 💳 Local Payments
+### Local Payments
 - MPesa integration for instant mobile money payments
 - Credit/Debit card support (Visa, Mastercard, AMEX)
 - Bank transfer options
 - Installment/financing calculators
 
-### 📦 Full Service
+### Full Service
 - Import duty calculator
 - Shipping logistics
 - VIN history checks
 - Order tracking
 - Dealer locator
 
-### 🔐 Trust Features
+### Trust Features
 - User authentication
 - Verified vehicle inspections
 - Price alerts

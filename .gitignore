@@ -1,17 +1,28 @@
 node_modules/
 .env
 .env.local
-.env.example
 .env.production
 *.log
 .kilo/
 web/build/
 web/dist/
 
-# Database
-omnidrive.db
-omnidrive.db-shm
-omnidrive.db-wal
+# Generated root site (output of `npm run build:site` — regenerate, don't commit)
+/index.html
+/privacy.html
+/terms.html
+/sw.js
+/workbox-*.js
+/registerSW.js
+/manifest.webmanifest
+/icons/
+
+# Database (committed-template excluded; real data ignored)
+*.db
+*.db-shm
+*.db-wal
+backups/
+test/smoke.db*
 
 # Runtime artifacts
 logs/

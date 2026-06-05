@@ -156,7 +156,7 @@ function ClientDashboard({ data }) {
             {data.recommendations.map(v => (
               <Link key={v.id} to={`/vehicle/${v.id}`} className="block bg-dark-surface border border-dark-border rounded-lg overflow-hidden hover:border-accent transition-colors">
                 <div className="h-28 bg-dark-bg">
-                  {v.image ? <img src={v.image} alt={v.brand} className="w-full h-full object-cover"/> : <div className="w-full h-full flex items-center justify-center text-3xl">🚗</div>}
+                  {v.image ? <img src={v.image} alt={v.brand} className="w-full h-full object-cover"/> : <div className="w-full h-full flex items-center justify-center text-3xl"></div>}
                 </div>
                 <div className="p-2.5">
                   <p className="text-white text-xs font-semibold truncate">{v.brand} {v.model}</p>
@@ -170,7 +170,7 @@ function ClientDashboard({ data }) {
 
       {!data.recentOrders?.length && (
         <div className="card p-8 text-center">
-          <p className="text-4xl mb-3">🚗</p>
+          <p className="text-4xl mb-3"></p>
           <p className="text-white font-semibold mb-1">No orders yet</p>
           <p className="text-[#6e7681] text-sm mb-4">Start browsing to find your perfect vehicle</p>
           <Link to="/browse" className="btn-primary text-sm px-6">Browse Vehicles</Link>
@@ -227,7 +227,7 @@ function DealerDashboard({ data, onRefresh }) {
         </div>
       ) : (
         <div className="card p-8 text-center">
-          <p className="text-4xl mb-3">🏢</p>
+          <p className="text-4xl mb-3"></p>
           <p className="text-white font-semibold mb-1">No listings yet</p>
           <p className="text-[#6e7681] text-sm mb-4">Add your first vehicle to start selling</p>
           <button onClick={() => setShowAdd(true)} className="btn-primary text-sm px-6">Add First Listing</button>

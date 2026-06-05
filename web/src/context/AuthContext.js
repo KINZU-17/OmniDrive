@@ -12,25 +12,33 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (user) localStorage.setItem('omnidrive_user', JSON.stringify(user));
-    else { localStorage.removeItem('omnidrive_user'); sessionStorage.removeItem('omnidrive_admin_key'); }
+    else {
+      localStorage.removeItem('omnidrive_user');
+      localStorage.removeItem('omnidrive_token');
+    }
   }, [user]);
 
-  const login = async (email, password, adminKey = '') => {
-    const body = { email, password };
-    if (adminKey) body.adminKey = adminKey;
+  // Persist the JWT immediately (before any navigation) so authHeaders() in
+  // api.js can attach it on the very next request.
+  const persist = (envelope) => {
+    const data = envelope.data || {};
+    const u = data.user;
+    const token = data.token;
+    if (token) localStorage.setItem('omnidrive_token', token);
+    if (u) localStorage.setItem('omnidrive_user', JSON.stringify(u));
+    setUser(u);
+    return u;
+  };
+
+  const login = async (email, password) => {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ email, password }),
     });
     const envelope = await res.json();
     if (!res.ok) throw new Error(envelope.data?.message || envelope.error || 'Login failed');
-    const user = envelope.data?.user;
-    if (user?.role === 'admin' && adminKey) {
-      sessionStorage.setItem('omnidrive_admin_key', adminKey);
-    }
-    setUser(user);
-    return user;
+    return persist(envelope);
   };
 
   const register = async (payload) => {
@@ -41,15 +49,40 @@ export function AuthProvider({ children }) {
     });
     const envelope = await res.json();
     if (!res.ok) throw new Error(envelope.data?.message || envelope.error || 'Registration failed');
-    const user = envelope.data?.user;
-    setUser(user);
-    return user;
+    return persist(envelope);
   };
 
-  const logout = () => setUser(null);
+  // Passwordless login: request a one-time code, then verify it for a JWT.
+  const requestOtp = async (identifier) => {
+    const res = await fetch('/api/auth/otp/request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier }),
+    });
+    const envelope = await res.json();
+    if (!res.ok) throw new Error(envelope.data?.message || envelope.error || 'Could not send code');
+    // devCode is only present in development when no SMS provider is configured.
+    return { message: envelope.data?.message, devCode: envelope.data?.devCode };
+  };
+
+  const verifyOtp = async (identifier, code) => {
+    const res = await fetch('/api/auth/otp/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, code }),
+    });
+    const envelope = await res.json();
+    if (!res.ok) throw new Error(envelope.data?.message || envelope.error || 'Invalid code');
+    return persist(envelope);
+  };
+
+  const logout = () => {
+    localStorage.removeItem('omnidrive_token');
+    setUser(null);
+  };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, login, register, logout, requestOtp, verifyOtp }}>
       {children}
     </AuthContext.Provider>
   );

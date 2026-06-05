@@ -3,29 +3,21 @@ const { listingCreateSchema, listingUpdateSchema } = require('../config/validati
 const { validateBody } = require('../middleware/validation');
 const { asyncHandler } = require('../middleware/errorHandler');
 
-module.exports = (db) => {
+module.exports = (db, authenticate) => {
     const router = express.Router();
 
-    function getUserFromHeaders(req) {
-        return {
-            role: (req.headers['x-user-role'] || '').toLowerCase(),
-            email: req.headers['x-user-email'] || '',
-        };
-    }
-
-    function dashboardAuth(req, res, next) {
-        const user = getUserFromHeaders(req);
-        if (!user.role || !user.email) {
-            return res.status(401).json({ success: false, error: 'Missing user authentication headers' });
-        }
-
-        if (user.role === 'admin' && process.env.ADMIN_KEY && req.headers['x-admin-key'] !== process.env.ADMIN_KEY) {
-            return res.status(401).json({ success: false, error: 'Unauthorized admin access' });
-        }
-
-        req.user = user;
-        next();
-    }
+    // JWT-based auth: `authenticate` populates req.user from the verified token.
+    // Normalise the role to lowercase for the role checks below.
+    const dashboardAuth = [
+        authenticate,
+        (req, res, next) => {
+            if (!req.user || !req.user.role || !req.user.email) {
+                return res.status(401).json({ success: false, error: 'Authentication required' });
+            }
+            req.user.role = String(req.user.role).toLowerCase();
+            next();
+        },
+    ];
 
     router.get('/test', (req, res) => {
         res.json({ success: true, message: 'Dashboard router test' });
@@ -173,15 +165,15 @@ module.exports = (db) => {
         `).run(
             brand,
             model,
-            price,
+            Math.round(price),
             nation,
             category,
             condition,
-            body_style,
-            fuel_type,
-            drivetrain,
-            color,
-            city,
+            body_style ?? null,
+            fuel_type ?? null,
+            drivetrain ?? null,
+            color ?? null,
+            city ?? 'Nairobi',
             image || null,
             badges ? JSON.stringify(badges) : '[]',
             specs ? JSON.stringify(specs) : '{}',
@@ -189,7 +181,7 @@ module.exports = (db) => {
             req.user.email
         );
 
-        return res.json({ success: true, id: result.lastInsertRowid, message: 'Listing created successfully' });
+        return res.json({ success: true, id: Number(result.lastInsertRowid), message: 'Listing created successfully' });
     }));
 
     router.put('/dealer/listings/:id', dashboardAuth, validateBody(listingUpdateSchema), asyncHandler(async (req, res) => {
@@ -217,21 +209,21 @@ module.exports = (db) => {
         `).run(
             brand,
             model,
-            price,
+            Math.round(price),
             nation,
             category,
             condition,
-            body_style,
-            fuel_type,
-            drivetrain,
-            color,
-            city,
+            body_style ?? null,
+            fuel_type ?? null,
+            drivetrain ?? null,
+            color ?? null,
+            city ?? 'Nairobi',
             image || null,
             badges ? JSON.stringify(badges) : '[]',
             specs ? JSON.stringify(specs) : '{}',
             rating || 4.5,
             isActive !== undefined ? (isActive ? 1 : 0) : 1,
-            req.params.id,
+            Number(req.params.id),
             req.user.email
         );
 

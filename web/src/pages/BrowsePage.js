@@ -100,7 +100,7 @@ export default function BrowsePage() {
 
         {!loading && filtered.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <div className="text-6xl">🔍</div>
+            <div className="text-6xl"></div>
             <h3 className="text-xl font-semibold text-white">No vehicles found</h3>
             <p className="text-[#6e7681] text-sm">Try adjusting your filters or search terms</p>
             <button onClick={clearFilters} className="btn-outline text-sm">Clear all filters</button>
