@@ -72,11 +72,12 @@ the original feature set:
 
 ## Installable PWA & offline
 
-The build is a **single self-contained `index.html`** (`vite-plugin-singlefile`) —
-all JS and CSS are inlined, so there are no separate `/assets/*` files to 404,
-list, or mis-cache. It must be **served over HTTP** (the backend or Vercel), not
-opened as a `file://` (browsers block module scripts and service workers there,
-and the app needs the `/api` backend).
+The frontend is a **React SPA** built with **Vite** (`web/`). `npm run build`
+emits a hashed `web/dist/index.html` plus `web/dist/assets/*.{js,css}`. It must be
+**served over HTTP** (the backend or Vercel), not opened as a `file://` (browsers
+block module scripts and service workers there, and the app needs the `/api`
+backend). The Express server serves `web/dist` and falls back to `index.html` for
+any non-API route, so deep links / refreshes work and there's never a directory listing.
 
 The web app is also a full Progressive Web App (`vite-plugin-pwa`):
 - **Installable** on Android, iOS and desktop ("Add to Home Screen"), with a
@@ -205,13 +206,15 @@ Japan | USA | Germany | UK | Italy | France | Sweden | South Korea | China | Ind
 
 ## Tech Stack
 
-- **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
-- **Backend**: Node.js/Express
-- **Database**: SQLite (production: PostgreSQL)
-- **Storage**: localStorage for persistence
-- **APIs**: Open Exchange Rates, Geolocation
-- **PWA**: manifest.json for installability
-- **SEO**: sitemap.xml, robots.txt, meta tags
+- **Frontend**: React 18 + React Router, built with Vite, styled with Tailwind CSS v4 (`web/`)
+- **Backend**: Node.js / Express
+- **Database**: `node:sqlite` (built-in, WAL mode + migrations) — file-backed, no native build
+- **Auth**: JWT (bcrypt password hashing) with role + dealership-ownership guards
+- **Payments**: M-Pesa Daraja STK Push; OTP login via Twilio / Africa's Talking (provider-agnostic)
+- **Storage**: localStorage for client preferences (wishlist, compare, currency, session)
+- **APIs**: Open Exchange Rates (live currency)
+- **PWA**: `vite-plugin-pwa` (installable + offline service worker)
+- **SEO**: sitemap.xml, per-route titles/meta
 
 ---
 
@@ -219,30 +222,27 @@ Japan | USA | Germany | UK | Italy | France | Sweden | South Korea | China | Ind
 
 ```
 ./
-├── index.html          # Main application
-├── admin.html          # Admin dashboard (scoped by dealership)
-├── script.js           # Application logic and API client
-├── styles.css          # UI styling
-├── server.js           # Node.js/Express backend
-├── dashboard.js        # Dashboard rendering for all user types
-├── login.html          # Login page with role selection
-├── login.js            # Authentication logic
-├── package.json        # Node dependencies and scripts
-├── vercel.json         # Vercel deployment config (frontend + /api proxy)
-├── Dockerfile          # Backend container (deploy to Railway/Render/Fly)
-├── manifest.json       # PWA manifest
-├── sw.js               # Service Worker (offline support)
-├── sitemap.xml         # SEO sitemap
-├── robots.txt          # Crawler rules
-├── privacy.html        # Privacy policy
-├── terms.html          # Terms of service
-├── dealer-register.html # Dealer onboarding page
-├── DEALERSHIPS.md      # Multi-dealership architecture documentation
-├── config/             # Server configuration
-├── routes/             # Express route handlers
-├── middleware/         # Request and error middleware
-├── assets/             # Images and media
-└── __tests__/          # Automated tests
+├── server.js           # Node.js/Express backend (API + serves the built SPA)
+├── config/             # DB (node:sqlite schema/migrations/seed), logger, queue, websocket, validation
+├── routes/             # Express route handlers (chat, dashboard, inventory sync)
+├── middleware/         # auth (JWT), validation, error handling, response normalizer, cache
+├── services/           # daraja (M-Pesa), sms (OTP), inventorySync
+├── public/assets/      # Vehicle images served at /assets
+├── package.json        # Backend deps + scripts (start, dev, test, test:unit)
+├── vercel.json         # Vercel deploy (frontend + /api → backend proxy)
+├── Dockerfile          # Backend container (Railway/Render/Fly)
+├── test/smoke.mjs      # Security smoke test (npm test)
+├── __tests__/          # Jest unit tests (npm run test:unit)
+└── web/                # React + Vite frontend
+    ├── src/
+    │   ├── App.js          # Routes + provider stack
+    │   ├── pages/          # HomePage, BrowsePage, VehicleDetailPage, DashboardPage,
+    │   │                   #   PaymentPage, OrdersPage, ComparePage, Login, Wishlist, Messaging, legal
+    │   ├── components/     # Navbar, Footer, VehicleCard, FilterBar, CompareTray, LegalLayout, …
+    │   ├── context/        # Auth, Currency, Wishlist, Compare
+    │   └── utils/          # api client, usePageTitle
+    ├── vite.config.js      # Vite + Tailwind + PWA config
+    └── dist/               # Build output (served by server.js)
 ```
 
 ---
@@ -264,10 +264,10 @@ Japan | USA | Germany | UK | Italy | France | Sweden | South Korea | China | Ind
 4. Access your dealership dashboard
 
 ### For Clients (Buyers)
-1. Open `index.html` in a web browser
-2. Browse vehicles by category or use filters
-3. Filter by dealership if desired
-4. Contact specific dealerships for vehicles
+1. Open the app in a browser (`http://localhost:3000` locally, or the deployed URL)
+2. Browse vehicles by category or use filters (filters are shareable via the URL)
+3. Save favorites to your wishlist, or add up to 3 vehicles to compare side by side
+4. Reserve a vehicle with an M-Pesa deposit and track it under **My Orders**
 
 ---
 
@@ -294,7 +294,7 @@ Japan | USA | Germany | UK | Italy | France | Sweden | South Korea | China | Ind
 
 - **Email**: info@omnidrive.co.ke
 - **Phone**: +254 700 000 000
-- **Dealer Registration**: [dealer-register.html](dealer-register.html)
+- **Dealer Registration**: sign in with the **Dealer** role at `/login` (applications are reviewed by an admin)
 
 ---
 

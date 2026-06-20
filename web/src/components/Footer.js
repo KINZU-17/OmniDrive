@@ -16,8 +16,8 @@ const LINKS = {
     { label: 'Messages', to: '/messages' },
   ],
   Legal: [
-    { label: 'Privacy Policy', href: '/privacy.html', external: true },
-    { label: 'Terms of Service', href: '/terms.html', external: true },
+    { label: 'Privacy Policy', to: '/privacy' },
+    { label: 'Terms of Service', to: '/terms' },
   ],
 };
 
@@ -48,15 +48,9 @@ export default function Footer() {
               <ul className="space-y-2.5">
                 {items.map(item => (
                   <li key={item.label}>
-                    {item.external ? (
-                      <a href={item.href} className="text-[#6e7681] text-sm hover:text-white transition-colors">
-                        {item.label}
-                      </a>
-                    ) : (
-                      <Link to={item.to} className="text-[#6e7681] text-sm hover:text-white transition-colors">
-                        {item.label}
-                      </Link>
-                    )}
+                    <Link to={item.to} className="text-[#6e7681] text-sm hover:text-white transition-colors">
+                      {item.label}
+                    </Link>
                   </li>
                 ))}
               </ul>

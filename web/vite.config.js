@@ -2,7 +2,6 @@ import { defineConfig, transformWithEsbuild } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
-import { viteSingleFile } from 'vite-plugin-singlefile';
 
 export default defineConfig({
   plugins: [
@@ -90,10 +89,6 @@ export default defineConfig({
       },
       devOptions: { enabled: false },
     }),
-
-    // Inline all JS + CSS into a single self-contained index.html, so the whole
-    // app ships in one file (no separate /assets/* bundle to 404 or list).
-    viteSingleFile(),
   ],
   optimizeDeps: {
     esbuildOptions: { loader: { '.js': 'jsx' } },

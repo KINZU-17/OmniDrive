@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../utils/api';
+import { usePageTitle } from '../utils/usePageTitle';
 
 export default function MessagingPage() {
+  usePageTitle('Messages');
   const { user } = useAuth();
   const navigate = useNavigate();
   const [rooms, setRooms] = useState([]);

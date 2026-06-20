@@ -1,7 +1,7 @@
 import React from 'react';
 
 const CATEGORIES = ['All', 'Car', 'Bike', 'Bus', 'Truck'];
-const FUELS = ['All', 'Gasoline', 'Diesel', 'Electric', 'Hybrid', 'Plug-in Hybrid'];
+const FUELS = ['All', 'Petrol', 'Diesel', 'Electric', 'Hybrid', 'Plug-in Hybrid'];
 const CONDITIONS = ['All', 'New', 'Used'];
 const SORT_OPTIONS = [
   { value: 'default', label: 'Featured' },

@@ -2,8 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import VehicleCard from '../components/VehicleCard';
 import { useWishlist } from '../context/WishlistContext';
+import { usePageTitle } from '../utils/usePageTitle';
 
 export default function WishlistPage() {
+  usePageTitle('My Wishlist');
   const { wishlist } = useWishlist();
 
   return (

@@ -239,6 +239,24 @@ const MIGRATIONS = [
     );
     CREATE INDEX IF NOT EXISTS idx_otp_identifier ON otp_codes(identifier, consumed);
   `),
+
+  // v3 — vehicle reviews. One row per (listing, user); aggregates fold back into
+  // listings.rating / listings.reviewCount. Only verified purchasers may post
+  // (enforced in the route, not the schema).
+  () => db.exec(`
+    CREATE TABLE IF NOT EXISTS reviews (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      listing_id INTEGER NOT NULL,
+      user_id    INTEGER NOT NULL,
+      user_name  TEXT NOT NULL,
+      rating     INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+      comment    TEXT DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE (listing_id, user_id),
+      FOREIGN KEY (listing_id) REFERENCES listings(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_reviews_listing ON reviews(listing_id, created_at);
+  `),
 ];
 
 function migrate() {

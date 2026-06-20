@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
+import { usePageTitle } from '../utils/usePageTitle';
+import RecentlyViewedRail from '../components/RecentlyViewedRail';
 
 const HERO_CATEGORIES = [
   { label: 'Cars', icon: '', query: 'Car' },
@@ -45,6 +47,7 @@ function StatBlock({ value, label }) {
 }
 
 export default function HomePage() {
+  usePageTitle(null, "OmniDrive — Kenya's vehicle marketplace. Browse cars, bikes, trucks from global dealers and pay via M-Pesa.");
   const navigate = useNavigate();
   const { format } = useCurrency();
   const [search, setSearch] = useState('');
@@ -301,6 +304,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ── RECENTLY VIEWED ──────────────────────────────────────────────── */}
+      <RecentlyViewedRail className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" />
 
       {/* ── CTA BANNER ───────────────────────────────────────────────────── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

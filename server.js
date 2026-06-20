@@ -871,6 +871,15 @@ try {
     logger.error('Failed to mount dashboard routes', { error: routeError.message });
 }
 
+// Mount review routes
+try {
+    const reviewRoutes = require('./routes/reviewRoutes');
+    app.use('/api', reviewRoutes(db, authenticate));
+    logger.info('Review routes mounted');
+} catch (routeError) {
+    logger.error('Failed to mount review routes', { error: routeError.message });
+}
+
 // ─── PHASE 2: REAL-TIME NOTIFICATIONS & BACKGROUND JOBS ──────────────────
 
 // Create HTTP server for WebSocket support

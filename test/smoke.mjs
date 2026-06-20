@@ -47,7 +47,9 @@ let serverLog = '';
 child.stdout.on('data', (d) => { serverLog += d; });
 child.stderr.on('data', (d) => { serverLog += d; });
 
-async function waitForHealth(timeoutMs = 15000) {
+// First-run boot seeds demo data with bcrypt (12 rounds) which can take tens of
+// seconds on a loaded/slow machine, so give the server a generous window.
+async function waitForHealth(timeoutMs = 60000) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     try {
@@ -156,6 +158,19 @@ async function main() {
   r = await api('/api/auth/otp/verify', { method: 'POST', body: { identifier: '0700000001', code: phoneCode } });
   expect(r.status === 200 && typeof unwrap(await r.json()).token === 'string',
     'otp login by phone number works', `status=${r.status}`);
+
+  // 9. reviews: public read shape, anonymous write rejected, and the
+  // verified-purchaser gate blocks a client with no paid order.
+  r = await api(`/api/listings/${sample.id}/reviews`);
+  const rev = unwrap(await r.json());
+  expect(r.status === 200 && rev && Array.isArray(rev.reviews) && typeof rev.count === 'number',
+    'public reviews return a summary shape', `status=${r.status}`);
+
+  r = await api(`/api/listings/${sample.id}/reviews`, { method: 'POST', body: { rating: 5 } });
+  expect(r.status === 401, 'anonymous post review -> 401', `status=${r.status}`);
+
+  r = await api(`/api/listings/${sample.id}/reviews`, { method: 'POST', token: clientToken, body: { rating: 5, comment: 'nope' } });
+  expect(r.status === 403, 'non-purchaser post review -> 403 (verified buyers only)', `status=${r.status}`);
 
   console.log(`\n${passed} passed, ${failed} failed`);
 }

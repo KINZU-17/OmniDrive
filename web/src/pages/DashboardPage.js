@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../utils/api';
+import { usePageTitle } from '../utils/usePageTitle';
 import { useCurrency } from '../context/CurrencyContext';
 
 const ROLE_COLOR = { admin: 'text-red-400', dealer: 'text-green-400', liaison: 'text-orange-400', client: 'text-blue-400' };
@@ -377,6 +378,7 @@ function AdminDashboard({ data }) {
 }
 
 export default function DashboardPage() {
+  usePageTitle('Dashboard');
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [data, setData] = useState(null);

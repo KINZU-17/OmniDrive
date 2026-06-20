@@ -9,8 +9,7 @@ web/dist/
 
 # Generated root site (output of `npm run build:site` — regenerate, don't commit)
 /index.html
-/privacy.html
-/terms.html
+/assets/
 /sw.js
 /workbox-*.js
 /registerSW.js

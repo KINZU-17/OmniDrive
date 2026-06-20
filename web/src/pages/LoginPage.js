@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { usePageTitle } from '../utils/usePageTitle';
 
 const ROLES = [
   { id: 'client', label: 'Client', desc: 'Browse and purchase vehicles', color: 'text-blue-400 border-blue-500/40' },
@@ -10,6 +11,7 @@ const ROLES = [
 ];
 
 export default function LoginPage() {
+  usePageTitle('Sign In');
   const { login, register, requestOtp, verifyOtp } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState('role');       // role -> form

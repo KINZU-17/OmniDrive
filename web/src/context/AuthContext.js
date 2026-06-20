@@ -10,6 +10,11 @@ export function AuthProvider({ children }) {
     } catch { return null; }
   });
 
+  // While we re-validate a stored token against the server we hold `loading`
+  // true, so the app can show a splash instead of flashing a logged-out UI (or
+  // letting a page act on a stale, expired session).
+  const [loading, setLoading] = useState(() => !!localStorage.getItem('omnidrive_token'));
+
   useEffect(() => {
     if (user) localStorage.setItem('omnidrive_user', JSON.stringify(user));
     else {
@@ -17,6 +22,29 @@ export function AuthProvider({ children }) {
       localStorage.removeItem('omnidrive_token');
     }
   }, [user]);
+
+  // On first load, if we have a token, confirm it's still valid and refresh the
+  // user from the server. A 401 (expired/invalid) clears the stale session so
+  // the rest of the app never makes doomed authenticated requests.
+  useEffect(() => {
+    const token = localStorage.getItem('omnidrive_token');
+    if (!token) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+        const envelope = await res.json().catch(() => ({}));
+        if (cancelled) return;
+        if (res.ok && envelope.data?.user) setUser(envelope.data.user);
+        else setUser(null); // invalid/expired -> the [user] effect drops the token too
+      } catch {
+        // Network error (e.g. offline): keep the cached session optimistically.
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   // Persist the JWT immediately (before any navigation) so authHeaders() in
   // api.js can attach it on the very next request.
@@ -82,7 +110,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, requestOtp, verifyOtp }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, requestOtp, verifyOtp }}>
       {children}
     </AuthContext.Provider>
   );

@@ -4,6 +4,11 @@ import { inventory as fallbackInventory } from '../data/inventory';
 import { useCurrency } from '../context/CurrencyContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
+import { useRecentlyViewed } from '../context/RecentlyViewedContext';
+import { usePageTitle } from '../utils/usePageTitle';
+import FinancingCalculator from '../components/FinancingCalculator';
+import ReviewsSection from '../components/ReviewsSection';
+import RecentlyViewedRail from '../components/RecentlyViewedRail';
 
 function SpecRow({ label, value }) {
   if (!value) return null;
@@ -21,9 +26,11 @@ export default function VehicleDetailPage() {
   const { format } = useCurrency();
   const { toggle, isWishlisted } = useWishlist();
   const { user } = useAuth();
+  const { record } = useRecentlyViewed();
   const [vehicle, setVehicle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('specs');
+  usePageTitle(vehicle ? `${vehicle.brand} ${vehicle.model}` : 'Vehicle');
 
   useEffect(() => {
     setLoading(true);
@@ -39,6 +46,11 @@ export default function VehicleDetailPage() {
       })
       .finally(() => setLoading(false));
   }, [id]);
+
+  // Track this vehicle for the "Recently viewed" rail once it has loaded.
+  useEffect(() => {
+    if (vehicle && vehicle.id) record(vehicle);
+  }, [vehicle?.id, record]);
 
   if (loading) {
     return (
@@ -128,7 +140,7 @@ export default function VehicleDetailPage() {
             {/* Tabs */}
             <div>
               <div className="flex gap-1 border-b border-dark-border mb-4">
-                {['specs', 'overview'].map(t => (
+                {['specs', 'overview', 'financing', 'reviews'].map(t => (
                   <button
                     key={t}
                     onClick={() => setTab(t)}
@@ -163,6 +175,10 @@ export default function VehicleDetailPage() {
                   </p>
                 </div>
               )}
+
+              {tab === 'financing' && <FinancingCalculator price={vehicle.price} />}
+
+              {tab === 'reviews' && <ReviewsSection listingId={vehicle.id} />}
             </div>
 
             {/* CTAs */}
@@ -181,6 +197,8 @@ export default function VehicleDetailPage() {
             </div>
           </div>
         </div>
+
+        <RecentlyViewedRail excludeId={vehicle.id} className="mt-12" />
       </div>
     </div>
   );

@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useCompare } from '../context/CompareContext';
+import { useSavedSearch } from '../context/SavedSearchContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { FALLBACK_RATES } from '../utils/api';
 
@@ -10,6 +12,8 @@ const CURRENCIES = Object.keys(FALLBACK_RATES);
 export default function Navbar({ onSearch }) {
   const { user, logout } = useAuth();
   const { wishlist } = useWishlist();
+  const { compare } = useCompare();
+  const { totalNew } = useSavedSearch();
   const { currency, setCurrency } = useCurrency();
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -90,8 +94,32 @@ export default function Navbar({ onSearch }) {
               Browse
             </Link>
 
+            {/* Saved-search alerts */}
+            {totalNew > 0 && (
+              <Link to="/browse" aria-label={`${totalNew} new matches for saved searches`} className="relative p-2 text-[#8b949e] hover:text-white transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <span className="absolute -top-0.5 -right-0.5 bg-accent text-white text-xs min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center font-bold">
+                  {totalNew}
+                </span>
+              </Link>
+            )}
+
+            {/* Compare */}
+            {compare.length > 0 && (
+              <Link to="/compare" aria-label="Compare vehicles" className="relative p-2 text-[#8b949e] hover:text-white transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m-6 5h6m-6 5h6M4 7h.01M4 12h.01M4 17h.01" />
+                </svg>
+                <span className="absolute -top-0.5 -right-0.5 bg-accent text-white text-xs w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                  {compare.length}
+                </span>
+              </Link>
+            )}
+
             {/* Wishlist */}
-            <Link to="/wishlist" className="relative p-2 text-[#8b949e] hover:text-white transition-colors">
+            <Link to="/wishlist" aria-label="Wishlist" className="relative p-2 text-[#8b949e] hover:text-white transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
@@ -121,6 +149,9 @@ export default function Navbar({ onSearch }) {
                     </div>
                     <Link to="/dashboard" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#c9d1d9] hover:bg-dark-surface hover:text-white transition-colors">
                       Dashboard
+                    </Link>
+                    <Link to="/orders" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#c9d1d9] hover:bg-dark-surface hover:text-white transition-colors">
+                      My Orders
                     </Link>
                     <Link to="/messages" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#c9d1d9] hover:bg-dark-surface hover:text-white transition-colors">
                       Messages
@@ -170,9 +201,15 @@ export default function Navbar({ onSearch }) {
             <Link to="/wishlist" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm text-[#c9d1d9] hover:text-white">
               Wishlist {wishlist.length > 0 && <span className="ml-1 badge bg-accent text-white">{wishlist.length}</span>}
             </Link>
+            {compare.length > 0 && (
+              <Link to="/compare" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm text-[#c9d1d9] hover:text-white">
+                Compare <span className="ml-1 badge bg-accent text-white">{compare.length}</span>
+              </Link>
+            )}
             {user ? (
               <>
                 <Link to="/dashboard" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm text-[#c9d1d9] hover:text-white">Dashboard</Link>
+                <Link to="/orders" onClick={() => setMenuOpen(false)} className="block px-3 py-2 text-sm text-[#c9d1d9] hover:text-white">My Orders</Link>
                 <button onClick={() => { logout(); setMenuOpen(false); }} className="block w-full text-left px-3 py-2 text-sm text-red-400">Sign out</button>
               </>
             ) : (

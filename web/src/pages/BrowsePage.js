@@ -2,48 +2,37 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import VehicleCard from '../components/VehicleCard';
 import FilterBar from '../components/FilterBar';
+import RecentlyViewedRail from '../components/RecentlyViewedRail';
+import SavedSearches from '../components/SavedSearches';
 import { inventory as fallbackInventory } from '../data/inventory';
+import { usePageTitle } from '../utils/usePageTitle';
+import { filterVehicles } from '../utils/filterVehicles';
 
 const PAGE_SIZE = 12;
 
-function applyFilters(vehicles, filters) {
-  let result = [...vehicles];
-  const q = (filters.search || '').toLowerCase();
-  if (q) result = result.filter(v =>
-    `${v.brand} ${v.model} ${v.nation || ''} ${v.city || ''}`.toLowerCase().includes(q)
-  );
-  if (filters.category && filters.category !== 'All') result = result.filter(v => v.category === filters.category);
-  if (filters.nation && filters.nation !== 'All') result = result.filter(v => v.nation === filters.nation);
-  if (filters.fuel && filters.fuel !== 'All') result = result.filter(v => v.fuel === filters.fuel);
-  if (filters.condition && filters.condition !== 'All') result = result.filter(v => v.condition === filters.condition);
-  if (filters.priceMin) result = result.filter(v => v.price >= Number(filters.priceMin));
-  if (filters.priceMax) result = result.filter(v => v.price <= Number(filters.priceMax));
-  if (filters.sort === 'price_asc') result.sort((a, b) => a.price - b.price);
-  else if (filters.sort === 'price_desc') result.sort((a, b) => b.price - a.price);
-  else if (filters.sort === 'rating') result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-  else if (filters.sort === 'newest') result.sort((a, b) => (b.id || 0) - (a.id || 0));
-  return result;
-}
-
 export default function BrowsePage() {
-  const [searchParams] = useSearchParams();
+  usePageTitle('Browse Vehicles', 'Browse cars, bikes, trucks and buses on OmniDrive — filter by category, fuel, price and more.');
+  const [searchParams, setSearchParams] = useSearchParams();
   const [allVehicles, setAllVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [filters, setFilters] = useState({
+
+  // The URL query string is the single source of truth for filters, so footer
+  // links (/browse?category=Car), shared URLs and the FilterBar all stay in sync.
+  const filters = useMemo(() => ({
     search: searchParams.get('q') || '',
     category: searchParams.get('category') || 'All',
     nation: searchParams.get('nation') || 'All',
-    fuel: 'All',
-    condition: 'All',
-    sort: 'default',
-    priceMin: '',
-    priceMax: '',
-  });
+    fuel: searchParams.get('fuel') || 'All',
+    condition: searchParams.get('condition') || 'All',
+    sort: searchParams.get('sort') || 'default',
+    priceMin: searchParams.get('priceMin') || '',
+    priceMax: searchParams.get('priceMax') || '',
+  }), [searchParams]);
 
   useEffect(() => {
     setLoading(true);
-    fetch('/api/listings?limit=200&isActive=1')
+    fetch('/api/listings?limit=100&isActive=1')
       .then(r => r.json())
       .then(data => {
         const raw = Array.isArray(data.data) ? data.data : (data.listings || []);
@@ -59,19 +48,27 @@ export default function BrowsePage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleFiltersChange = useCallback((f) => {
-    setFilters(f);
-    setPage(1);
-  }, []);
+  // Reset pagination whenever the filters (URL) change.
+  useEffect(() => { setPage(1); }, [searchParams]);
 
-  const filtered = useMemo(() => applyFilters(allVehicles, filters), [allVehicles, filters]);
+  const handleFiltersChange = useCallback((f) => {
+    const next = {};
+    if (f.search) next.q = f.search;
+    if (f.category && f.category !== 'All') next.category = f.category;
+    if (f.nation && f.nation !== 'All') next.nation = f.nation;
+    if (f.fuel && f.fuel !== 'All') next.fuel = f.fuel;
+    if (f.condition && f.condition !== 'All') next.condition = f.condition;
+    if (f.sort && f.sort !== 'default') next.sort = f.sort;
+    if (f.priceMin) next.priceMin = f.priceMin;
+    if (f.priceMax) next.priceMax = f.priceMax;
+    setSearchParams(next, { replace: true });
+  }, [setSearchParams]);
+
+  const filtered = useMemo(() => filterVehicles(allVehicles, filters), [allVehicles, filters]);
   const paginated = filtered.slice(0, page * PAGE_SIZE);
   const hasMore = paginated.length < filtered.length;
 
-  const clearFilters = () => handleFiltersChange({
-    search: '', category: 'All', nation: 'All',
-    fuel: 'All', condition: 'All', sort: 'default', priceMin: '', priceMax: '',
-  });
+  const clearFilters = () => setSearchParams({}, { replace: true });
 
   return (
     <div className="min-h-screen bg-dark-bg">
@@ -88,6 +85,10 @@ export default function BrowsePage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <FilterBar filters={filters} onChange={handleFiltersChange} count={filtered.length} />
+
+        <SavedSearches filters={filters} onApply={handleFiltersChange} />
+
+        <RecentlyViewedRail className="mt-6" />
 
         {loading && (
           <div className="flex items-center justify-center py-20">
